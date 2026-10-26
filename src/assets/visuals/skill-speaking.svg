@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="speBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3E8FF"/>
+      <stop offset="100%" stop-color="#E9D5FF"/>
+    </linearGradient>
+    <linearGradient id="micBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#speBg)"/>
+  <!-- Decorative background circle -->
+  <circle cx="160" cy="95" r="64" stroke="#7C3AED" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="160" cy="95" r="46" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Studio Microphone & Speech Waves -->
+  <g transform="translate(142, 54)">
+    <!-- Speech Waves Right -->
+    <path d="M46 16 C54 26 54 44 46 54" stroke="#7C3AED" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M54 8 C66 22 66 48 54 62" stroke="#7C3AED" stroke-width="3" stroke-linecap="round" stroke-opacity="0.5" fill="none"/>
+    
+    <!-- Speech Waves Left -->
+    <path d="M-10 16 C-18 26 -18 44 -10 54" stroke="#7C3AED" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M-18 8 C-30 22 -30 48 -18 62" stroke="#7C3AED" stroke-width="3" stroke-linecap="round" stroke-opacity="0.5" fill="none"/>
+
+    <!-- Mic Capsule -->
+    <rect x="7" y="4" width="22" height="38" rx="11" fill="url(#micBody)"/>
+    <line x1="7" y1="18" x2="29" y2="18" stroke="#E9D5FF" stroke-width="2"/>
+    <line x1="7" y1="26" x2="29" y2="26" stroke="#E9D5FF" stroke-width="2"/>
+
+    <!-- Mic Cradle -->
+    <path d="M0 24 C0 42 36 42 36 24" stroke="#6D28D9" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <line x1="18" y1="42" x2="18" y2="58" stroke="#6D28D9" stroke-width="3.5"/>
+    <line x1="6" y1="58" x2="30" y2="58" stroke="#6D28D9" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="84" height="24" rx="12" fill="#7C3AED" fill-opacity="0.15"/>
+    <text x="42" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#6D28D9" text-anchor="middle">SPEAKING</text>
+  </g>
+</svg>

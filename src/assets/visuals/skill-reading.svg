@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="readBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="bookCover" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#readBg)"/>
+  <!-- Decorative background circles -->
+  <circle cx="160" cy="95" r="64" stroke="#D97706" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="160" cy="95" r="46" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Open Academic Book Illustration -->
+  <g transform="translate(110, 58)">
+    <!-- Book Spine & Pages -->
+    <path d="M50 70 L50 20 C35 15 15 17 0 24 L0 74 C15 67 35 65 50 70 Z" fill="#FFFFFF" stroke="#D97706" stroke-width="3"/>
+    <path d="M50 70 L50 20 C65 15 85 17 100 24 L100 74 C85 67 65 65 50 70 Z" fill="#FFFFFF" stroke="#D97706" stroke-width="3"/>
+    
+    <!-- Left Page Text Lines -->
+    <line x1="12" y1="34" x2="38" y2="31" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+    <line x1="12" y1="44" x2="38" y2="41" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+    <line x1="12" y1="54" x2="30" y2="52" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+    
+    <!-- Right Page Text Lines -->
+    <line x1="62" y1="31" x2="88" y2="34" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+    <line x1="62" y1="41" x2="88" y2="44" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+    <line x1="62" y1="52" x2="78" y2="54" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.6"/>
+
+    <!-- Bookmark Ribbon -->
+    <path d="M48 20 L48 55 L53 50 L58 55 L58 20 Z" fill="#B45309"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="78" height="24" rx="12" fill="#D97706" fill-opacity="0.15"/>
+    <text x="39" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#B45309" text-anchor="middle">READING</text>
+  </g>
+</svg>

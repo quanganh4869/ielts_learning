@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="foundBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAF3F1"/>
+      <stop offset="100%" stop-color="#D5EBE6"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#foundBg)"/>
+  <circle cx="160" cy="90" r="64" stroke="#28665F" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+  
+  <!-- Foundation Compass & Base Blocks Art -->
+  <g transform="translate(125, 50)">
+    <!-- Base Foundation Pedestal -->
+    <rect x="0" y="60" width="70" height="16" rx="4" fill="#28665F"/>
+    <rect x="10" y="44" width="50" height="16" rx="4" fill="#3D8B82"/>
+    <rect x="20" y="28" width="30" height="16" rx="4" fill="#5EABA2"/>
+    
+    <!-- Academic Milestone Flag -->
+    <line x1="35" y1="28" x2="35" y2="4" stroke="#28665F" stroke-width="3"/>
+    <path d="M35 4 L55 12 L35 20 Z" fill="#D97706"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="112" height="24" rx="12" fill="#28665F" fill-opacity="0.15"/>
+    <text x="56" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#28665F" text-anchor="middle">PHASE 1: NỀN TẢNG</text>
+  </g>
+</svg>

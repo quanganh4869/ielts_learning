@@ -1,0 +1,1540 @@
+import {
+  UserAccount,
+  UserSession,
+  LoginEvent,
+  AdminLearningPlan,
+  AdminEnrollment,
+  AdminModule,
+  AdminLesson,
+  AdminVocabularyWord,
+  AdminGrammarRule,
+  AdminMediaAsset,
+  AdminQuestion,
+  AdminAssessment,
+  AdminAssessmentAttempt,
+  AdminServicePlan,
+  AdminAiTask,
+  AdminAiProviderStatus,
+  AdminRole,
+  AdminAuditLog,
+  SystemConfig,
+  AdminUser,
+} from '../types/admin'
+
+// Storage keys
+const KEY_USERS = 'ielts_admin_users_v1'
+const KEY_SESSIONS = 'ielts_admin_sessions_v1'
+const KEY_LOGIN_EVENTS = 'ielts_admin_login_events_v1'
+const KEY_LEARNING_PLANS = 'ielts_admin_plans_v1'
+const KEY_ENROLLMENTS = 'ielts_admin_enrollments_v1'
+const KEY_MODULES = 'ielts_admin_modules_v1'
+const KEY_LESSONS = 'ielts_admin_lessons_v1'
+const KEY_VOCAB = 'ielts_admin_vocab_v1'
+const KEY_GRAMMAR = 'ielts_admin_grammar_v1'
+const KEY_MEDIA = 'ielts_admin_media_v1'
+const KEY_QUESTIONS = 'ielts_admin_questions_v1'
+const KEY_ASSESSMENTS = 'ielts_admin_assessments_v1'
+const KEY_ATTEMPTS = 'ielts_admin_attempts_v1'
+const KEY_SERVICE_PLANS = 'ielts_admin_service_plans_v1'
+const KEY_AI_TASKS = 'ielts_admin_ai_tasks_v1'
+const KEY_ROLES = 'ielts_admin_roles_v1'
+const KEY_AUDIT_LOGS = 'ielts_admin_audit_logs_v1'
+const KEY_SETTINGS = 'ielts_admin_settings_v1'
+
+// Default logged-in admin user
+export const CURRENT_ADMIN_USER: AdminUser = {
+  id: 'adm-001',
+  email: 'admin.lead@ieltsplatform.edu.vn',
+  fullName: 'Trần Văn Hoàng (Lead Admin)',
+  role: 'super_admin',
+  lastLoginAt: '2026-10-25 08:30:00',
+}
+
+// ----------------------------------------------------------------------------
+// SEED DATA INITIALIZERS
+// ----------------------------------------------------------------------------
+const SEED_USERS: UserAccount[] = [
+  {
+    id: 'u-101',
+    email: 'quanganh.ielts@example.com',
+    fullName: 'Nguyễn Quang Anh',
+    role: 'student',
+    status: 'active',
+    targetBand: 7.0,
+    currentBand: 6.5,
+    testType: 'academic',
+    authProvider: 'google',
+    emailVerified: true,
+    servicePlanName: 'IELTS Pro Monthly',
+    servicePlanTier: 'pro',
+    createdAt: '2026-09-01 10:14:00',
+    lastActiveAt: '2026-10-25 17:45:00',
+    sessionsCount: 2,
+  },
+  {
+    id: 'u-102',
+    email: 'minhthu.le@gmail.com',
+    fullName: 'Lê Minh Thư',
+    role: 'student',
+    status: 'active',
+    targetBand: 7.5,
+    currentBand: 7.0,
+    testType: 'academic',
+    authProvider: 'password',
+    emailVerified: true,
+    servicePlanName: 'IELTS Premium 6-Month',
+    servicePlanTier: 'premium',
+    createdAt: '2026-08-15 14:22:00',
+    lastActiveAt: '2026-10-25 15:10:00',
+    sessionsCount: 1,
+  },
+  {
+    id: 'u-103',
+    email: 'duc.hoang99@outlook.com',
+    fullName: 'Hoàng Minh Đức',
+    role: 'student',
+    status: 'suspended',
+    targetBand: 6.5,
+    currentBand: 5.5,
+    testType: 'general',
+    authProvider: 'password',
+    emailVerified: false,
+    servicePlanName: 'Gói Miễn phí',
+    servicePlanTier: 'free',
+    createdAt: '2026-09-20 09:05:00',
+    lastActiveAt: '2026-10-21 11:30:00',
+    sessionsCount: 0,
+  },
+  {
+    id: 'u-104',
+    email: 'phuongthao.vu@gmail.com',
+    fullName: 'Vũ Phương Thảo',
+    role: 'student',
+    status: 'active',
+    targetBand: 8.0,
+    currentBand: 7.5,
+    testType: 'academic',
+    authProvider: 'apple',
+    emailVerified: true,
+    servicePlanName: 'IELTS VIP Intensive',
+    servicePlanTier: 'vip',
+    createdAt: '2026-07-10 16:45:00',
+    lastActiveAt: '2026-10-25 16:20:00',
+    sessionsCount: 3,
+  },
+  {
+    id: 'u-105',
+    email: 'tuananh.tran@yahoo.com',
+    fullName: 'Trần Tuấn Anh',
+    role: 'student',
+    status: 'locked',
+    targetBand: 6.0,
+    currentBand: 5.0,
+    testType: 'academic',
+    authProvider: 'password',
+    emailVerified: true,
+    servicePlanName: 'Gói Miễn phí',
+    servicePlanTier: 'free',
+    createdAt: '2026-10-02 08:00:00',
+    lastActiveAt: '2026-10-24 21:05:00',
+    sessionsCount: 0,
+  },
+  {
+    id: 'u-106',
+    email: 'lananh.ngo@vnu.edu.vn',
+    fullName: 'Ngô Lan Anh',
+    role: 'student',
+    status: 'active',
+    targetBand: 7.0,
+    currentBand: 6.0,
+    testType: 'academic',
+    authProvider: 'google',
+    emailVerified: true,
+    servicePlanName: 'IELTS Pro Monthly',
+    servicePlanTier: 'pro',
+    createdAt: '2026-09-28 13:12:00',
+    lastActiveAt: '2026-10-25 12:00:00',
+    sessionsCount: 1,
+  },
+]
+
+const SEED_SESSIONS: UserSession[] = [
+  {
+    id: 'sess-001',
+    userId: 'u-101',
+    userName: 'Nguyễn Quang Anh',
+    userEmail: 'quanganh.ielts@example.com',
+    maskedToken: 'tok_live_••••••8f4e',
+    ipAddress: '118.70.124.89',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0',
+    deviceType: 'desktop',
+    os: 'Windows 11',
+    browser: 'Chrome 128',
+    locationEstimate: 'Hà Nội, Việt Nam (ước tính)',
+    authMethod: 'google',
+    status: 'active',
+    createdAt: '2026-10-25 08:15:00',
+    lastActiveAt: '2026-10-25 17:45:00',
+    expiresAt: '2026-10-28 08:15:00',
+  },
+  {
+    id: 'sess-002',
+    userId: 'u-101',
+    userName: 'Nguyễn Quang Anh',
+    userEmail: 'quanganh.ielts@example.com',
+    maskedToken: 'tok_live_••••••12a9',
+    ipAddress: '14.232.180.45',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Mobile/15E148 Safari/604.1',
+    deviceType: 'mobile',
+    os: 'iOS 17.5',
+    browser: 'Safari Mobile',
+    locationEstimate: 'Hà Nội, Việt Nam (ước tính)',
+    authMethod: 'google',
+    status: 'active',
+    createdAt: '2026-10-24 19:30:00',
+    lastActiveAt: '2026-10-25 14:10:00',
+    expiresAt: '2026-10-27 19:30:00',
+  },
+  {
+    id: 'sess-003',
+    userId: 'u-102',
+    userName: 'Lê Minh Thư',
+    userEmail: 'minhthu.le@gmail.com',
+    maskedToken: 'tok_live_••••••99b1',
+    ipAddress: '115.79.208.12',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/129.0.0.0',
+    deviceType: 'desktop',
+    os: 'macOS Sonoma',
+    browser: 'Chrome 129',
+    locationEstimate: 'TP. Hồ Chí Minh, Việt Nam (ước tính)',
+    authMethod: 'password',
+    status: 'active',
+    createdAt: '2026-10-25 09:00:00',
+    lastActiveAt: '2026-10-25 15:10:00',
+    expiresAt: '2026-10-28 09:00:00',
+  },
+  {
+    id: 'sess-004',
+    userId: 'u-104',
+    userName: 'Vũ Phương Thảo',
+    userEmail: 'phuongthao.vu@gmail.com',
+    maskedToken: 'tok_live_••••••33f0',
+    ipAddress: '27.72.60.101',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15',
+    deviceType: 'desktop',
+    os: 'macOS Sonoma',
+    browser: 'Safari 17',
+    locationEstimate: 'Đà Nẵng, Việt Nam (ước tính)',
+    authMethod: 'apple',
+    status: 'active',
+    createdAt: '2026-10-25 11:20:00',
+    lastActiveAt: '2026-10-25 16:20:00',
+    expiresAt: '2026-10-28 11:20:00',
+  },
+  {
+    id: 'sess-005',
+    userId: 'u-103',
+    userName: 'Hoàng Minh Đức',
+    userEmail: 'duc.hoang99@outlook.com',
+    maskedToken: 'tok_live_••••••aa42',
+    ipAddress: '113.161.78.22',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/128.0.0.0',
+    deviceType: 'desktop',
+    os: 'Windows 10',
+    browser: 'Edge 128',
+    locationEstimate: 'Hải Phòng, Việt Nam (ước tính)',
+    authMethod: 'password',
+    status: 'revoked',
+    createdAt: '2026-10-21 08:00:00',
+    lastActiveAt: '2026-10-21 11:30:00',
+    expiresAt: '2026-10-24 08:00:00',
+    revokedAt: '2026-10-21 14:00:00',
+    revokedBy: 'Trần Văn Hoàng (Lead Admin)',
+  },
+  {
+    id: 'sess-006',
+    userId: 'adm-001',
+    userName: 'Trần Văn Hoàng (Lead Admin)',
+    userEmail: 'admin.lead@ieltsplatform.edu.vn',
+    maskedToken: 'tok_admin_••••••77ce',
+    ipAddress: '118.70.124.89',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0',
+    deviceType: 'desktop',
+    os: 'Windows 11',
+    browser: 'Chrome 128',
+    locationEstimate: 'Hà Nội, Việt Nam (ước tính)',
+    authMethod: 'password',
+    status: 'active',
+    createdAt: '2026-10-25 08:30:00',
+    lastActiveAt: '2026-10-25 18:05:00',
+    expiresAt: '2026-10-25 20:30:00',
+    isCurrentAdminSession: true,
+  },
+]
+
+const SEED_LOGIN_EVENTS: LoginEvent[] = [
+  {
+    id: 'evt-901',
+    timestamp: '2026-10-25 17:45:10',
+    userId: 'u-101',
+    userEmail: 'quanganh.ielts@example.com',
+    eventType: 'login_success',
+    status: 'success',
+    authMethod: 'google',
+    ipAddress: '118.70.124.89',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    deviceInfo: 'Desktop (Windows 11 / Chrome 128)',
+    correlationId: 'req_auth_98129841',
+  },
+  {
+    id: 'evt-902',
+    timestamp: '2026-10-25 16:30:22',
+    userId: 'u-105',
+    userEmail: 'tuananh.tran@yahoo.com',
+    eventType: 'login_failed',
+    status: 'failed',
+    failureReason: 'Sai mật khẩu quá 5 lần (Account locked)',
+    authMethod: 'password',
+    ipAddress: '171.244.12.80',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4)',
+    deviceInfo: 'Mobile (iOS 17.4 / Safari)',
+    correlationId: 'req_auth_98129815',
+  },
+  {
+    id: 'evt-903',
+    timestamp: '2026-10-25 15:10:04',
+    userId: 'u-102',
+    userEmail: 'minhthu.le@gmail.com',
+    eventType: 'login_success',
+    status: 'success',
+    authMethod: 'password',
+    ipAddress: '115.79.208.12',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    deviceInfo: 'Desktop (macOS Sonoma / Chrome 129)',
+    correlationId: 'req_auth_98129750',
+  },
+  {
+    id: 'evt-904',
+    timestamp: '2026-10-25 11:20:00',
+    userId: 'u-104',
+    userEmail: 'phuongthao.vu@gmail.com',
+    eventType: 'login_success',
+    status: 'success',
+    authMethod: 'apple',
+    ipAddress: '27.72.60.101',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    deviceInfo: 'Desktop (macOS Sonoma / Safari 17)',
+    correlationId: 'req_auth_98129611',
+  },
+  {
+    id: 'evt-905',
+    timestamp: '2026-10-25 08:30:00',
+    userId: 'adm-001',
+    userEmail: 'admin.lead@ieltsplatform.edu.vn',
+    eventType: 'login_success',
+    status: 'success',
+    authMethod: 'password',
+    ipAddress: '118.70.124.89',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    deviceInfo: 'Desktop (Windows 11 / Chrome 128)',
+    correlationId: 'req_auth_98129001',
+  },
+  {
+    id: 'evt-906',
+    timestamp: '2026-10-24 22:15:30',
+    userEmail: 'unknown.stranger@badactor.net',
+    eventType: 'login_failed',
+    status: 'failed',
+    failureReason: 'Tài khoản không tồn tại trên hệ thống',
+    authMethod: 'password',
+    ipAddress: '185.220.101.5',
+    userAgent: 'Python-urllib/3.10',
+    deviceInfo: 'Automated Bot Client',
+    correlationId: 'req_auth_98128911',
+  },
+]
+
+const SEED_LEARNING_PLANS: AdminLearningPlan[] = [
+  {
+    id: 'plan-acad-70',
+    title: 'Lộ trình IELTS Academic 6.5 -> 7.5+',
+    code: 'ACAD-7.0-STD',
+    testType: 'academic',
+    targetBand: 7.5,
+    level: 'Upper-Intermediate',
+    durationWeeks: 12,
+    phaseCount: 3,
+    lessonCount: 48,
+    status: 'published',
+    activeEnrollments: 342,
+    createdAt: '2026-06-01',
+    updatedAt: '2026-10-20',
+    updatedBy: 'Lê Phương Thảo (Content Lead)',
+  },
+  {
+    id: 'plan-acad-65',
+    title: 'Lộ trình Chinh phục IELTS Academic 5.5 -> 6.5',
+    code: 'ACAD-6.5-STD',
+    testType: 'academic',
+    targetBand: 6.5,
+    level: 'Intermediate',
+    durationWeeks: 10,
+    phaseCount: 3,
+    lessonCount: 40,
+    status: 'published',
+    activeEnrollments: 521,
+    createdAt: '2026-06-15',
+    updatedAt: '2026-10-18',
+    updatedBy: 'Lê Phương Thảo (Content Lead)',
+  },
+  {
+    id: 'plan-gen-70',
+    title: 'Lộ trình IELTS General Training Band 7.0 CLB 9',
+    code: 'GEN-7.0-EXPRESS',
+    testType: 'general',
+    targetBand: 7.0,
+    level: 'Upper-Intermediate',
+    durationWeeks: 8,
+    phaseCount: 2,
+    lessonCount: 32,
+    status: 'published',
+    activeEnrollments: 189,
+    createdAt: '2026-07-01',
+    updatedAt: '2026-09-30',
+    updatedBy: 'Nguyễn Văn Minh (Instructor)',
+  },
+  {
+    id: 'plan-acad-80-adv',
+    title: 'Lộ trình Chuyên sâu Band 8.0+ Masterclass',
+    code: 'ACAD-8.0-VIP',
+    testType: 'academic',
+    targetBand: 8.5,
+    level: 'Advanced',
+    durationWeeks: 14,
+    phaseCount: 4,
+    lessonCount: 56,
+    status: 'draft',
+    activeEnrollments: 0,
+    createdAt: '2026-10-10',
+    updatedAt: '2026-10-24',
+    updatedBy: 'Trần Văn Hoàng (Lead Admin)',
+  },
+]
+
+const SEED_ENROLLMENTS: AdminEnrollment[] = [
+  {
+    id: 'enr-501',
+    userId: 'u-101',
+    userName: 'Nguyễn Quang Anh',
+    userEmail: 'quanganh.ielts@example.com',
+    planId: 'plan-acad-70',
+    planTitle: 'Lộ trình IELTS Academic 6.5 -> 7.5+',
+    progressPercent: 42,
+    currentPhaseTitle: 'Giai đoạn 1: Nền tảng & Kỹ thuật cốt lõi',
+    currentWeekNumber: 2,
+    enrolledAt: '2026-09-02',
+    lastActivityAt: '2026-10-25',
+    status: 'in_progress',
+  },
+  {
+    id: 'enr-502',
+    userId: 'u-102',
+    userName: 'Lê Minh Thư',
+    userEmail: 'minhthu.le@gmail.com',
+    planId: 'plan-acad-70',
+    planTitle: 'Lộ trình IELTS Academic 6.5 -> 7.5+',
+    progressPercent: 78,
+    currentPhaseTitle: 'Giai đoạn 2: Tăng tốc & Nâng band chuyên sâu',
+    currentWeekNumber: 8,
+    enrolledAt: '2026-08-16',
+    lastActivityAt: '2026-10-25',
+    status: 'in_progress',
+  },
+  {
+    id: 'enr-503',
+    userId: 'u-104',
+    userName: 'Vũ Phương Thảo',
+    userEmail: 'phuongthao.vu@gmail.com',
+    planId: 'plan-acad-70',
+    planTitle: 'Lộ trình IELTS Academic 6.5 -> 7.5+',
+    progressPercent: 95,
+    currentPhaseTitle: 'Giai đoạn 3: Luyện đề tổng lực & Chiến thuật phòng thi',
+    currentWeekNumber: 12,
+    enrolledAt: '2026-07-12',
+    lastActivityAt: '2026-10-25',
+    status: 'in_progress',
+  },
+]
+
+const SEED_MODULES: AdminModule[] = [
+  { id: 'mod-1', title: 'Listening Section 1 Mastery', skill: 'listening', level: 'Intermediate', lessonCount: 6, status: 'published', order: 1, updatedAt: '2026-10-15' },
+  { id: 'mod-2', title: 'Academic Reading: True/False/Not Given', skill: 'reading', level: 'Upper-Intermediate', lessonCount: 5, status: 'published', order: 2, updatedAt: '2026-10-14' },
+  { id: 'mod-3', title: 'Writing Task 1: Trends & Charts Analysis', skill: 'writing', level: 'Upper-Intermediate', lessonCount: 8, status: 'published', order: 3, updatedAt: '2026-10-20' },
+  { id: 'mod-4', title: 'Speaking Part 2: Long Turn Fluency', skill: 'speaking', level: 'Intermediate', lessonCount: 6, status: 'published', order: 4, updatedAt: '2026-10-18' },
+  { id: 'mod-5', title: 'Academic Vocabulary 1000: Education & Society', skill: 'vocabulary', level: 'B2-C1', lessonCount: 10, status: 'published', order: 5, updatedAt: '2026-10-12' },
+  { id: 'mod-6', title: 'Complex Grammatical Structures for Band 7+', skill: 'grammar', level: 'C1', lessonCount: 8, status: 'published', order: 6, updatedAt: '2026-10-10' },
+]
+
+const SEED_LESSONS: AdminLesson[] = [
+  {
+    id: 'les-101',
+    moduleId: 'mod-1',
+    moduleTitle: 'Listening Section 1 Mastery',
+    title: 'Note Completion & Form Filling Essentials',
+    skill: 'listening',
+    level: 'Band 6.0 - 7.0',
+    estimatedMinutes: 25,
+    status: 'published',
+    questionCount: 10,
+    hasAudio: true,
+    hasPassage: false,
+    updatedAt: '2026-10-19',
+    updatedBy: 'Lê Phương Thảo',
+    contentSummary: 'Chiến thuật bắt key information, phát hiện bẫy distractors trong hội thoại hàng ngày.',
+  },
+  {
+    id: 'les-102',
+    moduleId: 'mod-2',
+    moduleTitle: 'Academic Reading: True/False/Not Given',
+    title: 'Decoding Distinctions: False vs Not Given',
+    skill: 'reading',
+    level: 'Band 6.5 - 7.5',
+    estimatedMinutes: 30,
+    status: 'published',
+    questionCount: 13,
+    hasAudio: false,
+    hasPassage: true,
+    updatedAt: '2026-10-18',
+    updatedBy: 'Lê Phương Thảo',
+    contentSummary: 'Phân biệt mệnh đề mâu thuẫn trực tiếp (False) và thông tin không được đề cập (Not Given).',
+  },
+  {
+    id: 'les-103',
+    moduleId: 'mod-3',
+    moduleTitle: 'Writing Task 1: Trends & Charts Analysis',
+    title: 'Overview Sentence & Grouping Data Strategies',
+    skill: 'writing',
+    level: 'Band 7.0+',
+    estimatedMinutes: 40,
+    status: 'published',
+    questionCount: 2,
+    hasAudio: false,
+    hasPassage: true,
+    updatedAt: '2026-10-22',
+    updatedBy: 'Nguyễn Văn Minh',
+    contentSummary: 'Phương pháp viết câu Overview chuẩn mực và chia thân bài mạch lạc theo xu hướng chính.',
+  },
+  {
+    id: 'les-104',
+    moduleId: 'mod-4',
+    moduleTitle: 'Speaking Part 2: Long Turn Fluency',
+    title: 'Storytelling Formula & Time Management in 2 Minutes',
+    skill: 'speaking',
+    level: 'Band 6.5 - 7.5',
+    estimatedMinutes: 35,
+    status: 'published',
+    questionCount: 4,
+    hasAudio: true,
+    hasPassage: false,
+    updatedAt: '2026-10-20',
+    updatedBy: 'Trần Văn Hoàng',
+    contentSummary: 'Cách sử dụng 1 phút chuẩn bị với phương pháp ghi chép theo cụm và duy trì nói đủ 2 phút.',
+  },
+]
+
+const SEED_VOCABULARY: AdminVocabularyWord[] = [
+  { id: 'voc-1', word: 'Pervasive', phonetic: '/pərˈveɪsɪv/', partOfSpeech: 'adj', definitionVi: 'Lan tỏa khắp nơi, có mặt ở mọi ngóc ngách', exampleEn: 'Smartphones have a pervasive influence on modern adolescent lifestyles.', cefrLevel: 'C1', topic: 'Technology & Society', status: 'published', updatedAt: '2026-10-15' },
+  { id: 'voc-2', word: 'Detrimental', phonetic: '/ˌdetrɪˈmentl/', partOfSpeech: 'adj', definitionVi: 'Có hại, gây tổn hại', exampleEn: 'Excessive carbon emissions have a detrimental impact on biodiversity.', cefrLevel: 'B2', topic: 'Environment', status: 'published', updatedAt: '2026-10-15' },
+  { id: 'voc-3', word: 'Substantiate', phonetic: '/səbˈstænʃieɪt/', partOfSpeech: 'verb', definitionVi: 'Chứng minh bằng chứng cứ cụ thể', exampleEn: 'The candidate failed to substantiate her claims with verifiable empirical data.', cefrLevel: 'C2', topic: 'Academic Research', status: 'published', updatedAt: '2026-10-14' },
+]
+
+const SEED_GRAMMAR: AdminGrammarRule[] = [
+  { id: 'grm-1', title: 'Inversion with Negative Adverbials', bandTarget: 'Band 7.5 - 8.5', category: 'Advanced Structures', formula: 'Rarely/Seldom + Auxiliary + Subject + Main Verb', explanation: 'Sử dụng cấu trúc đảo ngữ nhằm nhấn mạnh tính hiếm hoi hoặc mức độ trang trọng trong Writing Task 2.', status: 'published', updatedAt: '2026-10-12' },
+  { id: 'grm-2', title: 'Mixed Conditionals (Type 2 & 3)', bandTarget: 'Band 7.0 - 8.0', category: 'Conditionals', formula: 'If + Past Perfect, Subject + Would + Base Verb', explanation: 'Giả định một điều không có thật trong quá khứ dẫn đến kết quả còn tiếp diễn ở hiện tại.', status: 'published', updatedAt: '2026-10-11' },
+]
+
+const SEED_MEDIA: AdminMediaAsset[] = [
+  { id: 'med-1', fileName: 'ielts_cam18_test1_section1.mp3', fileType: 'audio', fileSizeKb: 4280, url: 'https://storage.ieltsplatform.vn/audio/cam18_t1_s1.mp3', usedInCount: 3, uploadedBy: 'Lê Phương Thảo', uploadedAt: '2026-09-10' },
+  { id: 'med-2', fileName: 'urban_agriculture_passage.pdf', fileType: 'document', fileSizeKb: 1120, url: 'https://storage.ieltsplatform.vn/docs/urban_agri.pdf', usedInCount: 2, uploadedBy: 'Lê Phương Thảo', uploadedAt: '2026-09-12' },
+  { id: 'med-3', fileName: 'bar_chart_energy_consumption.png', fileType: 'image', fileSizeKb: 540, url: 'https://storage.ieltsplatform.vn/images/bar_chart_energy.png', usedInCount: 4, uploadedBy: 'Nguyễn Văn Minh', uploadedAt: '2026-09-15' },
+]
+
+const SEED_QUESTIONS: AdminQuestion[] = [
+  {
+    id: 'q-1001',
+    code: 'L-SEC1-01',
+    skill: 'listening',
+    type: 'note_completion',
+    difficulty: 'easy',
+    prompt: 'Write NO MORE THAN TWO WORDS AND/OR A NUMBER for the caller address.',
+    correctAnswer: '48 North Road',
+    explanation: 'Speaker states clearly: "It is number 48, North Road, near the railway bridge."',
+    usageCount: 14,
+    status: 'published',
+    updatedAt: '2026-10-10',
+  },
+  {
+    id: 'q-1002',
+    code: 'R-TFNG-02',
+    skill: 'reading',
+    type: 'true_false_not_given',
+    difficulty: 'medium',
+    prompt: 'The government allocated additional budget to solar panel subsidies in 2024.',
+    correctAnswer: 'FALSE',
+    explanation: 'Passage mentions subsidies were sharply slashed by 30% rather than increased.',
+    passageSnippet: 'Contrary to environmentalists expectations, the cabinet slashed solar incentives in early 2024...',
+    usageCount: 8,
+    status: 'published',
+    updatedAt: '2026-10-12',
+  },
+  {
+    id: 'q-1003',
+    code: 'W-TASK2-03',
+    skill: 'writing',
+    type: 'writing_task2',
+    difficulty: 'hard',
+    prompt: 'Some people believe that unpaid community service should be a compulsory part of high school programmes. To what extent do you agree or disagree?',
+    correctAnswer: 'Essay Evaluation Rubric (TR, CC, LR, GRA)',
+    explanation: 'Yêu cầu thí sinh đưa ra lập trường rõ ràng (thesis) và phát triển 2 luận điểm cân xứng.',
+    usageCount: 22,
+    status: 'published',
+    updatedAt: '2026-10-15',
+  },
+]
+
+const SEED_ASSESSMENTS: AdminAssessment[] = [
+  {
+    id: 'pkg-british-council-acad',
+    title: 'Complete IELTS Academic Mock Exam 01 (Full 4 Skills)',
+    code: 'BC-ACAD-FULL-01',
+    type: 'full_mock',
+    skills: ['listening', 'reading', 'writing', 'speaking'],
+    durationMinutes: 164,
+    totalQuestions: 85,
+    totalAttempts: 528,
+    avgBandScore: 6.6,
+    status: 'published',
+    updatedAt: '2026-10-26',
+    updatedBy: 'Lê Phương Thảo',
+  },
+  {
+    id: 'pkg-ielts-org-sample',
+    title: 'IELTS Academic Official Sample Tasks Collection',
+    code: 'IELTS-ORG-SAMPLE-01',
+    type: 'placement',
+    skills: ['listening', 'reading', 'writing'],
+    durationMinutes: 95,
+    totalQuestions: 14,
+    totalAttempts: 890,
+    avgBandScore: 6.8,
+    status: 'published',
+    updatedAt: '2026-10-26',
+    updatedBy: 'Trần Văn Hoàng',
+  },
+  {
+    id: 'pkg-bc-vn-computer-fam',
+    title: 'Computer-Delivered IELTS Familiarisation Test (British Council VN)',
+    code: 'BC-VN-CDI-FAM-01',
+    type: 'full_mock',
+    skills: ['listening', 'reading', 'writing', 'speaking'],
+    durationMinutes: 120,
+    totalQuestions: 24,
+    totalAttempts: 642,
+    avgBandScore: 6.5,
+    status: 'published',
+    updatedAt: '2026-10-26',
+    updatedBy: 'Lê Phương Thảo',
+  },
+  {
+    id: 'asm-diag-01',
+    title: 'IELTS Diagnostic Placement Assessment (2026 Edition)',
+    code: 'DIAG-2026-V1',
+    type: 'placement',
+    skills: ['listening', 'reading', 'writing', 'speaking'],
+    durationMinutes: 45,
+    totalQuestions: 28,
+    totalAttempts: 1240,
+    avgBandScore: 6.2,
+    status: 'published',
+    updatedAt: '2026-10-01',
+    updatedBy: 'Lê Phương Thảo',
+  },
+]
+
+const SEED_ATTEMPTS: AdminAssessmentAttempt[] = [
+  {
+    id: 'att-8801',
+    userId: 'u-101',
+    userName: 'Nguyễn Quang Anh',
+    userEmail: 'quanganh.ielts@example.com',
+    assessmentId: 'asm-diag-01',
+    assessmentTitle: 'IELTS Diagnostic Placement Assessment',
+    type: 'placement',
+    startedAt: '2026-09-01 10:30:00',
+    submittedAt: '2026-09-01 11:15:00',
+    status: 'completed',
+    overallBand: 6.5,
+    listeningBand: 6.5,
+    readingBand: 7.0,
+    writingBand: 6.0,
+    speakingBand: 6.0,
+    isAiGraded: true,
+    isExaminerReviewed: false,
+  },
+  {
+    id: 'att-8802',
+    userId: 'u-104',
+    userName: 'Vũ Phương Thảo',
+    userEmail: 'phuongthao.vu@gmail.com',
+    assessmentId: 'asm-mock-cam18',
+    assessmentTitle: 'IELTS Academic Full Mock Exam #1',
+    type: 'full_mock',
+    startedAt: '2026-10-24 14:00:00',
+    submittedAt: '2026-10-24 16:45:00',
+    status: 'completed',
+    overallBand: 7.5,
+    listeningBand: 8.0,
+    readingBand: 8.0,
+    writingBand: 7.0,
+    speakingBand: 7.0,
+    isAiGraded: true,
+    isExaminerReviewed: true,
+  },
+  {
+    id: 'att-8803',
+    userId: 'u-102',
+    userName: 'Lê Minh Thư',
+    userEmail: 'minhthu.le@gmail.com',
+    assessmentId: 'asm-mock-cam18',
+    assessmentTitle: 'IELTS Academic Full Mock Exam #1',
+    type: 'full_mock',
+    startedAt: '2026-10-25 14:00:00',
+    submittedAt: '2026-10-25 16:40:00',
+    status: 'grading',
+    isAiGraded: false,
+    isExaminerReviewed: false,
+  },
+]
+
+const SEED_SERVICE_PLANS: AdminServicePlan[] = [
+  {
+    id: 'sp-free',
+    name: 'Gói Cơ Bản (Free Tier)',
+    code: 'PLAN-TIER-FREE',
+    priceVnd: 0,
+    billingCycle: 'free',
+    tier: 'free',
+    status: 'active',
+    activeSubscribers: 4200,
+    features: ['Truy cập bài kiểm tra đầu vào', '5 bài tập luyện kỹ năng mỗi tuần', 'Học từ vựng cơ bản Band 5.5'],
+    limits: { mockTestsPerMonth: 0, aiWritingReviewsPerDay: 0, aiSpeakingMinutesPerDay: 0, offlineDownloads: false },
+    updatedAt: '2026-06-01',
+  },
+  {
+    id: 'sp-pro',
+    name: 'IELTS Pro Monthly',
+    code: 'PLAN-TIER-PRO',
+    priceVnd: 499000,
+    billingCycle: 'monthly',
+    tier: 'pro',
+    status: 'active',
+    activeSubscribers: 1250,
+    features: ['Toàn bộ lộ trình cá nhân hóa', 'AI Tutor giải đáp 24/7', 'Chấm Writing & Speaking tự động', '2 bài thi thử full mock/tháng'],
+    limits: { mockTestsPerMonth: 2, aiWritingReviewsPerDay: 5, aiSpeakingMinutesPerDay: 20, offlineDownloads: true },
+    updatedAt: '2026-09-01',
+  },
+  {
+    id: 'sp-premium',
+    name: 'IELTS Premium 6-Month Intensive',
+    code: 'PLAN-TIER-PREMIUM',
+    priceVnd: 2390000,
+    billingCycle: 'quarterly',
+    tier: 'premium',
+    status: 'active',
+    activeSubscribers: 810,
+    features: ['Toàn bộ tính năng Pro', 'Không giới hạn bài thi thử', 'Cam kết đầu ra theo lộ trình', 'AI chấm chi tiết 4 tiêu chí band'],
+    limits: { mockTestsPerMonth: 999, aiWritingReviewsPerDay: 20, aiSpeakingMinutesPerDay: 60, offlineDownloads: true },
+    updatedAt: '2026-08-15',
+  },
+]
+
+const SEED_AI_TASKS: AdminAiTask[] = [
+  {
+    id: 'task-ai-401',
+    type: 'writing_evaluation',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
+    userId: 'u-101',
+    userEmail: 'quanganh.ielts@example.com',
+    latencyMs: 1420,
+    tokensUsed: 840,
+    status: 'success',
+    retryable: false,
+    createdAt: '2026-10-25 17:30:12',
+  },
+  {
+    id: 'task-ai-402',
+    type: 'speaking_pronunciation',
+    provider: 'gemini',
+    model: 'gemini-1.5-flash',
+    userId: 'u-102',
+    userEmail: 'minhthu.le@gmail.com',
+    latencyMs: 1850,
+    tokensUsed: 620,
+    status: 'success',
+    retryable: false,
+    createdAt: '2026-10-25 16:55:04',
+  },
+  {
+    id: 'task-ai-403',
+    type: 'tutor_chat',
+    provider: 'openai',
+    model: 'gpt-4o',
+    userId: 'u-104',
+    userEmail: 'phuongthao.vu@gmail.com',
+    latencyMs: 890,
+    tokensUsed: 310,
+    status: 'success',
+    retryable: false,
+    createdAt: '2026-10-25 16:20:10',
+  },
+  {
+    id: 'task-ai-404',
+    type: 'writing_evaluation',
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet',
+    userId: 'u-106',
+    userEmail: 'lananh.ngo@vnu.edu.vn',
+    latencyMs: 5120,
+    tokensUsed: 0,
+    status: 'failed',
+    errorMessage: 'Upstream Provider Rate Limit Exceeded (HTTP 429)',
+    retryable: true,
+    createdAt: '2026-10-25 15:45:00',
+  },
+]
+
+const SEED_AI_PROVIDERS: AdminAiProviderStatus[] = [
+  { id: 'p-openai', name: 'OpenAI API (GPT-4o / GPT-4o-mini)', provider: 'openai', model: 'gpt-4o-mini', status: 'operational', avgLatencyMs: 1240, successRate24h: 99.4, isConfigured: true },
+  { id: 'p-gemini', name: 'Google Gemini 1.5 Flash', provider: 'gemini', model: 'gemini-1.5-flash', status: 'operational', avgLatencyMs: 980, successRate24h: 99.8, isConfigured: true },
+  { id: 'p-anthropic', name: 'Anthropic Claude 3.5 Sonnet', provider: 'anthropic', model: 'claude-3-5-sonnet', status: 'degraded', avgLatencyMs: 2450, successRate24h: 94.2, isConfigured: true },
+  { id: 'p-internal', name: 'IELTS Speech Acoustic Analyzer (Internal)', provider: 'internal', model: 'v3.2-whisper', status: 'operational', avgLatencyMs: 1400, successRate24h: 99.1, isConfigured: true },
+]
+
+const SEED_ROLES: AdminRole[] = [
+  {
+    id: 'role-super',
+    name: 'super_admin',
+    displayName: 'Super Administrator',
+    description: 'Toàn quyền cấu hình hệ thống, quản lý tài khoản admin, phân quyền và kiểm toán dữ liệu.',
+    userCount: 2,
+    isSystem: true,
+    permissions: [
+      { module: 'dashboard', actions: ['view'] },
+      { module: 'users', actions: ['view', 'create', 'edit', 'delete', 'export'] },
+      { module: 'sessions', actions: ['view', 'revoke'] },
+      { module: 'login_events', actions: ['view', 'export'] },
+      { module: 'learning_plans', actions: ['view', 'create', 'edit', 'publish', 'delete'] },
+      { module: 'enrollments', actions: ['view', 'edit', 'export'] },
+      { module: 'content', actions: ['view', 'create', 'edit', 'publish', 'delete'] },
+      { module: 'question_bank', actions: ['view', 'create', 'edit', 'publish', 'delete', 'export'] },
+      { module: 'assessments', actions: ['view', 'create', 'edit', 'publish', 'delete'] },
+      { module: 'attempts', actions: ['view', 'edit', 'export'] },
+      { module: 'service_plans', actions: ['view', 'create', 'edit', 'publish'] },
+      { module: 'ai', actions: ['view', 'edit'] },
+      { module: 'reports', actions: ['view', 'export'] },
+      { module: 'security', actions: ['view', 'create', 'edit', 'delete', 'export'] },
+      { module: 'settings', actions: ['view', 'edit'] },
+    ],
+    createdAt: '2026-01-01',
+    updatedAt: '2026-10-01',
+  },
+  {
+    id: 'role-content',
+    name: 'content_manager',
+    displayName: 'Quản lý Nội dung (Content Manager)',
+    description: 'Soạn thảo, hiệu chỉnh và xuất bản bài học, ngân hàng câu hỏi, đề thi và media.',
+    userCount: 4,
+    isSystem: false,
+    permissions: [
+      { module: 'dashboard', actions: ['view'] },
+      { module: 'learning_plans', actions: ['view', 'create', 'edit', 'publish'] },
+      { module: 'content', actions: ['view', 'create', 'edit', 'publish'] },
+      { module: 'question_bank', actions: ['view', 'create', 'edit', 'publish'] },
+      { module: 'assessments', actions: ['view', 'create', 'edit', 'publish'] },
+    ],
+    createdAt: '2026-02-15',
+    updatedAt: '2026-09-10',
+  },
+  {
+    id: 'role-support',
+    name: 'support_specialist',
+    displayName: 'Chuyên viên Hỗ trợ (User Support)',
+    description: 'Tra cứu thông tin học viên, hỗ trợ đăng nhập, mở khóa tài khoản và theo dõi tiến độ.',
+    userCount: 5,
+    isSystem: false,
+    permissions: [
+      { module: 'dashboard', actions: ['view'] },
+      { module: 'users', actions: ['view', 'edit'] },
+      { module: 'sessions', actions: ['view', 'revoke'] },
+      { module: 'login_events', actions: ['view'] },
+      { module: 'enrollments', actions: ['view'] },
+      { module: 'attempts', actions: ['view'] },
+    ],
+    createdAt: '2026-03-01',
+    updatedAt: '2026-08-20',
+  },
+  {
+    id: 'role-analyst',
+    name: 'analyst',
+    displayName: 'Chuyên viên Phân tích (Analyst)',
+    description: 'Truy cập các báo cáo thống kê, số liệu học tập và xuất file phân tích.',
+    userCount: 2,
+    isSystem: false,
+    permissions: [
+      { module: 'dashboard', actions: ['view'] },
+      { module: 'reports', actions: ['view', 'export'] },
+      { module: 'attempts', actions: ['view', 'export'] },
+      { module: 'ai', actions: ['view'] },
+    ],
+    createdAt: '2026-04-10',
+    updatedAt: '2026-09-01',
+  },
+]
+
+const SEED_AUDIT_LOGS: AdminAuditLog[] = [
+  {
+    id: 'aud-701',
+    timestamp: '2026-10-25 17:50:20',
+    actorId: 'adm-001',
+    actorName: 'Trần Văn Hoàng (Lead Admin)',
+    actorRole: 'super_admin',
+    action: 'lesson_publish',
+    actionLabel: 'Xuất bản bài học',
+    module: 'content',
+    targetId: 'les-103',
+    targetName: 'Overview Sentence & Grouping Data Strategies',
+    ipAddress: '118.70.124.89',
+    status: 'success',
+    reason: 'Đã hoàn tất rà soát rubric chấm điểm Writing Task 1',
+  },
+  {
+    id: 'aud-702',
+    timestamp: '2026-10-25 16:40:15',
+    actorId: 'adm-001',
+    actorName: 'Trần Văn Hoàng (Lead Admin)',
+    actorRole: 'super_admin',
+    action: 'user_suspend',
+    actionLabel: 'Tạm ngưng tài khoản',
+    module: 'users',
+    targetId: 'u-103',
+    targetName: 'Hoàng Minh Đức (duc.hoang99@outlook.com)',
+    ipAddress: '118.70.124.89',
+    status: 'success',
+    reason: 'Phát hiện đăng nhập bất thường từ nhiều IP không hợp lệ',
+  },
+  {
+    id: 'aud-703',
+    timestamp: '2026-10-21 14:00:00',
+    actorId: 'adm-001',
+    actorName: 'Trần Văn Hoàng (Lead Admin)',
+    actorRole: 'super_admin',
+    action: 'session_revoke',
+    actionLabel: 'Thu hồi phiên đăng nhập',
+    module: 'sessions',
+    targetId: 'sess-005',
+    targetName: 'Phiên Edge Windows 10 (IP 113.161.78.22)',
+    ipAddress: '118.70.124.89',
+    status: 'success',
+    reason: 'Học viên yêu cầu đăng xuất khỏi máy lạ tại phòng máy công cộng',
+  },
+]
+
+const SEED_SETTINGS: SystemConfig = {
+  platformName: 'IELTS Learning Platform - Hệ thống Đào tạo Khảo thí Trực tuyến',
+  supportEmail: 'support@ieltsplatform.edu.vn',
+  allowStudentRegistration: true,
+  sessionTimeoutHours: 72,
+  maxConcurrentSessions: 3,
+  requireEmailVerification: true,
+  defaultTargetBand: 7.0,
+  aiWritingProvider: 'openai',
+  aiSpeakingProvider: 'gemini',
+  aiTutorModel: 'gpt-4o',
+  maintenanceMode: false,
+  allowedLoginDomains: ['gmail.com', 'outlook.com', 'edu.vn', 'vnu.edu.vn'],
+  updatedAt: '2026-10-20 14:00:00',
+  updatedBy: 'Trần Văn Hoàng (Lead Admin)',
+}
+
+// ----------------------------------------------------------------------------
+// ADMIN SERVICE IMPLEMENTATION
+// ----------------------------------------------------------------------------
+function getFromStorage<T>(key: string, seed: T): T {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) {
+      localStorage.setItem(key, JSON.stringify(seed))
+      return seed
+    }
+    return JSON.parse(raw) as T
+  } catch {
+    return seed
+  }
+}
+
+function saveToStorage<T>(key: string, data: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(data))
+  } catch (err) {
+    console.error(`Failed to persist key: ${key}`, err)
+  }
+}
+
+// Helper to delay simulation
+const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export const adminService = {
+  // Current admin profile
+  getAdminProfile(): AdminUser {
+    return CURRENT_ADMIN_USER
+  },
+
+  // Log an audit event
+  async recordAuditLog(
+    action: AdminAuditLog['action'],
+    actionLabel: string,
+    module: AdminAuditLog['module'],
+    targetId: string,
+    targetName: string,
+    reason?: string,
+    beforeState?: Record<string, unknown>,
+    afterState?: Record<string, unknown>
+  ): Promise<AdminAuditLog> {
+    const logs = getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
+    const newLog: AdminAuditLog = {
+      id: 'aud-' + Date.now(),
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      actorId: CURRENT_ADMIN_USER.id,
+      actorName: CURRENT_ADMIN_USER.fullName,
+      actorRole: CURRENT_ADMIN_USER.role,
+      action,
+      actionLabel,
+      module,
+      targetId,
+      targetName,
+      ipAddress: '118.70.124.89 (Local Client)',
+      status: 'success',
+      reason,
+      beforeState,
+      afterState,
+    }
+    const updated = [newLog, ...logs]
+    saveToStorage(KEY_AUDIT_LOGS, updated)
+    return newLog
+  },
+
+  // --------------------------------------------------------------------------
+  // 1. DASHBOARD & SYSTEM OVERVIEW
+  // --------------------------------------------------------------------------
+  async getDashboardSummary() {
+    await delay(120)
+    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    const attempts = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
+    const aiTasks = getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
+    const auditLogs = getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
+
+    const activeUsers = users.filter((u) => u.status === 'active').length
+    const activeSessions = sessions.filter((s) => s.status === 'active').length
+    const failedAiTasks = aiTasks.filter((t) => t.status === 'failed')
+
+    return {
+      totalUsers: users.length,
+      activeUsers,
+      activeSessions,
+      totalAttempts: attempts.length,
+      failedAiCount: failedAiTasks.length,
+      attentionItems: [
+        {
+          id: 'att-1',
+          type: 'ai_failure',
+          severity: 'warning' as const,
+          title: 'Tác vụ AI chấm Writing gặp sự cố Rate Limit',
+          description: 'Học viên lananh.ngo@vnu.edu.vn gặp lỗi Anthropic 429 lúc 15:45.',
+          link: '/admin/ai/tasks',
+          timestamp: '15:45 Hôm nay',
+        },
+        {
+          id: 'att-2',
+          type: 'security_lock',
+          severity: 'info' as const,
+          title: 'Tài khoản u-105 bị tạm khóa do nhập sai mật khẩu 5 lần',
+          description: 'Tài khoản tuananh.tran@yahoo.com đang ở trạng thái khóa bảo vệ.',
+          link: '/admin/users/u-105',
+          timestamp: '16:30 Hôm nay',
+        },
+      ],
+      recentAuditLogs: auditLogs.slice(0, 5),
+    }
+  },
+
+  // --------------------------------------------------------------------------
+  // 2. USERS MANAGEMENT
+  // --------------------------------------------------------------------------
+  async getUsers(): Promise<UserAccount[]> {
+    await delay(150)
+    return getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+  },
+
+  async getUserById(id: string): Promise<UserAccount | null> {
+    await delay(100)
+    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    return users.find((u) => u.id === id) || null
+  },
+
+  async updateUserStatus(userId: string, newStatus: UserAccount['status'], reason: string): Promise<UserAccount> {
+    await delay(200)
+    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    const index = users.findIndex((u) => u.id === userId)
+    if (index === -1) throw new Error('Không tìm thấy tài khoản người dùng')
+
+    const before = { ...users[index] }
+    users[index] = { ...users[index], status: newStatus }
+    saveToStorage(KEY_USERS, users)
+
+    await this.recordAuditLog(
+      newStatus === 'suspended' ? 'user_suspend' : 'user_unlock',
+      newStatus === 'suspended' ? 'Tạm ngưng tài khoản' : 'Mở khóa tài khoản',
+      'users',
+      userId,
+      users[index].fullName,
+      reason,
+      { status: before.status },
+      { status: newStatus }
+    )
+
+    return users[index]
+  },
+
+  // --------------------------------------------------------------------------
+  // 3. SESSION MANAGEMENT
+  // --------------------------------------------------------------------------
+  async getSessions(): Promise<UserSession[]> {
+    await delay(150)
+    return getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+  },
+
+  async getSessionById(sessionId: string): Promise<UserSession | null> {
+    await delay(100)
+    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    return sessions.find((s) => s.id === sessionId) || null
+  },
+
+  async revokeSession(sessionId: string, reason: string): Promise<UserSession> {
+    await delay(200)
+    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    const index = sessions.findIndex((s) => s.id === sessionId)
+    if (index === -1) throw new Error('Không tìm thấy phiên đăng nhập')
+
+    const target = sessions[index]
+    if (target.isCurrentAdminSession) {
+      throw new Error('Không thể thu hồi phiên đang đăng nhập hiện tại của chính bạn.')
+    }
+
+    const before = { ...target }
+    const updated: UserSession = {
+      ...target,
+      status: 'revoked',
+      revokedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      revokedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    sessions[index] = updated
+    saveToStorage(KEY_SESSIONS, sessions)
+
+    await this.recordAuditLog(
+      'session_revoke',
+      'Thu hồi phiên đăng nhập',
+      'sessions',
+      sessionId,
+      `${target.userName} (${target.deviceType} - ${target.browser})`,
+      reason,
+      { status: before.status },
+      { status: 'revoked' }
+    )
+
+    return updated
+  },
+
+  async revokeAllUserSessions(userId: string, reason: string): Promise<number> {
+    await delay(250)
+    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    let count = 0
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19)
+
+    const updated = sessions.map((s) => {
+      if (s.userId === userId && s.status === 'active' && !s.isCurrentAdminSession) {
+        count++
+        return {
+          ...s,
+          status: 'revoked' as const,
+          revokedAt: nowStr,
+          revokedBy: CURRENT_ADMIN_USER.fullName,
+        }
+      }
+      return s
+    })
+
+    saveToStorage(KEY_SESSIONS, updated)
+
+    await this.recordAuditLog(
+      'session_revoke_all',
+      'Đăng xuất tất cả phiên người dùng',
+      'sessions',
+      userId,
+      `User ID: ${userId}`,
+      `${reason} (Đã thu hồi ${count} phiên hoạt động)`
+    )
+
+    return count
+  },
+
+  // --------------------------------------------------------------------------
+  // 4. LOGIN EVENTS
+  // --------------------------------------------------------------------------
+  async getLoginEvents(): Promise<LoginEvent[]> {
+    await delay(120)
+    return getFromStorage<LoginEvent[]>(KEY_LOGIN_EVENTS, SEED_LOGIN_EVENTS)
+  },
+
+  // --------------------------------------------------------------------------
+  // 5. LEARNING PLANS & ENROLLMENTS
+  // --------------------------------------------------------------------------
+  async getLearningPlans(): Promise<AdminLearningPlan[]> {
+    await delay(120)
+    return getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+  },
+
+  async getLearningPlanById(id: string): Promise<AdminLearningPlan | null> {
+    await delay(80)
+    const plans = getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+    return plans.find((p) => p.id === id) || null
+  },
+
+  async createLearningPlan(data: Omit<AdminLearningPlan, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>): Promise<AdminLearningPlan> {
+    await delay(180)
+    const plans = getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+    const now = new Date().toISOString()
+    const newPlan: AdminLearningPlan = {
+      ...data,
+      id: `plan-${Date.now().toString().slice(-5)}`,
+      createdAt: now,
+      updatedAt: now,
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    const updated = [newPlan, ...plans]
+    saveToStorage(KEY_LEARNING_PLANS, updated)
+    await this.recordAuditLog(
+      'plan_update',
+      'Tạo lộ trình học mới',
+      'learning_plans',
+      newPlan.id,
+      newPlan.title,
+      'Khởi tạo lộ trình học mới'
+    )
+    return newPlan
+  },
+
+  async getEnrollments(): Promise<AdminEnrollment[]> {
+    await delay(120)
+    return getFromStorage<AdminEnrollment[]>(KEY_ENROLLMENTS, SEED_ENROLLMENTS)
+  },
+
+  // --------------------------------------------------------------------------
+  // 6. CONTENT MANAGEMENT
+  // --------------------------------------------------------------------------
+  async getModules(): Promise<AdminModule[]> {
+    await delay(100)
+    return getFromStorage<AdminModule[]>(KEY_MODULES, SEED_MODULES)
+  },
+
+  async createModule(data: Omit<AdminModule, 'id' | 'updatedAt'>): Promise<AdminModule> {
+    await delay(150)
+    const modules = getFromStorage<AdminModule[]>(KEY_MODULES, SEED_MODULES)
+    const newMod: AdminModule = {
+      ...data,
+      id: `mod-${Date.now().toString().slice(-4)}`,
+      updatedAt: new Date().toISOString(),
+    }
+    const updated = [newMod, ...modules]
+    saveToStorage(KEY_MODULES, updated)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Tạo module mới',
+      'content',
+      newMod.id,
+      newMod.title,
+      'Khởi tạo module mới'
+    )
+    return newMod
+  },
+
+  async getLessons(): Promise<AdminLesson[]> {
+    await delay(120)
+    return getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+  },
+
+  async getLessonById(id: string): Promise<AdminLesson | null> {
+    await delay(80)
+    const lessons = getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+    return lessons.find((l) => l.id === id) || null
+  },
+
+  async createLesson(data: Omit<AdminLesson, 'id' | 'updatedAt' | 'updatedBy'>): Promise<AdminLesson> {
+    await delay(180)
+    const lessons = getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+    const newLesson: AdminLesson = {
+      ...data,
+      id: `les-${Date.now().toString().slice(-5)}`,
+      updatedAt: new Date().toISOString(),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    const updated = [newLesson, ...lessons]
+    saveToStorage(KEY_LESSONS, updated)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Soạn bài học mới',
+      'content',
+      newLesson.id,
+      newLesson.title,
+      'Khởi tạo bài học mới'
+    )
+    return newLesson
+  },
+
+  async getVocabulary(): Promise<AdminVocabularyWord[]> {
+    await delay(100)
+    return getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
+  },
+
+  async createVocabulary(data: Omit<AdminVocabularyWord, 'id' | 'updatedAt'>): Promise<AdminVocabularyWord> {
+    await delay(150)
+    const words = getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
+    const newWord: AdminVocabularyWord = {
+      ...data,
+      id: `voc-${Date.now().toString().slice(-5)}`,
+      updatedAt: new Date().toISOString(),
+    }
+    const updated = [newWord, ...words]
+    saveToStorage(KEY_VOCAB, updated)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Thêm từ vựng mới',
+      'content',
+      newWord.id,
+      newWord.word,
+      'Bổ sung từ vựng mới'
+    )
+    return newWord
+  },
+
+  async getGrammar(): Promise<AdminGrammarRule[]> {
+    await delay(100)
+    return getFromStorage<AdminGrammarRule[]>(KEY_GRAMMAR, SEED_GRAMMAR)
+  },
+
+  async createGrammar(data: Omit<AdminGrammarRule, 'id' | 'updatedAt'>): Promise<AdminGrammarRule> {
+    await delay(150)
+    const rules = getFromStorage<AdminGrammarRule[]>(KEY_GRAMMAR, SEED_GRAMMAR)
+    const newRule: AdminGrammarRule = {
+      ...data,
+      id: `grm-${Date.now().toString().slice(-5)}`,
+      updatedAt: new Date().toISOString(),
+    }
+    const updated = [newRule, ...rules]
+    saveToStorage(KEY_GRAMMAR, updated)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Thêm chủ điểm ngữ pháp',
+      'content',
+      newRule.id,
+      newRule.title,
+      'Bổ sung ngữ pháp mới'
+    )
+    return newRule
+  },
+
+  async getMedia(): Promise<AdminMediaAsset[]> {
+    await delay(100)
+    return getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
+  },
+
+  async createMedia(data: Omit<AdminMediaAsset, 'id' | 'uploadedAt' | 'uploadedBy'>): Promise<AdminMediaAsset> {
+    await delay(150)
+    const media = getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
+    const newMedia: AdminMediaAsset = {
+      ...data,
+      id: `med-${Date.now().toString().slice(-5)}`,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    const updated = [newMedia, ...media]
+    saveToStorage(KEY_MEDIA, updated)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Tải lên tệp media',
+      'content',
+      newMedia.id,
+      newMedia.fileName,
+      'Tải tệp media mới'
+    )
+    return newMedia
+  },
+
+  // --------------------------------------------------------------------------
+  // 7. QUESTION BANK & ASSESSMENTS
+  // --------------------------------------------------------------------------
+  async getQuestions(): Promise<AdminQuestion[]> {
+    await delay(120)
+    return getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+  },
+
+  async getQuestionById(id: string): Promise<AdminQuestion | null> {
+    await delay(80)
+    const questions = getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+    return questions.find((q) => q.id === id) || null
+  },
+
+  async getAssessments(): Promise<AdminAssessment[]> {
+    await delay(120)
+    return getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+  },
+
+  async getAssessmentById(id: string): Promise<AdminAssessment | null> {
+    await delay(80)
+    const list = getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+    return list.find((a) => a.id === id) || null
+  },
+
+  async getAttempts(): Promise<AdminAssessmentAttempt[]> {
+    await delay(120)
+    return getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
+  },
+
+  async getAttemptById(id: string): Promise<AdminAssessmentAttempt | null> {
+    await delay(80)
+    const list = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
+    return list.find((a) => a.id === id) || null
+  },
+
+  // --------------------------------------------------------------------------
+  // 8. SERVICE PLANS
+  // --------------------------------------------------------------------------
+  async getServicePlans(): Promise<AdminServicePlan[]> {
+    await delay(100)
+    return getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+  },
+
+  async getServicePlanById(id: string): Promise<AdminServicePlan | null> {
+    await delay(80)
+    const list = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+    return list.find((p) => p.id === id) || null
+  },
+
+  // --------------------------------------------------------------------------
+  // 9. AI & INTEGRATIONS
+  // --------------------------------------------------------------------------
+  async getAiTasks(): Promise<AdminAiTask[]> {
+    await delay(120)
+    return getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
+  },
+
+  async getAiProviders(): Promise<AdminAiProviderStatus[]> {
+    await delay(100)
+    return SEED_AI_PROVIDERS
+  },
+
+  async retryAiTask(taskId: string): Promise<AdminAiTask> {
+    await delay(300)
+    const tasks = getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
+    const index = tasks.findIndex((t) => t.id === taskId)
+    if (index === -1) throw new Error('Không tìm thấy tác vụ AI')
+
+    const task = tasks[index]
+    if (!task.retryable) throw new Error('Tác vụ này không thể thử lại an toàn')
+
+    const updated: AdminAiTask = {
+      ...task,
+      status: 'success',
+      latencyMs: 1640,
+      tokensUsed: 780,
+      errorMessage: undefined,
+      retryable: false,
+    }
+    tasks[index] = updated
+    saveToStorage(KEY_AI_TASKS, tasks)
+
+    await this.recordAuditLog(
+      'ai_task_retry',
+      'Thử lại tác vụ AI',
+      'ai',
+      taskId,
+      `Tác vụ ${task.type} (${task.model})`,
+      'Thực hiện retry thủ công từ Admin Console'
+    )
+
+    return updated
+  },
+
+  // --------------------------------------------------------------------------
+  // 10. ROLES & AUDIT LOGS
+  // --------------------------------------------------------------------------
+  async getRoles(): Promise<AdminRole[]> {
+    await delay(100)
+    return getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+  },
+
+  async getRoleById(id: string): Promise<AdminRole | null> {
+    await delay(80)
+    const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+    return roles.find((r) => r.id === id) || null
+  },
+
+  async getAuditLogs(): Promise<AdminAuditLog[]> {
+    await delay(120)
+    return getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
+  },
+
+  // --------------------------------------------------------------------------
+  // 11. SYSTEM SETTINGS
+  // --------------------------------------------------------------------------
+  async getSettings(): Promise<SystemConfig> {
+    await delay(80)
+    return getFromStorage<SystemConfig>(KEY_SETTINGS, SEED_SETTINGS)
+  },
+
+  async updateSettings(newSettings: Partial<SystemConfig>, reason: string): Promise<SystemConfig> {
+    await delay(250)
+    const current = getFromStorage<SystemConfig>(KEY_SETTINGS, SEED_SETTINGS)
+    const updated = {
+      ...current,
+      ...newSettings,
+      updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    saveToStorage(KEY_SETTINGS, updated)
+
+    await this.recordAuditLog(
+      'system_setting_update',
+      'Cập nhật cấu hình hệ thống',
+      'settings',
+      'sys-config',
+      'Cấu hình vận hành chung',
+      reason,
+      current as unknown as Record<string, unknown>,
+      updated as unknown as Record<string, unknown>
+    )
+
+    return updated
+  },
+}

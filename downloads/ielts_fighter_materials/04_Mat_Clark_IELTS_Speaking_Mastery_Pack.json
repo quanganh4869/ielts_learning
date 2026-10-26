@@ -1,0 +1,24 @@
+{
+  "source": "Mat Clark IELTS Speaking Mastery Guide",
+  "formula_framework": [
+    {
+      "type": "Part 1 - Point + Reason + Example + Concession",
+      "example": "Well, strictly speaking, I am quite keen on photography, particularly urban architectural shots, because it grants me a meditative pause from daily academic pressure, though I seldom have time during exam periods."
+    },
+    {
+      "type": "Part 2 - Spatial & Chronological Narrative Anchor",
+      "example": "I would like to elaborate on an environmental campaign that took place in the coastal delta of my province around three years ago..."
+    },
+    {
+      "type": "Part 3 - Two-sided Analytical Perspective + Societal Speculation",
+      "example": "From an economic standpoint, one could argue that..., yet if we scrutinize the long-term ecological repercussions..."
+    }
+  ],
+  "high_frequency_topics": [
+    "Work & Career Aspirations",
+    "Urbanization & Smart Cities",
+    "Cultural Heritage Preservation",
+    "Artificial Intelligence in Higher Education",
+    "Environmental Policy & Carbon Reduction"
+  ]
+}

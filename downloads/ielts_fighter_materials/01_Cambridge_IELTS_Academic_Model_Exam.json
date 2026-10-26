@@ -1,0 +1,257 @@
+{
+  "test_id": "CAM-18-ACAD-TEST-01",
+  "test_title": "Cambridge IELTS 18 Academic — Full Authentic Mock Exam 01",
+  "difficulty": "Standard Cambridge Assessment",
+  "total_duration_minutes": 165,
+  "total_questions": 85,
+  "sections": {
+    "listening": {
+      "duration_minutes": 30,
+      "total_questions": 40,
+      "parts": [
+        {
+          "part": 1,
+          "title": "University Campus Accommodation & Services Booking",
+          "format": "Form & Notes Completion (NO MORE THAN TWO WORDS AND/OR A NUMBER)",
+          "questions": [
+            {
+              "q_num": 1,
+              "prompt": "Type of room preferred: ______ (with private bathroom)",
+              "answer": "en-suite",
+              "explanation": "The applicant states clearly: 'I would definitely prefer an en-suite room with my own bathroom.'"
+            },
+            {
+              "q_num": 2,
+              "prompt": "Move-in date: 24th of ______",
+              "answer": "September",
+              "explanation": "Audio specifies: 'Arrival weekend commences on the 24th of September.'"
+            },
+            {
+              "q_num": 3,
+              "prompt": "Contact telephone number: ______",
+              "answer": "07700900342",
+              "explanation": "The student spells the mobile number digits accurately."
+            },
+            {
+              "q_num": 4,
+              "prompt": "Catering package: Half board including ______ and dinner",
+              "answer": "breakfast",
+              "explanation": "Staff explains: 'Our half-board option covers hot breakfast and evening dinner.'"
+            },
+            {
+              "q_num": 5,
+              "prompt": "Emergency contact name: Dr. Arthur ______",
+              "answer": "Pemberton",
+              "explanation": "Spelled out: P-E-M-B-E-R-T-O-N."
+            }
+          ]
+        },
+        {
+          "part": 2,
+          "title": "Local Nature Reserve & Ecotourism Visitor Guide",
+          "format": "Multiple Choice & Map Labelling",
+          "questions": [
+            {
+              "q_num": 11,
+              "prompt": "What makes the reserve distinct from others in the region?",
+              "options": [
+                "A. It has the oldest pine trees",
+                "B. It preserves a rare wetland ecosystem",
+                "C. It is open 24 hours a day"
+              ],
+              "answer": "B",
+              "explanation": "Speaker mentions: 'Our primary distinction lies in preserving the rare wetland habitat found nowhere else in the county.'"
+            },
+            {
+              "q_num": 12,
+              "prompt": "Where is the new bird observation hide located?",
+              "options": [
+                "A. Adjacent to the visitor center",
+                "B. Across the wooden boardwalk bridge",
+                "C. Beyond the picnic orchard"
+              ],
+              "answer": "B",
+              "explanation": "Direction cues follow: 'Cross the wooden boardwalk over the marsh and you will see the observation hide directly on your left.'"
+            }
+          ]
+        },
+        {
+          "part": 3,
+          "title": "Academic Seminar Discussion: Urban Heat Island Mitigation",
+          "format": "Matching & Multiple Choice with two students and a tutor",
+          "questions": [
+            {
+              "q_num": 21,
+              "prompt": "Both students agree that green roofs are most effective when:",
+              "options": [
+                "A. Installed on high-rise residential towers",
+                "B. Combined with reflective pavement materials",
+                "C. Subsidised heavily by local municipalities"
+              ],
+              "answer": "B",
+              "explanation": "Student A states: 'The cooling effect doubles when integrated with high-albedo pavements', which Student B validates: 'Exactly, the synergy between both yields the best data.'"
+            }
+          ]
+        },
+        {
+          "part": 4,
+          "title": "Academic Lecture: The Evolution of Marine Bioluminescence",
+          "format": "Lecture Notes Completion (ONE WORD ONLY)",
+          "questions": [
+            {
+              "q_num": 31,
+              "prompt": "Bioluminescence is primarily produced via an enzyme called ______.",
+              "answer": "luciferase",
+              "explanation": "Professor states: 'The chemical reaction requires the catalytic presence of luciferase.'"
+            },
+            {
+              "q_num": 32,
+              "prompt": "Deep sea anglerfish utilize glowing bacteria inside an organ termed the ______.",
+              "answer": "esca",
+              "explanation": "The specialized luminous lure at the tip of the dorsal spine is defined as the esca."
+            }
+          ]
+        }
+      ]
+    },
+    "reading": {
+      "duration_minutes": 60,
+      "total_questions": 40,
+      "passages": [
+        {
+          "passage": 1,
+          "title": "The Evolution of Early Marine Chronometers and Longitude Determination",
+          "word_count": 860,
+          "question_types": [
+            "True / False / Not Given",
+            "Diagram Labelling",
+            "Short Answer Questions"
+          ],
+          "questions": [
+            {
+              "q_num": 1,
+              "prompt": "John Harrison received the full Longitude Prize immediately upon presenting H4 in 1761.",
+              "answer": "FALSE",
+              "explanation": "Paragraph 4 explains: 'The Board of Longitude refused to award the full sum until further sea trials were completed in 1765 and Parliament intervened.'"
+            },
+            {
+              "q_num": 2,
+              "prompt": "The celestial method relying on lunar distances required complex mathematical calculations taking several hours.",
+              "answer": "TRUE",
+              "explanation": "Paragraph 2 explicitly states: 'Navigators had to calculate lunar angles and spend up to four hours solving trigonometric equations.'"
+            },
+            {
+              "q_num": 3,
+              "prompt": "Harrison had received formal training at a renowned watchmakers guild in London.",
+              "answer": "FALSE",
+              "explanation": "The text notes: 'Harrison was an untrained carpenter and self-taught clockmaker from Yorkshire, which aroused suspicion among the scientific elite.'"
+            }
+          ]
+        },
+        {
+          "passage": 2,
+          "title": "Biomimetic Architecture: Harnessing Nature for Climate-Resilient Urban Design",
+          "word_count": 920,
+          "question_types": [
+            "Matching Headings (List of Headings i-viii)",
+            "Summary Completion with Word Bank"
+          ],
+          "questions": [
+            {
+              "q_num": 14,
+              "prompt": "Heading for Section A (Termite mounds and Eastgate Centre passive ventilation)",
+              "answer": "vi",
+              "explanation": "Section A details how the Eastgate Centre mimics the ventilation chimneys of Macrotermes bellicosus mounds to eliminate mechanical air conditioning."
+            },
+            {
+              "q_num": 15,
+              "prompt": "Heading for Section B (Lotus leaf hydrophobic self-cleaning facade coatings)",
+              "answer": "ii",
+              "explanation": "Section B investigates microscopic surface textures that cause water droplets to roll off carrying soot away, inspired by Nelumbo nucifera."
+            }
+          ]
+        },
+        {
+          "passage": 3,
+          "title": "Neurological Foundations of Bilingual Cognitive Control and Executive Function",
+          "word_count": 1050,
+          "question_types": [
+            "Multiple Choice",
+            "Yes / No / Not Given",
+            "Matching Sentence Endings"
+          ],
+          "questions": [
+            {
+              "q_num": 27,
+              "prompt": "What do neuroimaging studies reveal regarding the prefrontal cortex in lifelong bilinguals?",
+              "options": [
+                "A. It undergoes irreversible gray matter depletion",
+                "B. It displays enhanced neural efficiency and denser white matter connectivity",
+                "C. It activates only when switching between non-Indo-European languages",
+                "D. It mimics the cognitive patterns of patients with executive deficits"
+              ],
+              "answer": "B",
+              "explanation": "Paragraph 5 highlights that fMRI scans demonstrate denser myelin integrity and superior executive control networks in the dorsolateral prefrontal cortex of lifelong bilinguals."
+            }
+          ]
+        }
+      ]
+    },
+    "writing": {
+      "duration_minutes": 60,
+      "tasks": [
+        {
+          "task": "Task 1",
+          "type": "Academic Line Graph & Pie Chart Report",
+          "min_words": 150,
+          "prompt": "The charts below illustrate the changes in renewable energy generation across four OECD countries between 2000 and 2025, alongside the projected energy source distribution for 2035. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+          "band_8_model_summary": "The line graph delineates renewable electricity output in gigawatt-hours across Germany, Denmark, Canada, and Japan from 2000 to 2025, while the pie chart projects the expected compositional breakdown of energy production in 2035. Overall, renewable energy generation exhibited a pronounced upward trajectory across all four nations, with Denmark and Germany experiencing the most dramatic expansion. Furthermore, projections indicate that wind and solar power will jointly constitute the preponderance of the energy matrix by 2035."
+        },
+        {
+          "task": "Task 2",
+          "type": "Academic Discursive Essay",
+          "min_words": 250,
+          "prompt": "The rapid deployment of artificial intelligence and automated systems is poised to replace substantial numbers of white-collar professionals, including legal analysts, accountants, and educators. Some people argue that this will lead to unprecedented intellectual unemployment, whereas others contend that it will liberate human workers to pursue higher-level creative and strategic endeavors. Discuss both views and give your own opinion.",
+          "band_8_model_summary": "In recent years, the accelerating sophistication of artificial intelligence has precipitated intense debate regarding the future viability of knowledge-based occupations. While critics foresee profound technological displacement and systemic unemployment among specialized professions, proponents maintain that cognitive automation will liberate human intellect from tedious tasks. In my view, although labor market disruptions are inevitable in the short term, AI integration will fundamentally augment rather than eradicate human expertise, provided institutional reskilling frameworks are proactively established."
+        }
+      ]
+    },
+    "speaking": {
+      "duration_minutes": 14,
+      "parts": [
+        {
+          "part": 1,
+          "topic": "Hometown, Technology & Daily Habits",
+          "questions": [
+            "Let's talk about where you live. What kind of area is your hometown?",
+            "How frequently do you use artificial intelligence applications in your studies or daily routines?",
+            "Do you prefer reading printed publications or digital articles on screen? Why?"
+          ]
+        },
+        {
+          "part": 2,
+          "cue_card": {
+            "prompt": "Describe an environmental initiative or project in your community that you found admirable.",
+            "you_should_say": [
+              "What the initiative is and where it took place",
+              "Who organized and participated in it",
+              "What specific environmental outcomes were achieved",
+              "And explain why you consider this project particularly impactful."
+            ],
+            "prep_seconds": 60,
+            "speaking_seconds": 120
+          }
+        },
+        {
+          "part": 3,
+          "topic": "Global Sustainability, Corporate Responsibility & Individual Action",
+          "questions": [
+            "To what extent do you believe individual consumers can influence multinational corporations toward greener practices?",
+            "Should governments impose severe carbon taxation on fossil-fuel industries even if it elevates consumer living costs?",
+            "How has digital media transformed international awareness of ecological emergencies over the past decade?"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="wriBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DCFCE7"/>
+      <stop offset="100%" stop-color="#BBF7D0"/>
+    </linearGradient>
+    <linearGradient id="penBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#wriBg)"/>
+  <!-- Decorative background circle -->
+  <circle cx="160" cy="95" r="64" stroke="#059669" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="160" cy="95" r="46" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- Writing Paper & Fountain Pen -->
+  <g transform="translate(112, 54)">
+    <!-- Document Page -->
+    <rect x="0" y="6" width="60" height="74" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="2.5"/>
+    <line x1="10" y1="20" x2="50" y2="20" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="10" y1="32" x2="44" y2="32" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="10" y1="44" x2="50" y2="44" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="10" y1="56" x2="34" y2="56" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+
+    <!-- Fountain Pen Angled -->
+    <g transform="translate(56, 12) rotate(42)">
+      <rect x="0" y="0" width="12" height="48" rx="3" fill="url(#penBody)"/>
+      <path d="M0 48 L6 62 L12 48 Z" fill="#D97706"/>
+      <circle cx="6" cy="54" r="1.5" fill="#047857"/>
+      <rect x="0" y="8" width="12" height="4" fill="#FDE68A"/>
+    </g>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="78" height="24" rx="12" fill="#059669" fill-opacity="0.15"/>
+    <text x="39" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#047857" text-anchor="middle">WRITING</text>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="cdiBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAF3F1"/>
+      <stop offset="100%" stop-color="#CCE5DF"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#cdiBg)"/>
+  <circle cx="160" cy="90" r="64" stroke="#28665F" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- Computer Screen Mock Exam Art -->
+  <g transform="translate(100, 42)">
+    <!-- Monitor Outer Body -->
+    <rect x="0" y="0" width="120" height="78" rx="8" fill="#1E293B"/>
+    <!-- Screen Glass -->
+    <rect x="6" y="6" width="108" height="66" rx="4" fill="#FFFFFF"/>
+    
+    <!-- Split Screen: Left Passage Column -->
+    <rect x="10" y="10" width="46" height="58" rx="2" fill="#F8FAFC"/>
+    <line x1="14" y1="18" x2="48" y2="18" stroke="#28665F" stroke-width="2" stroke-linecap="round"/>
+    <line x1="14" y1="26" x2="52" y2="26" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14" y1="32" x2="46" y2="32" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14" y1="38" x2="50" y2="38" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Split Screen: Right Question Column -->
+    <rect x="62" y="10" width="46" height="58" rx="2" fill="#F8FAFC"/>
+    <circle cx="68" cy="18" r="3" fill="#28665F"/>
+    <line x1="74" y1="18" x2="102" y2="18" stroke="#28665F" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="3" stroke="#94A3B8" stroke-width="1.5" fill="#FFFFFF"/>
+    <line x1="74" y1="28" x2="98" y2="28" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="68" cy="38" r="3" stroke="#94A3B8" stroke-width="1.5" fill="#FFFFFF"/>
+    <line x1="74" y1="38" x2="96" y2="38" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Monitor Stand -->
+    <path d="M52 78 L68 78 L72 90 L48 90 Z" fill="#334155"/>
+    <rect x="42" y="90" width="36" height="4" rx="2" fill="#475569"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="118" height="24" rx="12" fill="#28665F" fill-opacity="0.18"/>
+    <text x="59" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#28665F" text-anchor="middle">IELTS SIMULATION</text>
+  </g>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="vocBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF4FF"/>
+      <stop offset="100%" stop-color="#FAE8FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#vocBg)"/>
+  <circle cx="160" cy="90" r="64" stroke="#C026D3" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- Vocabulary Flashcard Stack Art -->
+  <g transform="translate(115, 46)">
+    <!-- Back card -->
+    <rect x="14" y="0" width="62" height="76" rx="8" fill="#F5D0FE" stroke="#C026D3" stroke-width="2" transform="rotate(8 45 38)"/>
+    <!-- Front card -->
+    <rect x="4" y="8" width="62" height="76" rx="8" fill="#FFFFFF" stroke="#C026D3" stroke-width="2.5"/>
+    <text x="35" y="42" font-family="Nunito, sans-serif" font-size="20" font-weight="900" fill="#A21CAF" text-anchor="middle">Aa</text>
+    <line x1="16" y1="56" x2="54" y2="56" stroke="#E879F9" stroke-width="2" stroke-linecap="round"/>
+    <line x1="22" y1="64" x2="48" y2="64" stroke="#E879F9" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="90" height="24" rx="12" fill="#C026D3" fill-opacity="0.15"/>
+    <text x="45" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#A21CAF" text-anchor="middle">VOCABULARY</text>
+  </g>
+</svg>

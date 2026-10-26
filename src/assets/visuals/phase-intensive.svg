@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" fill="none">
+  <defs>
+    <linearGradient id="intBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EFF6FF"/>
+      <stop offset="100%" stop-color="#DBEAFE"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" rx="16" fill="url(#intBg)"/>
+  <circle cx="160" cy="90" r="64" stroke="#2563EB" stroke-opacity="0.15" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- Intensive Target & Ascent Meter -->
+  <g transform="translate(125, 48)">
+    <circle cx="35" cy="35" r="32" stroke="#2563EB" stroke-width="3" fill="#FFFFFF"/>
+    <circle cx="35" cy="35" r="22" stroke="#60A5FA" stroke-width="2.5" fill="#EFF6FF"/>
+    <circle cx="35" cy="35" r="12" fill="#2563EB"/>
+    <circle cx="35" cy="35" r="4" fill="#FFFFFF"/>
+    
+    <!-- Arrow Impact -->
+    <path d="M12 70 L35 47" stroke="#D97706" stroke-width="4" stroke-linecap="round"/>
+    <path d="M10 60 L12 70 L22 72" stroke="#D97706" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tag Pill -->
+  <g transform="translate(18, 18)">
+    <rect width="116" height="24" rx="12" fill="#2563EB" fill-opacity="0.15"/>
+    <text x="58" y="16" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="#1D4ED8" text-anchor="middle">PHASE 2: TĂNG TỐC</text>
+  </g>
+</svg>
