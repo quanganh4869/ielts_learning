@@ -12,7 +12,11 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAdmin?
   const location = useLocation()
 
   if (isLoading) {
-    return null // or loading spinner
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+        <div className="w-8 h-8 border-3 border-[#28665F] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   // Not logged in

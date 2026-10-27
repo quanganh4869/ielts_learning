@@ -30,12 +30,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
 
   const syncBackendUser = useCallback(async (token: string | null): Promise<User | null> => {
+    if (!token) {
+      return null
+    }
+
     try {
       const headers: Record<string, string> = {
         Accept: 'application/json',
-      }
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       }
 
       const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
@@ -94,6 +96,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       if (isSupabaseConfigured()) {
+        // If OAuth PKCE code is present in URL, exchange it first
+        const params = new URLSearchParams(window.location.search)
+        const code = params.get('code')
+        if (code) {
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            if (!error && data?.session?.access_token) {
+              setAccessToken(data.session.access_token)
+              await syncBackendUser(data.session.access_token)
+              // Clean up code parameter from URL
+              params.delete('code')
+              const newSearch = params.toString() ? `?${params.toString()}` : ''
+              window.history.replaceState({}, document.title, window.location.pathname + newSearch + window.location.hash)
+              return
+            }
+          } catch (e) {
+            console.error('Error exchanging code for session:', e)
+          }
+        }
+
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.access_token) {
           setAccessToken(session.access_token)
@@ -101,7 +123,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         }
       }
-      await syncBackendUser(accessToken)
+
+      if (accessToken) {
+        await syncBackendUser(accessToken)
+      } else {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored))
+          } catch {
+            setUser(null)
+          }
+        }
+      }
     } finally {
       setIsLoading(false)
     }
@@ -115,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
             if (session?.access_token) {
               setAccessToken(session.access_token)
               await syncBackendUser(session.access_token)
@@ -125,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(null)
             localStorage.removeItem(STORAGE_KEY)
           }
+          setIsLoading(false)
         }
       )
 

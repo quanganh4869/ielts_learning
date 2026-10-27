@@ -1,5 +1,5 @@
-import React from 'react'
-import { useSearchParams } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Card } from '@/components/common/Card'
 import { BrandLogo } from '@/components/brand'
@@ -8,9 +8,18 @@ import { useLanguage } from '@/context/LanguageContext'
 
 export const LoginPage: React.FC = () => {
   const { tText } = useLanguage()
-  const { loginWithGoogle, isLoading } = useAuth()
+  const { user, isAuthenticated, loginWithGoogle, isLoading } = useAuth()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const errorCode = searchParams.get('error')
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/app/dashboard'
+      navigate(from, { replace: true })
+    }
+  }, [isLoading, isAuthenticated, user, navigate, location])
 
   const getErrorMessage = (code: string | null): string | null => {
     if (!code) return null
