@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { Eye } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { DataToolbar } from '../../components/DataToolbar'
-import { FilterPanel } from '../../components/FilterPanel'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { SideDrawer } from '../../components/SideDrawer'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { adminService } from '../../services/adminService'
 import { LoginEvent } from '../../types/admin'
 
@@ -16,99 +17,113 @@ export const LoginEventsPage: React.FC = () => {
 
   // Filters
   const [search, setSearch] = useState('')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [methodFilter, setMethodFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'blocked'>('all')
+
+  // Selected event for detail
+  const [selectedEvent, setSelectedEvent] = useState<LoginEvent | null>(null)
+
+  // Delete State
+  const [deletingEvent, setDeletingEvent] = useState<LoginEvent | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
-  // Selected event for SideDrawer inspection
-  const [selectedEvent, setSelectedEvent] = useState<LoginEvent | null>(null)
+  // Feedback State
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    title: string
+    message: string
+  } | null>(null)
 
-  const loadEvents = useCallback(async () => {
+  useEffect(() => {
+    loadEvents()
+  }, [])
+
+  const loadEvents = async () => {
     try {
       setIsLoading(true)
       setError(null)
       const data = await adminService.getLoginEvents()
       setEvents(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải nhật ký xác thực')
+      setError(err instanceof Error ? err.message : 'Lỗi tải lịch sử xác thực')
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    loadEvents()
-  }, [loadEvents])
+  const handleConfirmDelete = async () => {
+    if (!deletingEvent) return
+    try {
+      setIsDeleting(true)
+      await adminService.deleteLoginEvent(deletingEvent.id)
+      setEvents((prev) => prev.filter((item) => item.id !== deletingEvent.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa bản ghi xác thực',
+        message: `Đã xóa sự kiện đăng nhập của ${deletingEvent.userEmail} khỏi nhật ký.`,
+      })
+      setDeletingEvent(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa bản ghi thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa sự kiện',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       const matchSearch =
         e.userEmail.toLowerCase().includes(search.toLowerCase()) ||
         e.ipAddress.includes(search) ||
-        e.correlationId.toLowerCase().includes(search.toLowerCase()) ||
-        e.eventType.toLowerCase().includes(search.toLowerCase())
-
+        e.id.toLowerCase().includes(search.toLowerCase())
       const matchStatus = statusFilter === 'all' || e.status === statusFilter
-      const matchMethod = methodFilter === 'all' || e.authMethod === methodFilter
-
-      return matchSearch && matchStatus && matchMethod
+      return matchSearch && matchStatus
     })
-  }, [events, search, statusFilter, methodFilter])
+  }, [events, search, statusFilter])
 
-  const totalPages = Math.ceil(filteredEvents.length / pageSize)
+  const totalPages = Math.ceil(filteredEvents.length / pageSize) || 1
   const paginatedEvents = useMemo(() => {
     const start = (currentPage - 1) * pageSize
     return filteredEvents.slice(start, start + pageSize)
   }, [filteredEvents, currentPage, pageSize])
 
-  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (methodFilter !== 'all' ? 1 : 0)
-
-  const handleResetFilters = () => {
-    setSearch('')
-    setStatusFilter('all')
-    setMethodFilter('all')
-    setCurrentPage(1)
-  }
-
   const columns: Column<LoginEvent>[] = [
     {
       key: 'timestamp',
-      header: 'Thời gian',
-      render: (e) => <span className="font-mono text-xs text-[#20272E]">{e.timestamp}</span>,
-    },
-    {
-      key: 'userEmail',
-      header: 'Tài khoản cung cấp',
+      header: 'Thời điểm',
       render: (e) => (
         <div>
-          <span className="font-semibold text-[#20272E]">{e.userEmail}</span>
-          <div className="text-2xs text-[#68727D] font-mono">{e.userId || 'Chưa định danh'}</div>
+          <span className="font-semibold text-xs sm:text-sm text-[#20272E] block">{e.timestamp}</span>
+          <span className="text-2xs text-[#68727D] font-mono">{e.id}</span>
         </div>
       ),
     },
     {
-      key: 'eventType',
-      header: 'Loại sự kiện',
+      key: 'userEmail',
+      header: 'Email / Tài khoản',
       render: (e) => (
         <div>
-          <span className="font-semibold text-xs text-[#20272E]">{e.eventType}</span>
-          {e.failureReason && (
-            <div className="text-2xs text-rose-600 font-medium truncate max-w-xs">
-              {e.failureReason}
-            </div>
+          <span className="font-medium text-xs sm:text-sm text-[#20272E] block">{e.userEmail}</span>
+          {e.userId && (
+            <span className="text-2xs text-[#68727D]">
+              User ID: <span className="font-mono">{e.userId}</span>
+            </span>
           )}
         </div>
       ),
     },
     {
-      key: 'authMethod',
+      key: 'method',
       header: 'Phương thức',
       render: (e) => (
-        <span className="capitalize text-xs bg-[#F7F8FA] border border-[#E3E7EB] px-2 py-0.5 rounded">
+        <span className="text-xs text-[#68727D] capitalize bg-[#F7F8FA] px-2 py-0.5 rounded border border-[#E3E7EB]">
           {e.authMethod}
         </span>
       ),
@@ -130,16 +145,20 @@ export const LoginEventsPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Chi tiết',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (e) => (
         <button
           type="button"
-          onClick={() => setSelectedEvent(e)}
-          className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-          title="Xem chi tiết sự kiện"
+          onClick={(ev) => {
+            ev.stopPropagation()
+            setDeletingEvent(e)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa sự kiện này"
         >
-          <Eye className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
       ),
     },
@@ -149,8 +168,17 @@ export const LoginEventsPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Lịch sử Xác thực & Đăng nhập"
-        subtitle={`Ghi nhận luồng sự kiện xác thực, phát hiện đăng nhập thất bại và kiểm tra an ninh tài khoản (${filteredEvents.length} sự kiện)`}
+        subtitle={`Ghi nhận luồng sự kiện xác thực, phát hiện đăng nhập thất bại. Nhấp vào hàng để xem chi tiết (${filteredEvents.length} sự kiện)`}
       />
+
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
       <DataToolbar
         searchPlaceholder="Tìm theo email, IP, request ID hoặc mã sự kiện..."
@@ -159,56 +187,46 @@ export const LoginEventsPage: React.FC = () => {
           setSearch(v)
           setCurrentPage(1)
         }}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        activeFilterCount={activeFilterCount}
+        filters={[
+          {
+            key: 'status',
+            label: 'Kết quả xác thực',
+            value: statusFilter,
+            options: [
+              { label: 'Tất cả kết quả', value: 'all' },
+              { label: 'Thành công', value: 'success' },
+              { label: 'Thất bại', value: 'failed' },
+              { label: 'Bị chặn', value: 'blocked' },
+            ],
+            onChange: (v: string) => {
+              setStatusFilter(v as any)
+              setCurrentPage(1)
+            },
+          },
+        ]}
+        onReset={() => {
+          setSearch('')
+          setStatusFilter('all')
+          setCurrentPage(1)
+        }}
+        isFiltered={search !== '' || statusFilter !== 'all'}
       />
-
-      <FilterPanel isOpen={isFilterOpen} onReset={handleResetFilters}>
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Kết quả xác thực</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả kết quả</option>
-            <option value="success">Thành công (Success)</option>
-            <option value="failed">Thất bại (Failed)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Phương thức xác thực</label>
-          <select
-            value={methodFilter}
-            onChange={(e) => {
-              setMethodFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả phương thức</option>
-            <option value="password">Mật khẩu (Password)</option>
-            <option value="google">Google OAuth</option>
-            <option value="apple">Apple ID</option>
-          </select>
-        </div>
-      </FilterPanel>
 
       <DataTable
         columns={columns}
         data={paginatedEvents}
         isLoading={isLoading}
         error={error}
-        onRetry={loadEvents}
-        keyExtractor={(e) => e.id}
         onRowClick={(e) => setSelectedEvent(e)}
-        isFiltered={activeFilterCount > 0 || search.length > 0}
-        onResetFilters={handleResetFilters}
+        keyExtractor={(e) => e.id}
+        emptyTitle="Không tìm thấy sự kiện xác thực"
+        emptyDescription="Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm."
+        isFiltered={search !== '' || statusFilter !== 'all'}
+        onResetFilters={() => {
+          setSearch('')
+          setStatusFilter('all')
+          setCurrentPage(1)
+        }}
         pagination={{
           currentPage,
           totalPages,
@@ -218,53 +236,66 @@ export const LoginEventsPage: React.FC = () => {
         }}
       />
 
-      {/* SideDrawer for inspecting event metadata */}
+      {/* Delete Event Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletingEvent}
+        onClose={() => setDeletingEvent(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa bản ghi xác thực"
+        message={`Bạn có chắc chắn muốn xóa bản ghi sự kiện đăng nhập của "${deletingEvent?.userEmail}" không? Hành động này sẽ xóa dữ liệu lịch sử khỏi hệ thống.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
+      />
+
+      {/* Detail Drawer */}
       <SideDrawer
         isOpen={!!selectedEvent}
         onClose={() => setSelectedEvent(null)}
         title="Chi tiết sự kiện xác thực"
-        subtitle={selectedEvent?.correlationId}
+        badge={selectedEvent ? <StatusBadge status={selectedEvent.status} /> : undefined}
       >
         {selectedEvent && (
           <div className="space-y-4 text-xs">
             <div>
-              <span className="text-[#68727D] block mb-1">Mã sự kiện (ID)</span>
-              <strong className="font-mono text-sm text-[#20272E]">{selectedEvent.id}</strong>
+              <span className="text-[#68727D] block mb-1">Mã định danh sự kiện (Event ID)</span>
+              <span className="font-mono text-[#20272E] bg-[#F7F8FA] p-2 rounded block">
+                {selectedEvent.id}
+              </span>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Thời điểm xảy ra</span>
-              <span className="text-[#20272E] font-medium">{selectedEvent.timestamp}</span>
+              <span className="text-[#68727D] block mb-1">Email người dùng</span>
+              <strong className="text-sm text-[#20272E]">{selectedEvent.userEmail}</strong>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Tài khoản cung cấp</span>
-              <span className="font-semibold text-sm text-[#20272E]">{selectedEvent.userEmail}</span>
+              <span className="text-[#68727D] block mb-1">Thời điểm ghi nhận</span>
+              <span className="text-[#20272E]">{selectedEvent.timestamp}</span>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Kết quả</span>
-              <StatusBadge status={selectedEvent.status} />
+              <span className="text-[#68727D] block mb-1">Địa chỉ IP & Vị trí</span>
+              <span className="font-mono text-[#20272E]">{selectedEvent.ipAddress}</span>
+              {selectedEvent.location && (
+                <span className="text-2xs text-[#68727D] block mt-0.5">
+                  Vị trí ước tính: {selectedEvent.location}
+                </span>
+              )}
+            </div>
+            <div>
+              <span className="text-[#68727D] block mb-1">Thông tin thiết bị</span>
+              <span className="text-[#20272E]">{selectedEvent.deviceInfo}</span>
+            </div>
+            <div>
+              <span className="text-[#68727D] block mb-1">Phương thức xác thực</span>
+              <span className="capitalize font-semibold text-[#20272E]">
+                {selectedEvent.authMethod}
+              </span>
             </div>
             {selectedEvent.failureReason && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg">
-                <span className="font-bold text-rose-900 block mb-0.5">Nguyên nhân từ chối:</span>
-                <span className="text-rose-700">{selectedEvent.failureReason}</span>
+                <span className="text-rose-900 font-bold block mb-1">Nguyên nhân thất bại:</span>
+                <p className="text-rose-700">{selectedEvent.failureReason}</p>
               </div>
             )}
-            <div>
-              <span className="text-[#68727D] block mb-1">Địa chỉ IP</span>
-              <strong className="font-mono text-[#20272E]">{selectedEvent.ipAddress}</strong>
-            </div>
-            <div>
-              <span className="text-[#68727D] block mb-1">User-Agent Header</span>
-              <div className="p-2 bg-[#F7F8FA] border border-[#E3E7EB] rounded font-mono text-2xs text-[#68727D] break-all">
-                {selectedEvent.userAgent}
-              </div>
-            </div>
-            <div>
-              <span className="text-[#68727D] block mb-1">Correlation / Request ID</span>
-              <div className="p-2 bg-[#F7F8FA] border border-[#E3E7EB] rounded font-mono text-2xs text-[#68727D]">
-                {selectedEvent.correlationId}
-              </div>
-            </div>
           </div>
         )}
       </SideDrawer>

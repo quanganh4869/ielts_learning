@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldCheck, Eye, Plus } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { DataTable, Column } from '../../components/DataTable'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
 import { AdminRole } from '../../types/admin'
 
@@ -13,19 +14,23 @@ export const RolesListPage: React.FC = () => {
   const [roles, setRoles] = useState<AdminRole[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Delete State
+  const [deletingRole, setDeletingRole] = useState<AdminRole | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Feedback State
   const [feedback, setFeedback] = useState<{
-    isOpen: boolean
     type: 'success' | 'error'
     title: string
     message: string
-  }>({
-    isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
-  })
+  } | null>(null)
 
-  const loadRoles = useCallback(async () => {
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -36,36 +41,64 @@ export const RolesListPage: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    loadRoles()
-  }, [loadRoles])
+  const handleConfirmDelete = async () => {
+    if (!deletingRole) return
+    if (deletingRole.isSystem) {
+      setFeedback({
+        type: 'error',
+        title: 'Không thể xóa vai trò hệ thống',
+        message: 'Vai trò cốt lõi của hệ thống được bảo vệ và không được phép xóa.',
+      })
+      setDeletingRole(null)
+      return
+    }
+
+    try {
+      setIsDeleting(true)
+      await adminService.deleteRole(deletingRole.id)
+      setRoles((prev) => prev.filter((item) => item.id !== deletingRole.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa vai trò thành công',
+        message: `Đã xóa vai trò "${deletingRole.name}" khỏi hệ thống.`,
+      })
+      setDeletingRole(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa vai trò thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa vai trò',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const columns: Column<AdminRole>[] = [
     {
-      key: 'displayName',
+      key: 'name',
       header: 'Tên vai trò (Role)',
       render: (r) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#EAF3F1] text-[#28665F] flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="font-bold text-xs text-[#20272E] hover:text-[#28665F] transition-colors">{r.displayName}</div>
-            <div className="text-2xs text-[#68727D] font-mono">{r.name}</div>
-          </div>
+        <div className="space-y-0.5">
+          <span className="font-bold text-sm text-[#20272E] block">{r.name}</span>
+          <span className="text-2xs text-[#68727D]">{r.description}</span>
         </div>
       ),
     },
     {
-      key: 'description',
-      header: 'Mô tả trách nhiệm',
-      render: (r) => <span className="text-xs text-[#68727D] max-w-md block">{r.description}</span>,
+      key: 'permissionsCount',
+      header: 'Số quyền hạn gán',
+      render: (r) => (
+        <span className="font-mono text-xs font-bold text-[#28665F] bg-[#EAF3F1] px-2.5 py-0.5 rounded-full">
+          {r.permissions.length} quyền
+        </span>
+      ),
     },
     {
       key: 'userCount',
-      header: 'Số người được gán',
+      header: 'Người dùng sở hữu',
       render: (r) => (
         <span className="font-semibold text-xs text-[#20272E]">{r.userCount} thành viên</span>
       ),
@@ -85,16 +118,25 @@ export const RolesListPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Phân quyền',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (r) => (
         <button
           type="button"
-          onClick={() => navigate(`/admin/security/roles/${r.id}`)}
-          className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-          title="Xem ma trận phân quyền"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingRole(r)
+          }}
+          disabled={r.isSystem}
+          className={`p-1.5 rounded-lg transition-colors ${
+            r.isSystem
+              ? 'text-slate-200 cursor-not-allowed'
+              : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer'
+          }`}
+          title={r.isSystem ? 'Không thể xóa vai trò hệ thống' : 'Xóa vai trò này'}
         >
-          <Eye className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
       ),
     },
@@ -104,19 +146,19 @@ export const RolesListPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Quản lý Vai trò & Phân quyền (Roles & Permissions)"
-        subtitle="Thiết lập các vai trò quản trị viên theo nguyên tắc đặc quyền tối thiểu (Least Privilege)"
+        subtitle="Thiết lập các vai trò quản trị viên theo nguyên tắc đặc quyền tối thiểu. Nhấp vào hàng để xem chi tiết & chỉnh sửa"
         actions={
           <Button
             variant="primary"
             size="sm"
             onClick={() => {
               setFeedback({
-                isOpen: true,
                 type: 'success',
-                title: 'Khởi tạo vai trò mới',
-                message: 'Chức năng khai báo mẫu phân quyền Custom Role đang được nạp cấu hình bảo mật Least Privilege.',
+                title: 'Tạo vai trò mới',
+                message: 'Vui lòng thiết lập vai trò mới trong trang phân quyền.',
               })
             }}
+            className="font-bold shadow-xs"
             leftIcon={<Plus className="w-4 h-4" />}
           >
             Tạo vai trò mới
@@ -124,22 +166,35 @@ export const RolesListPage: React.FC = () => {
         }
       />
 
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       <DataTable
         columns={columns}
         data={roles}
         isLoading={isLoading}
         error={error}
-        onRetry={loadRoles}
-        keyExtractor={(r) => r.id}
         onRowClick={(r) => navigate(`/admin/security/roles/${r.id}`)}
+        keyExtractor={(r) => r.id}
+        emptyTitle="Chưa có vai trò nào"
       />
 
-      <FeedbackOverlay
-        isOpen={feedback.isOpen}
-        type={feedback.type}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback((f) => ({ ...f, isOpen: false }))}
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletingRole}
+        onClose={() => setDeletingRole(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa vai trò người dùng"
+        message={`Bạn có chắc chắn muốn xóa vai trò "${deletingRole?.name}" không? Người dùng thuộc vai trò này sẽ bị mất các quyền hạn tương ứng.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
       />
     </div>
   )

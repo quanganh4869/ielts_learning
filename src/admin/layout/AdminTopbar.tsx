@@ -4,7 +4,6 @@ import {
   Menu,
   Bell,
   ArrowUpRight,
-  ShieldCheck,
   LogOut,
   History,
   Settings,
@@ -136,23 +135,10 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-[#E3E7EB] hover:opacity-90 transition-opacity focus:outline-hidden"
+            className="flex items-center gap-1.5 pl-2 sm:pl-3 border-l border-[#E3E7EB] text-xs font-bold text-[#20272E] hover:text-[#28665F] transition-colors focus:outline-hidden"
           >
-            <div className="w-8 h-8 rounded-full bg-[#EAF3F1] border border-[#28665F]/20 text-[#28665F] flex items-center justify-center font-bold text-xs shrink-0">
-              TVH
-            </div>
-            <div className="hidden sm:block text-left">
-              <div className="text-xs font-bold text-[#20272E] leading-tight flex items-center gap-1">
-                <span>{admin.fullName}</span>
-                <ChevronDown className={`w-3 h-3 text-[#68727D] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <ShieldCheck className="w-3 h-3 text-[#28665F]" />
-                <span className="text-2xs font-semibold text-[#28665F] uppercase tracking-wide">
-                  Super Admin
-                </span>
-              </div>
-            </div>
+            <span>Admin</span>
+            <ChevronDown className={`w-3.5 h-3.5 text-[#68727D] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {dropdownOpen && (

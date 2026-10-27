@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, ShieldBan, ShieldCheck } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { DataToolbar } from '../../components/DataToolbar'
-import { FilterPanel } from '../../components/FilterPanel'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { adminService } from '../../services/adminService'
-import { UserAccount, UserStatus } from '../../types/admin'
+import { UserAccount, UserRole, UserStatus } from '../../types/admin'
 
 export const UserListPage: React.FC = () => {
   const navigate = useNavigate()
@@ -17,39 +16,29 @@ export const UserListPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filters & Search
+  // Filters
   const [search, setSearch] = useState('')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [testTypeFilter, setTestTypeFilter] = useState<string>('all')
-  const [tierFilter, setTierFilter] = useState<string>('all')
+  const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
+  const [statusFilter, setStatusFilter] = useState<UserStatus | 'all'>('all')
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
-  // Confirm dialog state for suspend/unlock
-  const [dialogState, setDialogState] = useState<{
-    isOpen: boolean
-    user: UserAccount | null
-    targetStatus: UserStatus
-  }>({
-    isOpen: false,
-    user: null,
-    targetStatus: 'active',
-  })
+  // Delete State
+  const [deletingUser, setDeletingUser] = useState<UserAccount | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
+  // Feedback State
   const [feedback, setFeedback] = useState<{
-    isOpen: boolean
     type: 'success' | 'error'
     title: string
     message: string
-  }>({
-    isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
-  })
+  } | null>(null)
+
+  useEffect(() => {
+    loadUsers()
+  }, [])
 
   const loadUsers = async () => {
     try {
@@ -58,90 +47,78 @@ export const UserListPage: React.FC = () => {
       const data = await adminService.getUsers()
       setUsers(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách người dùng')
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách người dùng')
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadUsers()
-  }, [])
+  const handleConfirmDelete = async (reason: string) => {
+    if (!deletingUser) return
+    try {
+      setIsDeleting(true)
+      await adminService.deleteUser(deletingUser.id)
+      setUsers((prev) => prev.filter((item) => item.id !== deletingUser.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa người dùng thành công',
+        message: `Đã xóa tài khoản "${deletingUser.fullName}" (${deletingUser.email}) khỏi hệ thống. Lý do: ${reason || 'Yêu cầu quản trị'}.`,
+      })
+      setDeletingUser(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa tài khoản thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa người dùng',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
-  // Filtered & searched data
+  // Filtered & Paginated data
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       const matchSearch =
         u.fullName.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase()) ||
         u.id.toLowerCase().includes(search.toLowerCase())
-
+      const matchRole = roleFilter === 'all' || u.role === roleFilter
       const matchStatus = statusFilter === 'all' || u.status === statusFilter
-      const matchTestType = testTypeFilter === 'all' || u.testType === testTypeFilter
-      const matchTier = tierFilter === 'all' || u.servicePlanTier === tierFilter
-
-      return matchSearch && matchStatus && matchTestType && matchTier
+      return matchSearch && matchRole && matchStatus
     })
-  }, [users, search, statusFilter, testTypeFilter, tierFilter])
+  }, [users, search, roleFilter, statusFilter])
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize)
+  const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * pageSize
     return filteredUsers.slice(start, start + pageSize)
   }, [filteredUsers, currentPage, pageSize])
 
-  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (testTypeFilter !== 'all' ? 1 : 0) + (tierFilter !== 'all' ? 1 : 0)
-
-  const handleResetFilters = () => {
-    setSearch('')
-    setStatusFilter('all')
-    setTestTypeFilter('all')
-    setTierFilter('all')
-    setCurrentPage(1)
-  }
-
-  const handleStatusChangeConfirm = async (reason: string) => {
-    if (!dialogState.user) return
-    await adminService.updateUserStatus(dialogState.user.id, dialogState.targetStatus, reason)
-    await loadUsers()
-  }
-
   const columns: Column<UserAccount>[] = [
     {
-      key: 'user',
-      header: 'Học viên',
+      key: 'fullName',
+      header: 'Người dùng',
       render: (u) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#EAF3F1] border border-[#28665F]/20 text-[#28665F] flex items-center justify-center font-bold text-xs shrink-0">
-            {u.fullName.charAt(0)}
+          <div className="w-8 h-8 rounded-full bg-[#EAF3F1] text-[#28665F] font-bold text-xs flex items-center justify-center shrink-0">
+            {u.fullName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-[#20272E] hover:text-[#28665F] transition-colors">{u.fullName}</div>
-            <div className="text-2xs text-[#68727D] font-mono">{u.email}</div>
+            <span className="font-semibold text-xs sm:text-sm text-[#20272E] block">{u.fullName}</span>
+            <span className="text-2xs text-[#68727D] block">{u.email}</span>
           </div>
         </div>
       ),
     },
     {
-      key: 'testType',
-      header: 'Kỳ thi & Mục tiêu',
+      key: 'role',
+      header: 'Vai trò & Target',
       render: (u) => (
-        <div>
-          <span className="font-semibold text-[#20272E] capitalize">{u.testType}</span>
+        <div className="text-xs">
+          <span className="capitalize font-medium text-[#20272E]">{u.role}</span>
           <div className="text-2xs text-[#68727D]">
-            Mục tiêu: <strong className="text-[#28665F]">Band {u.targetBand.toFixed(1)}</strong>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'servicePlanTier',
-      header: 'Gói dịch vụ',
-      render: (u) => (
-        <div>
-          <span className="font-medium text-[#20272E]">{u.servicePlanName}</span>
-          <div className="text-2xs text-[#68727D]">
-            {u.sessionsCount} phiên đăng nhập
+            Target: <strong className="text-[#28665F]">Band {u.targetBand}</strong> ({u.testType})
           </div>
         </div>
       ),
@@ -167,50 +144,21 @@ export const UserListPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Thao tác',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (u) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => navigate(`/admin/users/${u.id}`)}
-            className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-            title="Xem chi tiết"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          {u.status === 'active' ? (
-            <button
-              type="button"
-              onClick={() =>
-                setDialogState({
-                  isOpen: true,
-                  user: u,
-                  targetStatus: 'suspended',
-                })
-              }
-              className="p-1.5 text-[#68727D] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-              title="Tạm ngưng tài khoản"
-            >
-              <ShieldBan className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                setDialogState({
-                  isOpen: true,
-                  user: u,
-                  targetStatus: 'active',
-                })
-              }
-              className="p-1.5 text-[#68727D] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-              title="Mở khóa tài khoản"
-            >
-              <ShieldCheck className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingUser(u)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa tài khoản này"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       ),
     },
   ]
@@ -219,8 +167,17 @@ export const UserListPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Quản lý Người dùng"
-        subtitle={`Quản lý toàn bộ tài khoản học viên và người dùng hệ thống (${filteredUsers.length} tài khoản)`}
+        subtitle={`Quản lý toàn bộ tài khoản học viên và người dùng hệ thống (${filteredUsers.length} tài khoản). Nhấp vào hàng để xem chi tiết & chỉnh sửa`}
       />
+
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
       <DataToolbar
         searchPlaceholder="Tìm kiếm theo tên, email, user ID..."
@@ -229,82 +186,64 @@ export const UserListPage: React.FC = () => {
           setSearch(v)
           setCurrentPage(1)
         }}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        activeFilterCount={activeFilterCount}
-        onExport={() => {
-          setFeedback({
-            isOpen: true,
-            type: 'success',
-            title: 'Xuất danh sách học viên thành công!',
-            message: 'Tệp CSV danh sách học viên kèm thông tin kiểm toán đã được khởi tạo và ghi log thành công.',
-          })
+        filters={[
+          {
+            key: 'role',
+            label: 'Vai trò',
+            value: roleFilter,
+            options: [
+              { label: 'Tất cả vai trò', value: 'all' },
+              { label: 'Student', value: 'student' },
+              { label: 'Instructor', value: 'instructor' },
+              { label: 'Admin', value: 'admin' },
+            ],
+            onChange: (v: string) => {
+              setRoleFilter(v as UserRole | 'all')
+              setCurrentPage(1)
+            },
+          },
+          {
+            key: 'status',
+            label: 'Trạng thái',
+            value: statusFilter,
+            options: [
+              { label: 'Tất cả trạng thái', value: 'all' },
+              { label: 'Active', value: 'active' },
+              { label: 'Suspended', value: 'suspended' },
+              { label: 'Locked', value: 'locked' },
+              { label: 'Pending', value: 'pending_verification' },
+            ],
+            onChange: (v: string) => {
+              setStatusFilter(v as UserStatus | 'all')
+              setCurrentPage(1)
+            },
+          },
+        ]}
+        onReset={() => {
+          setSearch('')
+          setRoleFilter('all')
+          setStatusFilter('all')
+          setCurrentPage(1)
         }}
+        isFiltered={search !== '' || roleFilter !== 'all' || statusFilter !== 'all'}
       />
-
-      <FilterPanel isOpen={isFilterOpen} onReset={handleResetFilters}>
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Trạng thái tài khoản</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="suspended">Tạm ngưng</option>
-            <option value="locked">Đã khóa</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Loại kỳ thi</label>
-          <select
-            value={testTypeFilter}
-            onChange={(e) => {
-              setTestTypeFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả hình thức thi</option>
-            <option value="academic">IELTS Academic</option>
-            <option value="general">IELTS General</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Gói dịch vụ</label>
-          <select
-            value={tierFilter}
-            onChange={(e) => {
-              setTierFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả các gói</option>
-            <option value="free">Gói Miễn phí</option>
-            <option value="pro">Pro Monthly</option>
-            <option value="premium">Premium 6-Month</option>
-            <option value="vip">VIP Intensive</option>
-          </select>
-        </div>
-      </FilterPanel>
 
       <DataTable
         columns={columns}
         data={paginatedUsers}
         isLoading={isLoading}
         error={error}
-        onRetry={loadUsers}
-        keyExtractor={(u) => u.id}
         onRowClick={(u) => navigate(`/admin/users/${u.id}`)}
-        isFiltered={activeFilterCount > 0 || search.length > 0}
-        onResetFilters={handleResetFilters}
+        keyExtractor={(u) => u.id}
+        emptyTitle="Không tìm thấy người dùng"
+        emptyDescription="Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm."
+        isFiltered={search !== '' || roleFilter !== 'all' || statusFilter !== 'all'}
+        onResetFilters={() => {
+          setSearch('')
+          setRoleFilter('all')
+          setStatusFilter('all')
+          setCurrentPage(1)
+        }}
         pagination={{
           currentPage,
           totalPages,
@@ -314,29 +253,18 @@ export const UserListPage: React.FC = () => {
         }}
       />
 
-      {/* Confirm Dialog */}
+      {/* Confirm Delete User Dialog */}
       <ConfirmDialog
-        isOpen={dialogState.isOpen}
-        onClose={() => setDialogState({ isOpen: false, user: null, targetStatus: 'active' })}
-        onConfirm={handleStatusChangeConfirm}
-        title={dialogState.targetStatus === 'suspended' ? 'Tạm ngưng tài khoản học viên' : 'Mở khóa tài khoản học viên'}
-        message={
-          dialogState.targetStatus === 'suspended'
-            ? `Bạn có chắc chắn muốn tạm ngưng tài khoản của ${dialogState.user?.fullName} (${dialogState.user?.email})? Người dùng sẽ không thể đăng nhập hoặc tiếp tục học cho đến khi được mở khóa.`
-            : `Mở khóa và khôi phục quyền truy cập học tập bình thường cho học viên ${dialogState.user?.fullName}.`
-        }
-        severity={dialogState.targetStatus === 'suspended' ? 'danger' : 'info'}
-        confirmLabel={dialogState.targetStatus === 'suspended' ? 'Xác nhận tạm ngưng' : 'Xác nhận mở khóa'}
-        requireReason={true}
-        scopeWarning="Hành động này sẽ được ghi nhận vào Nhật ký kiểm toán bảo mật (Audit Log) kèm địa chỉ IP và lý do thực hiện."
-      />
-
-      <FeedbackOverlay
-        isOpen={feedback.isOpen}
-        type={feedback.type}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback((f) => ({ ...f, isOpen: false }))}
+        isOpen={!!deletingUser}
+        onClose={() => setDeletingUser(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa tài khoản người dùng"
+        message={`Bạn có chắc chắn muốn xóa tài khoản "${deletingUser?.fullName}" (${deletingUser?.email}) không? Hành động này sẽ xóa dữ liệu người dùng và không thể hoàn tác.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
+        requireReason
+        reasonPlaceholder="Nhập lý do xóa tài khoản (bắt buộc theo quy định kiểm toán)..."
       />
     </div>
   )

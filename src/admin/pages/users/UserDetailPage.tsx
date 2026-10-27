@@ -6,16 +6,21 @@ import {
   ShieldCheck,
   Compass,
   Award,
+  Edit2,
+  Save,
 } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { DetailHeader } from '../../components/DetailHeader'
 import { DetailSection } from '../../components/DetailSection'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { AdminModal } from '../../components/AdminModal'
+import { FormField } from '../../components/FormField'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { PageSkeleton } from '../../components/PageSkeleton'
 import { ErrorState } from '../../components/ErrorState'
 import { adminService } from '../../services/adminService'
-import { UserAccount, UserSession, LoginEvent, UserStatus } from '../../types/admin'
+import { UserAccount, UserSession, LoginEvent, UserStatus, UserRole } from '../../types/admin'
 
 type TabType = 'overview' | 'learning' | 'sessions' | 'login_events' | 'plan'
 
@@ -28,6 +33,17 @@ export const UserDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
 
+  // Edit State
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isConfirmSaveOpen, setIsConfirmSaveOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Edit Form Fields
+  const [fullName, setFullName] = useState('')
+  const [targetBand, setTargetBand] = useState(7.0)
+  const [role, setRole] = useState<UserRole>('student')
+  const [testType, setTestType] = useState<'academic' | 'general'>('academic')
+
   // Status dialog
   const [statusDialog, setStatusDialog] = useState<{
     isOpen: boolean
@@ -37,6 +53,13 @@ export const UserDetailPage: React.FC = () => {
   // Logout all sessions dialog
   const [logoutAllDialog, setLogoutAllDialog] = useState(false)
 
+  // Feedback State
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    title: string
+    message: string
+  } | null>(null)
+
   const loadData = useCallback(async () => {
     if (!userId) return
     try {
@@ -45,6 +68,7 @@ export const UserDetailPage: React.FC = () => {
       const u = await adminService.getUserById(userId)
       if (!u) throw new Error('Không tìm thấy tài khoản người dùng tương ứng')
       setUser(u)
+      populateForm(u)
 
       // Load sessions and login events related to this user
       const allSessions = await adminService.getSessions()
@@ -63,32 +87,108 @@ export const UserDetailPage: React.FC = () => {
     loadData()
   }, [loadData])
 
-  if (isLoading) return <PageSkeleton type="detail" />
-  if (error || !user) return <ErrorState message={error || 'Tài khoản không tồn tại'} onRetry={loadData} />
+  const populateForm = (data: UserAccount) => {
+    setFullName(data.fullName || '')
+    setTargetBand(data.targetBand || 7.0)
+    setRole(data.role || 'student')
+    setTestType(data.testType || 'academic')
+  }
+
+  const handleExecuteSave = async () => {
+    if (!user) return
+    try {
+      setIsSubmitting(true)
+      const updated = await adminService.updateUser(user.id, {
+        fullName: fullName.trim(),
+        targetBand,
+        role,
+        testType,
+      })
+      setUser(updated)
+      setIsConfirmSaveOpen(false)
+      setIsEditOpen(false)
+      setFeedback({
+        type: 'success',
+        title: 'Cập nhật thành công!',
+        message: `Đã cập nhật thông tin cho người dùng "${updated.fullName}".`,
+      })
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Cập nhật thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi cập nhật tài khoản',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const handleStatusChange = async (reason: string) => {
-    await adminService.updateUserStatus(user.id, statusDialog.targetStatus, reason)
-    await loadData()
+    if (!user) return
+    try {
+      const updated = await adminService.updateUserStatus(user.id, statusDialog.targetStatus, reason)
+      setUser(updated)
+      setFeedback({
+        type: 'success',
+        title: statusDialog.targetStatus === 'active' ? 'Đã mở khóa tài khoản' : 'Đã tạm ngưng tài khoản',
+        message: `Trạng thái của tài khoản "${user.fullName}" đã được chuyển sang ${statusDialog.targetStatus.toUpperCase()}.`,
+      })
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Thao tác không thành công',
+        message: err instanceof Error ? err.message : 'Lỗi cập nhật trạng thái',
+      })
+    }
   }
 
   const handleLogoutAll = async (reason: string) => {
-    await adminService.revokeAllUserSessions(user.id, reason)
-    await loadData()
+    if (!user) return
+    try {
+      await adminService.revokeAllUserSessions(user.id, reason)
+      setSessions((prev) => prev.map((s) => ({ ...s, isActive: false })))
+      setFeedback({
+        type: 'success',
+        title: 'Đã thu hồi tất cả phiên',
+        message: `Toàn bộ ${activeSessionsCount} phiên đang hoạt động của người dùng đã được đăng xuất.`,
+      })
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Thao tác không thành công',
+        message: err instanceof Error ? err.message : 'Lỗi đăng xuất phiên',
+      })
+    }
   }
 
-  const activeSessionsCount = sessions.filter((s) => s.status === 'active').length
+  if (isLoading) return <PageSkeleton type="detail" />
+  if (error || !user) return <ErrorState message={error || 'Tài khoản không tồn tại'} onRetry={loadData} />
+
+  const activeSessionsCount = sessions.filter((s) => s.status === 'active' || s.isActive).length
 
   return (
     <div className="space-y-6">
-      {/* Detail Header */}
       <DetailHeader
         backTo="/admin/users"
         backLabel="Quay lại danh sách người dùng"
         title={user.fullName}
-        subtitle={`User ID: ${user.id} • ${user.email}`}
+        subtitle={`${user.email} • ID: ${user.id} • Đăng ký ngày ${user.createdAt}`}
         badge={<StatusBadge status={user.status} />}
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                populateForm(user)
+                setIsEditOpen(true)
+              }}
+              leftIcon={<Edit2 className="w-3.5 h-3.5" />}
+              className="text-xs"
+            >
+              Chỉnh sửa thông tin
+            </Button>
+
             {activeSessionsCount > 0 && (
               <Button
                 variant="outline"
@@ -126,6 +226,15 @@ export const UserDetailPage: React.FC = () => {
         }
       />
 
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       {/* Internal Navigation Tabs */}
       <div className="border-b border-[#E3E7EB] flex items-center gap-6 text-xs font-bold">
         {[
@@ -139,89 +248,93 @@ export const UserDetailPage: React.FC = () => {
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key as TabType)}
-            className={`pb-3 border-b-2 transition-all select-none ${
-              activeTab === tab.key
-                ? 'border-[#28665F] text-[#28665F]'
-                : 'border-transparent text-[#68727D] hover:text-[#20272E]'
+            className={`pb-3 transition-colors relative cursor-pointer ${
+              activeTab === tab.key ? 'text-[#28665F]' : 'text-[#68727D] hover:text-[#20272E]'
             }`}
           >
             {tab.label}
+            {activeTab === tab.key && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#28665F] rounded-full" />
+            )}
           </button>
         ))}
       </div>
 
-      {/* Tab 1: Tổng quan */}
+      {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-            <DetailSection title="Thông tin cơ bản">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <DetailSection title="Thông tin cá nhân & Mục tiêu thi">
+              <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-[#68727D] block mb-1">Họ và tên</span>
-                  <strong className="text-[#20272E] text-sm">{user.fullName}</strong>
+                  <span className="text-[#68727D] block mb-1">Họ và tên hiển thị</span>
+                  <strong className="text-sm text-[#20272E]">{user.fullName}</strong>
                 </div>
                 <div>
-                  <span className="text-[#68727D] block mb-1">Địa chỉ Email</span>
-                  <strong className="text-[#20272E] text-sm font-mono">{user.email}</strong>
+                  <span className="text-[#68727D] block mb-1">Email đăng nhập</span>
+                  <span className="text-sm font-mono text-[#20272E]">{user.email}</span>
                 </div>
                 <div>
-                  <span className="text-[#68727D] block mb-1">Trạng thái xác thực email</span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Đã xác thực
+                  <span className="text-[#68727D] block mb-1">Kỳ thi dự kiến</span>
+                  <span className="capitalize font-semibold text-[#20272E]">{user.testType}</span>
+                </div>
+                <div>
+                  <span className="text-[#68727D] block mb-1">Mục tiêu Band điểm</span>
+                  <strong className="text-[#28665F] text-base">Band {user.targetBand.toFixed(1)}</strong>
+                </div>
+                <div>
+                  <span className="text-[#68727D] block mb-1">Phương thức đăng nhập</span>
+                  <span className="capitalize bg-slate-100 px-2 py-0.5 rounded text-2xs font-semibold">
+                    {user.authProvider}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#68727D] block mb-1">Phương thức đăng nhập chính</span>
-                  <span className="capitalize font-semibold text-[#20272E]">{user.authProvider}</span>
-                </div>
-                <div>
-                  <span className="text-[#68727D] block mb-1">Ngày tạo tài khoản</span>
-                  <span className="text-[#20272E] font-medium">{user.createdAt}</span>
-                </div>
-                <div>
-                  <span className="text-[#68727D] block mb-1">Hoạt động gần nhất</span>
-                  <span className="text-[#20272E] font-medium">{user.lastActiveAt}</span>
+                  <span className="text-[#68727D] block mb-1">Trạng thái hoàn thành Onboarding</span>
+                  <span
+                    className={`text-2xs font-bold px-2 py-0.5 rounded ${
+                      user.isOnboarded ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                    }`}
+                  >
+                    {user.isOnboarded ? 'Đã hoàn tất' : 'Chưa hoàn tất'}
+                  </span>
                 </div>
               </div>
             </DetailSection>
 
-            <DetailSection title="Mục tiêu Khảo thí IELTS">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                <div>
-                  <span className="text-[#68727D] block mb-1">Loại kỳ thi</span>
-                  <strong className="text-[#20272E] uppercase">{user.testType}</strong>
+            <DetailSection title="Tiến trình học tập tổng hợp">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-3 bg-[#FAFBFB] rounded-xl border border-[#E3E7EB]">
+                  <span className="text-2xs text-[#68727D] block mb-1">Thời gian học tập</span>
+                  <strong className="text-base text-[#20272E]">{user.stats?.totalStudyMinutes || 0} phút</strong>
                 </div>
-                <div>
-                  <span className="text-[#68727D] block mb-1">Trình độ hiện tại</span>
-                  <strong className="text-[#20272E]">Band {user.currentBand?.toFixed(1) || 'Chưa test'}</strong>
+                <div className="p-3 bg-[#FAFBFB] rounded-xl border border-[#E3E7EB]">
+                  <span className="text-2xs text-[#68727D] block mb-1">Bài học hoàn thành</span>
+                  <strong className="text-base text-[#20272E]">{user.stats?.completedLessons || 0} bài</strong>
                 </div>
-                <div>
-                  <span className="text-[#68727D] block mb-1">Mục tiêu hướng tới</span>
-                  <strong className="text-[#28665F] text-base">Band {user.targetBand.toFixed(1)}</strong>
+                <div className="p-3 bg-[#FAFBFB] rounded-xl border border-[#E3E7EB]">
+                  <span className="text-2xs text-[#68727D] block mb-1">Từ vựng đã nắm vững</span>
+                  <strong className="text-base text-[#28665F]">{user.stats?.masteredVocabulary || 0} từ</strong>
                 </div>
               </div>
             </DetailSection>
           </div>
 
           <div className="space-y-6">
-            <DetailSection title="Tình trạng dịch vụ">
+            <DetailSection title="Bảo mật tài khoản">
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="text-[#68727D] block mb-1">Gói hiện tại</span>
-                  <span className="font-bold text-sm text-[#20272E]">{user.servicePlanName}</span>
+                  <span className="text-[#68727D] block mb-1">Vai trò hệ thống</span>
+                  <span className="capitalize font-bold text-[#20272E] bg-slate-100 px-2 py-0.5 rounded">
+                    {user.role}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[#68727D] block mb-1">Phiên đang mở</span>
-                  <span className="font-semibold text-[#20272E]">{activeSessionsCount} thiết bị</span>
+                  <span className="text-[#68727D] block mb-1">Đăng nhập lần cuối</span>
+                  <span className="text-[#20272E]">{user.lastActiveAt}</span>
                 </div>
-                <div className="pt-2 border-t border-[#E3E7EB]">
-                  <Link
-                    to="/admin/access/sessions"
-                    className="text-xs font-bold text-[#28665F] hover:underline"
-                  >
-                    Xem tất cả phiên thiết bị →
-                  </Link>
+                <div>
+                  <span className="text-[#68727D] block mb-1">Số phiên đang hoạt động</span>
+                  <strong className="text-[#20272E]">{activeSessionsCount} thiết bị</strong>
                 </div>
               </div>
             </DetailSection>
@@ -229,196 +342,227 @@ export const UserDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 2: Hoạt động học tập */}
+      {/* Tab 2: Learning Activity */}
       {activeTab === 'learning' && (
         <div className="space-y-6">
-          <DetailSection title="Lộ trình học đang theo đuổi">
-            <div className="p-4 rounded-xl border border-[#E3E7EB] bg-[#F7F8FA] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#EAF3F1] text-[#28665F] flex items-center justify-center font-bold">
-                  <Compass className="w-5 h-5" />
-                </div>
+          <DetailSection title="Kết quả các bài thi thử & Đánh giá năng lực">
+            {(user.stats?.mockTestsTaken || 0) > 0 ? (
+              <div className="p-4 bg-[#F7F8FA] rounded-xl border border-[#E3E7EB] flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-sm text-[#20272E]">Lộ trình IELTS Academic 6.5 -&gt; 7.5+</h4>
-                  <p className="text-xs text-[#68727D]">Đang học Tuần 2: Note Completion & Form Filling</p>
+                  <strong className="text-sm text-[#20272E] block">Bài thi chẩn đoán trình độ đầu vào</strong>
+                  <span className="text-xs text-[#68727D]">Hoàn thành đánh giá Listening & Reading</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-[#28665F]">
+                    Band {user.currentBand ? user.currentBand.toFixed(1) : 'Chưa có'}
+                  </span>
+                  <span className="text-2xs text-[#68727D] block">Ước tính năng lực</span>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-extrabold text-[#28665F]">42%</div>
-                <div className="text-2xs text-[#68727D]">Tiến độ hoàn thành</div>
-              </div>
-            </div>
-          </DetailSection>
-
-          <DetailSection title="Kết quả thi thử & Đánh giá gần đây">
-            <div className="p-4 rounded-xl border border-[#E3E7EB] bg-[#F7F8FA] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-teal-50 text-[#28665F] flex items-center justify-center">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-[#20272E]">Diagnostic Placement Assessment</h4>
-                  <p className="text-xs text-[#68727D]">Nộp bài ngày 01/09/2026 • Đã chấm tự động qua AI</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="px-2.5 py-1 rounded-md bg-[#EAF3F1] text-[#28665F] font-extrabold text-sm">
-                  Band 6.5
-                </span>
-              </div>
-            </div>
+            ) : (
+              <div className="text-xs text-[#68727D] py-6 text-center">Học viên chưa thực hiện bài thi thử nào.</div>
+            )}
           </DetailSection>
         </div>
       )}
 
-      {/* Tab 3: Phiên đăng nhập */}
+      {/* Tab 3: Sessions */}
       {activeTab === 'sessions' && (
-        <DetailSection
-          title="Danh sách phiên đăng nhập của tài khoản"
-          description="Admin có thể kiểm tra danh tính thiết bị và thu hồi từng phiên cụ thể."
-        >
+        <DetailSection title="Danh sách các phiên đăng nhập">
           {sessions.length === 0 ? (
-            <p className="text-xs text-[#68727D] py-4">Chưa có phiên đăng nhập nào được ghi nhận.</p>
+            <div className="text-xs text-[#68727D] py-6 text-center">Không tìm thấy phiên đăng nhập nào.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-[#20272E]">
-                <thead className="bg-[#F7F8FA] border-b border-[#E3E7EB] text-2xs font-bold text-[#68727D] uppercase">
-                  <tr>
-                    <th className="py-2.5 px-3">Session ID</th>
-                    <th className="py-2.5 px-3">Thiết bị & Trình duyệt</th>
-                    <th className="py-2.5 px-3">Địa chỉ IP</th>
-                    <th className="py-2.5 px-3">Khởi tạo</th>
-                    <th className="py-2.5 px-3">Hoạt động cuối</th>
-                    <th className="py-2.5 px-3">Trạng thái</th>
-                    <th className="py-2.5 px-3 text-right">Chi tiết</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E3E7EB]">
-                  {sessions.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50/50">
-                      <td className="py-2.5 px-3 font-mono font-medium">{s.id}</td>
-                      <td className="py-2.5 px-3">
-                        <div className="font-semibold">{s.deviceType} ({s.os})</div>
-                        <div className="text-2xs text-[#68727D]">{s.browser}</div>
-                      </td>
-                      <td className="py-2.5 px-3 font-mono text-2xs">{s.ipAddress}</td>
-                      <td className="py-2.5 px-3 text-[#68727D]">{s.createdAt}</td>
-                      <td className="py-2.5 px-3 text-[#68727D]">{s.lastActiveAt}</td>
-                      <td className="py-2.5 px-3">
-                        <StatusBadge status={s.status} />
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <Link
-                          to={`/admin/access/sessions/${s.id}`}
-                          className="font-bold text-[#28665F] hover:underline"
-                        >
-                          Quản lý
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-[#E3E7EB]">
+              {sessions.map((sess) => (
+                <div key={sess.id} className="py-3 flex items-center justify-between text-xs">
+                  <div>
+                    <strong className="text-[#20272E] block">{sess.deviceName || `${sess.browser} (${sess.deviceType})`} ({sess.os})</strong>
+                    <span className="text-2xs text-[#68727D]">IP: {sess.ipAddress} • {sess.location || sess.locationEstimate || 'Việt Nam'}</span>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`text-2xs font-bold px-2 py-0.5 rounded-full ${
+                        sess.status === 'active' || sess.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-[#68727D]'
+                      }`}
+                    >
+                      {sess.status === 'active' || sess.isActive ? 'Đang hoạt động' : 'Đã kết thúc'}
+                    </span>
+                    <span className="text-2xs text-[#68727D] block mt-1">{sess.lastActiveAt}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </DetailSection>
       )}
 
-      {/* Tab 4: Lịch sử xác thực */}
+      {/* Tab 4: Login Events */}
       {activeTab === 'login_events' && (
-        <DetailSection
-          title="Nhật ký các sự kiện đăng nhập và xác thực"
-          description="Ghi nhận các lần đăng nhập thành công, thất bại và thay đổi bảo mật của học viên."
-        >
+        <DetailSection title="Lịch sử xác thực tài khoản">
           {loginEvents.length === 0 ? (
-            <p className="text-xs text-[#68727D] py-4">Chưa có sự kiện xác thực nào.</p>
+            <div className="text-xs text-[#68727D] py-6 text-center">Chưa có lịch sử đăng nhập nào được ghi nhận.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-[#20272E]">
-                <thead className="bg-[#F7F8FA] border-b border-[#E3E7EB] text-2xs font-bold text-[#68727D] uppercase">
-                  <tr>
-                    <th className="py-2.5 px-3">Thời gian</th>
-                    <th className="py-2.5 px-3">Loại sự kiện</th>
-                    <th className="py-2.5 px-3">Phương thức</th>
-                    <th className="py-2.5 px-3">Thiết bị & IP</th>
-                    <th className="py-2.5 px-3">Kết quả</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E3E7EB]">
-                  {loginEvents.map((e) => (
-                    <tr key={e.id} className="hover:bg-slate-50/50">
-                      <td className="py-2.5 px-3 font-mono text-2xs">{e.timestamp}</td>
-                      <td className="py-2.5 px-3 font-semibold">{e.eventType}</td>
-                      <td className="py-2.5 px-3 capitalize">{e.authMethod}</td>
-                      <td className="py-2.5 px-3">
-                        <div>{e.deviceInfo}</div>
-                        <span className="font-mono text-2xs text-[#68727D]">{e.ipAddress}</span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <StatusBadge status={e.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-[#E3E7EB]">
+              {loginEvents.map((evt) => (
+                <div key={evt.id} className="py-3 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-semibold text-[#20272E] block">{evt.timestamp}</span>
+                    <span className="text-2xs text-[#68727D]">
+                      IP: {evt.ipAddress} • Thiết bị: {evt.deviceInfo || evt.device || 'Thiết bị bảo mật'} • {evt.location || 'Việt Nam'}
+                    </span>
+                  </div>
+                  <div>
+                    <span
+                      className={`text-2xs font-bold px-2 py-0.5 rounded-full ${
+                        evt.status === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                      }`}
+                    >
+                      {evt.status === 'success' ? 'Thành công' : 'Thất bại'}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </DetailSection>
       )}
 
-      {/* Tab 5: Gói dịch vụ */}
+      {/* Tab 5: Plan */}
       {activeTab === 'plan' && (
-        <DetailSection title="Quyền lợi và Hạn mức học tập">
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl border border-[#E3E7EB] bg-white flex items-center justify-between">
+        <DetailSection title="Gói dịch vụ học viên">
+          <div className="p-4 bg-[#FAFBFB] rounded-xl border border-[#E3E7EB] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Award className="w-8 h-8 text-[#28665F]" />
               <div>
-                <h4 className="font-bold text-sm text-[#20272E]">{user.servicePlanName}</h4>
-                <p className="text-xs text-[#68727D]">Cấp phép học tập không giới hạn cho kỳ thi IELTS</p>
-              </div>
-              <StatusBadge status="active" label="Đang áp dụng" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <div className="p-3 bg-[#F7F8FA] rounded-lg border border-[#E3E7EB]">
-                <span className="text-[#68727D] block mb-1">AI Writing Review / ngày</span>
-                <strong className="text-sm text-[#20272E]">5 lượt (Đã dùng 1)</strong>
-              </div>
-              <div className="p-3 bg-[#F7F8FA] rounded-lg border border-[#E3E7EB]">
-                <span className="text-[#68727D] block mb-1">AI Speaking / ngày</span>
-                <strong className="text-sm text-[#20272E]">20 phút (Đã dùng 5)</strong>
-              </div>
-              <div className="p-3 bg-[#F7F8FA] rounded-lg border border-[#E3E7EB]">
-                <span className="text-[#68727D] block mb-1">Full Mock Tests / tháng</span>
-                <strong className="text-sm text-[#20272E]">2 bài (Đã dùng 0)</strong>
+                <strong className="text-sm text-[#20272E] block">Gói IELTS Master Prep (Pro)</strong>
+                <span className="text-xs text-[#68727D]">Truy cập không giới hạn kho bài tập và đề thi thử</span>
               </div>
             </div>
+            <span className="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
+              Đang hoạt động
+            </span>
           </div>
         </DetailSection>
       )}
 
-      {/* Confirm Dialog for Status Change */}
+      {/* Edit User Modal */}
+      <AdminModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title={`Chỉnh sửa thông tin: ${user.fullName}`}
+        subtitle="Cập nhật họ tên, mục tiêu Band điểm, vai trò và hình thức thi"
+        badge={{ text: 'Chế độ Chỉnh sửa', variant: 'amber' }}
+        maxWidth="max-w-xl"
+        footer={
+          <div className="flex items-center gap-2.5 ml-auto">
+            <Button type="button" variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => setIsConfirmSaveOpen(true)}
+              leftIcon={<Save className="w-4 h-4" />}
+            >
+              Lưu thay đổi
+            </Button>
+          </div>
+        }
+      >
+        <div className="p-6 space-y-4">
+          <FormField label="Họ và tên hiển thị" required>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full text-sm font-semibold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+            />
+          </FormField>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField label="Target Band">
+              <select
+                value={targetBand}
+                onChange={(e) => setTargetBand(parseFloat(e.target.value))}
+                className="w-full text-sm font-bold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+              >
+                <option value={5.5}>Band 5.5</option>
+                <option value={6.0}>Band 6.0</option>
+                <option value={6.5}>Band 6.5</option>
+                <option value={7.0}>Band 7.0</option>
+                <option value={7.5}>Band 7.5</option>
+                <option value={8.0}>Band 8.0</option>
+                <option value={8.5}>Band 8.5+</option>
+              </select>
+            </FormField>
+
+            <FormField label="Vai trò (Role)">
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className="w-full text-sm font-bold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none capitalize"
+              >
+                <option value="student">Student (Học viên)</option>
+                <option value="instructor">Instructor (Giảng viên)</option>
+                <option value="admin">Admin (Quản trị viên)</option>
+              </select>
+            </FormField>
+          </div>
+
+          <FormField label="Hình thức thi">
+            <select
+              value={testType}
+              onChange={(e) => setTestType(e.target.value as any)}
+              className="w-full text-sm font-medium rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none capitalize"
+            >
+              <option value="academic">IELTS Academic</option>
+              <option value="general">IELTS General</option>
+            </select>
+          </FormField>
+        </div>
+      </AdminModal>
+
+      {/* Confirmation Dialog before saving user */}
       <ConfirmDialog
-        isOpen={statusDialog.isOpen}
-        onClose={() => setStatusDialog({ isOpen: false, targetStatus: 'active' })}
-        onConfirm={handleStatusChange}
-        title={statusDialog.targetStatus === 'suspended' ? 'Tạm ngưng tài khoản' : 'Mở khóa tài khoản'}
-        message={`Bạn có chắc chắn muốn thực hiện thao tác đối với học viên ${user.fullName} (${user.email})?`}
-        severity={statusDialog.targetStatus === 'suspended' ? 'danger' : 'info'}
-        requireReason={true}
-        scopeWarning="Thao tác này ảnh hưởng trực tiếp đến khả năng đăng nhập và quá trình học tập của học viên."
+        isOpen={isConfirmSaveOpen}
+        onClose={() => setIsConfirmSaveOpen(false)}
+        onConfirm={handleExecuteSave}
+        title="Xác nhận cập nhật thông tin người dùng"
+        message={`Bạn có chắc chắn muốn lưu các thay đổi cho tài khoản "${fullName}" không?`}
+        confirmLabel={isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+        cancelLabel="Kiểm tra lại"
+        severity="info"
       />
 
-      {/* Confirm Dialog for Logout All Sessions */}
+      {/* Change Status Dialog */}
+      <ConfirmDialog
+        isOpen={statusDialog.isOpen}
+        onClose={() => setStatusDialog({ ...statusDialog, isOpen: false })}
+        onConfirm={handleStatusChange}
+        title={statusDialog.targetStatus === 'suspended' ? 'Tạm ngưng tài khoản' : 'Mở khóa tài khoản'}
+        message={
+          statusDialog.targetStatus === 'suspended'
+            ? `Tài khoản của ${user.fullName} sẽ bị tạm ngưng và không thể đăng nhập vào hệ thống. Các phiên đang hoạt động sẽ bị thu hồi.`
+            : `Khôi phục quyền truy cập cho tài khoản của ${user.fullName}. Người dùng sẽ có thể đăng nhập bình thường.`
+        }
+        confirmLabel={statusDialog.targetStatus === 'suspended' ? 'Xác nhận tạm ngưng' : 'Mở khóa ngay'}
+        severity={statusDialog.targetStatus === 'suspended' ? 'danger' : 'info'}
+        requireReason
+        reasonPlaceholder="Nhập lý do thay đổi trạng thái (bắt buộc cho Audit Log)..."
+      />
+
+      {/* Logout All Dialog */}
       <ConfirmDialog
         isOpen={logoutAllDialog}
         onClose={() => setLogoutAllDialog(false)}
         onConfirm={handleLogoutAll}
-        title="Đăng xuất tất cả các phiên thiết bị"
-        message={`Thao tác này sẽ thu hồi toàn bộ ${activeSessionsCount} phiên đăng nhập đang hoạt động của học viên ${user.fullName}. Học viên sẽ phải đăng nhập lại trên mọi thiết bị.`}
-        severity="warning"
+        title="Đăng xuất tất cả các phiên"
+        message={`Hành động này sẽ vô hiệu hóa tất cả ${activeSessionsCount} phiên đang hoạt động của ${user.fullName}. Người dùng sẽ cần đăng nhập lại trên mọi thiết bị.`}
         confirmLabel="Đăng xuất tất cả"
-        requireReason={true}
-        scopeWarning="Tất cả token phiên đang lưu trên thiết bị của học viên sẽ bị vô hiệu hóa ngay lập tức."
+        severity="warning"
+        requireReason
+        reasonPlaceholder="Nhập lý do thu hồi phiên đăng nhập..."
       />
     </div>
   )

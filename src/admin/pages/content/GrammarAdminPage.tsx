@@ -1,89 +1,87 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Search, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
-import { DataToolbar } from '../../components/DataToolbar'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { GrammarModal } from '../../components/content/CreateGrammarDrawer'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
 import { AdminGrammarRule } from '../../types/admin'
-import { GrammarModal } from '../../components/content/CreateGrammarDrawer'
-import { FeedbackOverlay } from '../../components/FeedbackOverlay'
-import { cn } from '@/utils/cn'
 
 export const GrammarAdminPage: React.FC = () => {
-  const [grammar, setGrammar] = useState<AdminGrammarRule[]>([])
+  const [rules, setRules] = useState<AdminGrammarRule[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
-  // Sorting
-  const [sortColumn, setSortColumn] = useState<string>('title')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const [sortPreset, setSortPreset] = useState<string>('title_asc')
-
-  // Modal State (Create & Edit)
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRule, setEditingRule] = useState<AdminGrammarRule | null>(null)
-  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create')
+  const [selectedRule, setSelectedRule] = useState<AdminGrammarRule | null>(null)
 
-  // Delete Dialog State
+  // Delete State
   const [deletingRule, setDeletingRule] = useState<AdminGrammarRule | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Feedback State
+  // Feedback Toast
   const [feedback, setFeedback] = useState<{
-    type: 'success' | 'error' | null
+    type: 'success' | 'error'
     title: string
-    message?: string
-  }>({ type: null, title: '' })
+    message: string
+  } | null>(null)
 
-  const loadData = async () => {
+  // Sorting
+  const [sortColumn, setSortColumn] = useState<string>('order')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [sortPreset, setSortPreset] = useState<string>('custom')
+
+  useEffect(() => {
+    loadRules()
+  }, [])
+
+  const loadRules = async () => {
     try {
       setIsLoading(true)
       setError(null)
       const data = await adminService.getGrammar()
-      setGrammar(data)
+      setRules(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải kho ngữ pháp')
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách chủ điểm ngữ pháp')
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
   const handleOpenCreate = () => {
-    setEditingRule(null)
+    setSelectedRule(null)
+    setModalMode('create')
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = (item: AdminGrammarRule) => {
-    setEditingRule(item)
+  const handleOpenDetail = (rule: AdminGrammarRule) => {
+    setSelectedRule(rule)
+    setModalMode('view')
     setIsModalOpen(true)
   }
 
   const handleModalSuccess = (savedRule: AdminGrammarRule, isEdit: boolean) => {
     if (isEdit) {
-      setGrammar((prev) => prev.map((item) => (item.id === savedRule.id ? savedRule : item)))
+      setRules((prev) => prev.map((item) => (item.id === savedRule.id ? savedRule : item)))
       setFeedback({
         type: 'success',
         title: 'Cập nhật ngữ pháp thành công!',
-        message: `Chủ điểm "${savedRule.title}" (${savedRule.bandTarget}) đã được cập nhật thành công.`,
+        message: `Đã lưu các thay đổi cho cấu trúc "${savedRule.title}".`,
       })
     } else {
-      setGrammar((prev) => [savedRule, ...prev])
+      setRules((prev) => [savedRule, ...prev])
       setFeedback({
         type: 'success',
-        title: 'Thêm chủ điểm ngữ pháp thành công!',
-        message: `Ngữ pháp "${savedRule.title}" (${savedRule.bandTarget}) đã được lưu vào hệ thống.`,
+        title: 'Thêm ngữ pháp mới thành công!',
+        message: `Chủ điểm "${savedRule.title}" đã được lưu vào hệ thống.`,
       })
     }
-    setHighlightedId(savedRule.id)
-    setTimeout(() => setHighlightedId(null), 3000)
   }
 
   const handleModalError = (msg: string) => {
@@ -99,11 +97,11 @@ export const GrammarAdminPage: React.FC = () => {
     try {
       setIsDeleting(true)
       await adminService.deleteGrammar(deletingRule.id)
-      setGrammar((prev) => prev.filter((item) => item.id !== deletingRule.id))
+      setRules((prev) => prev.filter((item) => item.id !== deletingRule.id))
       setFeedback({
         type: 'success',
         title: 'Đã xóa chủ điểm ngữ pháp',
-        message: `Cấu trúc "${deletingRule.title}" đã được xóa khỏi hệ thống.`,
+        message: `Đã xóa "${deletingRule.title}" khỏi hệ thống.`,
       })
       setDeletingRule(null)
     } catch (err) {
@@ -117,32 +115,33 @@ export const GrammarAdminPage: React.FC = () => {
     }
   }
 
+  // Handle Reorder Up / Down
   const handleMoveOrder = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= grammar.length) return
+    if (targetIndex < 0 || targetIndex >= rules.length) return
 
-    const newGrammar = [...grammar]
-    const temp = newGrammar[index]
-    newGrammar[index] = newGrammar[targetIndex]
-    newGrammar[targetIndex] = temp
+    const newRules = [...rules]
+    const temp = newRules[index]
+    newRules[index] = newRules[targetIndex]
+    newRules[targetIndex] = temp
 
-    setGrammar(newGrammar)
+    setRules(newRules)
     setSortPreset('custom')
     try {
-      await adminService.reorderGrammar(newGrammar.map((g) => g.id))
+      await adminService.reorderGrammar(newRules.map((r) => r.id))
     } catch (e) {
-      console.warn('Reorder grammar error:', e)
+      console.warn('Reorder error:', e)
     }
   }
 
   const handleSort = (columnKey: string) => {
+    setSortPreset('column')
     if (sortColumn === columnKey) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortColumn(columnKey)
       setSortDirection('asc')
     }
-    setSortPreset('custom')
   }
 
   const handleSortPresetChange = (preset: string) => {
@@ -156,17 +155,17 @@ export const GrammarAdminPage: React.FC = () => {
         setSortColumn('title')
         setSortDirection('desc')
         break
-      case 'band_desc':
-        setSortColumn('bandTarget')
-        setSortDirection('desc')
-        break
-      case 'band_asc':
-        setSortColumn('bandTarget')
+      case 'category':
+        setSortColumn('category')
         setSortDirection('asc')
         break
       case 'newest':
         setSortColumn('updatedAt')
         setSortDirection('desc')
+        break
+      case 'oldest':
+        setSortColumn('updatedAt')
+        setSortDirection('asc')
         break
       default:
         break
@@ -174,12 +173,11 @@ export const GrammarAdminPage: React.FC = () => {
   }
 
   const sortedAndFiltered = useMemo(() => {
-    const filtered = grammar.filter(
-      (g) =>
-        g.title.toLowerCase().includes(search.toLowerCase()) ||
-        g.category.toLowerCase().includes(search.toLowerCase()) ||
-        g.explanation.toLowerCase().includes(search.toLowerCase()) ||
-        g.formula.toLowerCase().includes(search.toLowerCase())
+    const filtered = rules.filter(
+      (r) =>
+        r.title.toLowerCase().includes(search.toLowerCase()) ||
+        r.category.toLowerCase().includes(search.toLowerCase()) ||
+        r.explanation.toLowerCase().includes(search.toLowerCase())
     )
 
     if (sortPreset === 'custom') return filtered
@@ -190,8 +188,6 @@ export const GrammarAdminPage: React.FC = () => {
         cmp = a.title.localeCompare(b.title)
       } else if (sortColumn === 'category') {
         cmp = a.category.localeCompare(b.category)
-      } else if (sortColumn === 'bandTarget') {
-        cmp = a.bandTarget.localeCompare(b.bandTarget)
       } else if (sortColumn === 'status') {
         cmp = a.status.localeCompare(b.status)
       } else if (sortColumn === 'updatedAt') {
@@ -199,16 +195,16 @@ export const GrammarAdminPage: React.FC = () => {
       }
       return sortDirection === 'asc' ? cmp : -cmp
     })
-  }, [grammar, search, sortColumn, sortDirection, sortPreset])
+  }, [rules, search, sortColumn, sortDirection, sortPreset])
 
   const columns: Column<AdminGrammarRule>[] = [
     {
       key: 'order',
       header: 'Thứ tự',
-      width: '90px',
+      width: '80px',
       align: 'center',
       render: (_, index = 0) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           <span className="font-mono text-2xs text-[#68727D] w-5 text-right">{index + 1}</span>
           <div className="flex flex-col">
             <button
@@ -223,7 +219,7 @@ export const GrammarAdminPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleMoveOrder(index, 'down')}
-              disabled={index === grammar.length - 1}
+              disabled={index === rules.length - 1}
               className="p-0.5 text-slate-400 hover:text-[#28665F] disabled:opacity-20 hover:bg-slate-100 rounded"
               title="Đẩy xuống"
             >
@@ -235,30 +231,29 @@ export const GrammarAdminPage: React.FC = () => {
     },
     {
       key: 'title',
-      header: 'Chủ điểm & Công thức',
+      header: 'Chủ điểm ngữ pháp (Title)',
       sortable: true,
-      render: (g) => (
-        <div className={cn('transition-all duration-300', g.id === highlightedId && 'p-1 rounded-lg bg-emerald-50 text-emerald-900 ring-2 ring-emerald-300')}>
-          <div className="font-extrabold text-sm text-[#20272E]">{g.title}</div>
-          <div className="text-2xs font-mono text-[#28665F] bg-[#28665F]/5 p-1 rounded mt-1 border border-[#28665F]/10 inline-block max-w-md truncate">
-            {g.formula}
-          </div>
+      render: (r) => (
+        <div className="space-y-1">
+          <span className="font-bold text-sm text-[#20272E] block">{r.title}</span>
+          <span className="font-mono text-2xs text-[#28665F] bg-[#28665F]/10 px-2 py-0.5 rounded font-semibold inline-block">
+            {r.formula}
+          </span>
         </div>
       ),
     },
     {
       key: 'category',
-      header: 'Phân loại',
+      header: 'Nhóm chuyên đề',
       sortable: true,
-      render: (g) => <span className="text-xs font-semibold text-[#68727D]">{g.category}</span>,
+      render: (r) => <span className="text-xs font-semibold text-[#68727D]">{r.category}</span>,
     },
     {
       key: 'bandTarget',
       header: 'Mục tiêu Band',
-      sortable: true,
-      render: (g) => (
-        <span className="font-bold text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-          {g.bandTarget}
+      render: (r) => (
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+          {r.bandTarget}
         </span>
       ),
     },
@@ -266,32 +261,25 @@ export const GrammarAdminPage: React.FC = () => {
       key: 'status',
       header: 'Trạng thái',
       sortable: true,
-      render: (g) => <StatusBadge status={g.status} />,
+      render: (r) => <StatusBadge status={r.status} />,
     },
     {
       key: 'actions',
-      header: 'Thao tác',
-      align: 'right',
-      width: '120px',
-      render: (g) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleOpenEdit(g)}
-            className="p-1.5 text-slate-500 hover:text-[#28665F] hover:bg-[#28665F]/10 rounded-lg transition-colors"
-            title="Chỉnh sửa cấu trúc"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeletingRule(g)}
-            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-            title="Xóa cấu trúc"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+      header: '',
+      align: 'center',
+      width: '60px',
+      render: (r) => (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingRule(r)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa chủ điểm này"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       ),
     },
   ]
@@ -299,8 +287,8 @@ export const GrammarAdminPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Ngân hàng Ngữ pháp (Grammar Bank)"
-        subtitle="Hệ thống cấu trúc câu học thuật, công thức ngữ pháp Band 7.0 - 9.0 phục vụ Writing & Speaking"
+        title="Quản lý Ngữ pháp Học thuật (Grammar Hub)"
+        subtitle="Hệ thống quy tắc cấu trúc câu, đảo ngữ, câu chẻ và mệnh đề nâng cao. Nhấp vào hàng để xem chi tiết & chỉnh sửa"
         actions={
           <Button
             variant="primary"
@@ -309,47 +297,50 @@ export const GrammarAdminPage: React.FC = () => {
             className="font-bold shadow-xs"
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            Thêm chủ điểm mới
+            Thêm ngữ pháp mới
           </Button>
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-[#E3E7EB] shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <DataToolbar
-            searchPlaceholder="Tìm kiếm theo tên cấu trúc, nhóm hoặc công thức..."
-            searchValue={search}
-            onSearchChange={setSearch}
-            showFilterToggle={false}
-            className="flex-1"
-          />
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-semibold text-[#68727D] flex items-center gap-1">
-              <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
-            </span>
-            <select
-              value={sortPreset}
-              onChange={(e) => handleSortPresetChange(e.target.value)}
-              className="h-9.5 px-3 rounded-lg border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all cursor-pointer"
-            >
-              <option value="title_asc">Tên chủ điểm (A ➔ Z)</option>
-              <option value="title_desc">Tên chủ điểm (Z ➔ A)</option>
-              <option value="band_desc">Band điểm (Cao ➔ Thấp)</option>
-              <option value="band_asc">Band điểm (Thấp ➔ Cao)</option>
-              <option value="newest">Mới cập nhật nhất</option>
-              <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
-            </select>
-          </div>
+      {/* Search Toolbar & Sort Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <input
+            type="text"
+            placeholder="Tìm theo tên chủ điểm, công thức hoặc nhóm chuyên đề..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full text-xs sm:text-sm pl-9 pr-4 py-2 rounded-lg border border-[#E3E7EB] bg-[#F7F8FA] focus:bg-white focus:border-[#28665F] outline-none transition-all"
+          />
         </div>
 
-        <div className="flex items-center justify-between text-2xs text-[#68727D] pt-1 border-t border-slate-100">
-          <div>
-            Hiển thị <span className="font-bold text-[#20272E]">{sortedAndFiltered.length}</span> / {grammar.length} chủ điểm
-          </div>
-          <div className="text-right">
-            Nhấn vào tiêu đề cột để đảo chiều sắp xếp (Tăng/Giảm)
-          </div>
+        {/* Quick Sort Presets */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider flex items-center gap-1">
+            <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
+          </span>
+          <select
+            value={sortPreset}
+            onChange={(e) => handleSortPresetChange(e.target.value)}
+            className="text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 py-1.5 text-[#20272E] font-medium outline-none focus:border-[#28665F]"
+          >
+            <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
+            <option value="title_asc">Tên chủ điểm (A → Z)</option>
+            <option value="title_desc">Tên chủ điểm (Z → A)</option>
+            <option value="category">Nhóm chuyên đề</option>
+            <option value="newest">Mới cập nhật nhất</option>
+            <option value="oldest">Cũ nhất</option>
+          </select>
         </div>
       </div>
 
@@ -358,44 +349,38 @@ export const GrammarAdminPage: React.FC = () => {
         data={sortedAndFiltered}
         isLoading={isLoading}
         error={error}
-        onRetry={loadData}
-        keyExtractor={(g) => g.id}
+        onRowClick={handleOpenDetail}
         sortColumn={sortColumn}
         sortDirection={sortDirection}
         onSort={handleSort}
+        keyExtractor={(r) => r.id}
+        emptyTitle="Không tìm thấy chủ điểm ngữ pháp nào"
+        emptyDescription="Thử thay đổi từ khóa tìm kiếm hoặc bấm Thêm ngữ pháp mới."
       />
 
-      {/* Creation & Edit Window Modal */}
+      {/* Grammar Modal (Create, Edit & View Detail) */}
       <GrammarModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          setEditingRule(null)
+          setSelectedRule(null)
         }}
         onSuccess={handleModalSuccess}
         onError={handleModalError}
-        initialData={editingRule}
-        mode={editingRule ? 'edit' : 'create'}
+        initialData={selectedRule}
+        mode={modalMode}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={!!deletingRule}
         onClose={() => setDeletingRule(null)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa chủ điểm ngữ pháp"
-        message={`Bạn có chắc chắn muốn xóa chủ điểm "${deletingRule?.title}" (${deletingRule?.bandTarget}) khỏi hệ thống? Thao tác này sẽ xóa vĩnh viễn và không thể hoàn tác.`}
+        message={`Bạn có chắc chắn muốn xóa chủ điểm "${deletingRule?.title}" không? Hành động này không thể hoàn tác.`}
         confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
         severity="danger"
-      />
-
-      {/* Feedback Overlay */}
-      <FeedbackOverlay
-        type={feedback.type}
-        animationType={feedback.type === 'success' ? 'data_saved' : 'error_feedback'}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback({ type: null, title: '' })}
       />
     </div>
   )

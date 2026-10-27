@@ -9,6 +9,7 @@ interface SideDrawerProps {
   children: ReactNode
   footer?: ReactNode
   width?: string
+  badge?: ReactNode
 }
 
 export const SideDrawer: React.FC<SideDrawerProps> = ({
@@ -19,6 +20,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   children,
   footer,
   width = 'max-w-md',
+  badge,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,9 +46,12 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         <div className={`w-screen ${width} bg-white shadow-2xl border-l border-[#E3E7EB] flex flex-col justify-between animate-in slide-in-from-right duration-250`}>
           {/* Header */}
           <div className="p-5 border-b border-[#E3E7EB] flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-base font-bold text-[#20272E]">{title}</h3>
-              {subtitle && <p className="text-xs text-[#68727D] mt-0.5">{subtitle}</p>}
+            <div className="flex items-center gap-2.5">
+              <div>
+                <h3 className="text-base font-bold text-[#20272E]">{title}</h3>
+                {subtitle && <p className="text-xs text-[#68727D] mt-0.5">{subtitle}</p>}
+              </div>
+              {badge}
             </div>
             <button
               type="button"

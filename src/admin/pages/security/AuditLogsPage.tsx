@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Eye } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { DataToolbar } from '../../components/DataToolbar'
 import { FilterPanel } from '../../components/FilterPanel'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { SideDrawer } from '../../components/SideDrawer'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { adminService } from '../../services/adminService'
 import { AdminAuditLog } from '../../types/admin'
 
@@ -14,13 +16,27 @@ export const AuditLogsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filters
   const [search, setSearch] = useState('')
-  const [moduleFilter, setModuleFilter] = useState('all')
+  const [resourceFilter, setResourceFilter] = useState('all')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  // Selected log for SideDrawer inspection
+  // Drawer detail
   const [selectedLog, setSelectedLog] = useState<AdminAuditLog | null>(null)
+
+  // Delete State
+  const [deletingLog, setDeletingLog] = useState<AdminAuditLog | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Feedback State
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    title: string
+    message: string
+  } | null>(null)
+
+  useEffect(() => {
+    loadLogs()
+  }, [])
 
   const loadLogs = async () => {
     try {
@@ -35,48 +51,76 @@ export const AuditLogsPage: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    loadLogs()
-  }, [])
+  const handleConfirmDelete = async () => {
+    if (!deletingLog) return
+    try {
+      setIsDeleting(true)
+      await adminService.deleteAuditLog(deletingLog.id)
+      setLogs((prev) => prev.filter((item) => item.id !== deletingLog.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa bản ghi kiểm toán',
+        message: `Đã xóa nhật ký hành động #${deletingLog.id} khỏi hệ thống.`,
+      })
+      setDeletingLog(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa bản ghi thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa nhật ký',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
-  const filtered = useMemo(() => {
-    return logs.filter((l) => {
-      const matchSearch =
-        l.actorName.toLowerCase().includes(search.toLowerCase()) ||
-        l.targetName.toLowerCase().includes(search.toLowerCase()) ||
-        l.actionLabel.toLowerCase().includes(search.toLowerCase()) ||
-        l.ipAddress.includes(search)
-
-      const matchModule = moduleFilter === 'all' || l.module === moduleFilter
-
-      return matchSearch && matchModule
-    })
-  }, [logs, search, moduleFilter])
+  const filtered = logs.filter((l) => {
+    const matchesSearch =
+      l.actorName.toLowerCase().includes(search.toLowerCase()) ||
+      l.action.toLowerCase().includes(search.toLowerCase()) ||
+      l.targetName.toLowerCase().includes(search.toLowerCase()) ||
+      l.id.toLowerCase().includes(search.toLowerCase())
+    const matchesResource = resourceFilter === 'all' || l.module === resourceFilter
+    return matchesSearch && matchesResource
+  })
 
   const columns: Column<AdminAuditLog>[] = [
     {
       key: 'timestamp',
-      header: 'Thời gian',
-      render: (l) => <span className="font-mono text-xs text-[#20272E]">{l.timestamp}</span>,
-    },
-    {
-      key: 'actorName',
-      header: 'Tác nhân thực hiện',
+      header: 'Thời điểm & Mã log',
       render: (l) => (
         <div>
-          <span className="font-bold text-xs text-[#20272E]">{l.actorName}</span>
-          <div className="text-2xs text-[#68727D] font-mono">IP: {l.ipAddress}</div>
+          <span className="font-semibold text-xs sm:text-sm text-[#20272E] block">{l.timestamp}</span>
+          <span className="font-mono text-2xs text-[#68727D]">{l.id}</span>
         </div>
       ),
     },
     {
-      key: 'actionLabel',
-      header: 'Hành động',
+      key: 'actor',
+      header: 'Người thực hiện (Actor)',
       render: (l) => (
         <div>
-          <span className="font-semibold text-xs text-[#20272E]">{l.actionLabel}</span>
-          <div className="text-2xs text-[#28665F] font-mono uppercase">{l.module}</div>
+          <span className="font-semibold text-xs text-[#20272E] block">{l.actorName}</span>
+          <span className="text-2xs text-[#68727D]">IP: {l.ipAddress}</span>
         </div>
+      ),
+    },
+    {
+      key: 'action',
+      header: 'Hành động',
+      render: (l) => (
+        <span className="font-mono text-xs font-bold text-[#28665F] bg-[#EAF3F1] px-2 py-0.5 rounded">
+          {l.action}
+        </span>
+      ),
+    },
+    {
+      key: 'module',
+      header: 'Phân hệ (Module)',
+      render: (l) => (
+        <span className="text-2xs font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+          {l.module}
+        </span>
       ),
     },
     {
@@ -95,16 +139,20 @@ export const AuditLogsPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Chi tiết',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (l) => (
         <button
           type="button"
-          onClick={() => setSelectedLog(l)}
-          className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-          title="Xem chi tiết kiểm toán"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingLog(l)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa bản ghi kiểm toán này"
         >
-          <Eye className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
       ),
     },
@@ -113,38 +161,43 @@ export const AuditLogsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Nhật ký Kiểm toán Hệ thống (Audit Logs)"
-        subtitle={`Lưu trữ toàn vẹn và bất biến mọi thao tác quản trị, phân quyền, cấu hình và bảo mật (${filtered.length} bản ghi)`}
-        actions={
-          <span className="text-2xs text-[#68727D] bg-white border border-[#E3E7EB] px-3 py-1.5 rounded-lg font-medium">
-            Mặc định chỉ đọc (Read-only Compliance)
-          </span>
-        }
+        title="Nhật ký Hoạt động Quản trị (Audit Trail)"
+        subtitle={`Lưu trữ bất biến lịch sử các thao tác thay đổi dữ liệu của Admin (${filtered.length} bản ghi). Nhấp vào hàng để xem chi tiết`}
       />
 
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       <DataToolbar
-        searchPlaceholder="Tìm theo admin, đối tượng hoặc IP..."
+        searchPlaceholder="Tìm theo người thực hiện, hành động, ID..."
         searchValue={search}
         onSearchChange={setSearch}
         isFilterOpen={isFilterOpen}
         onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        activeFilterCount={moduleFilter !== 'all' ? 1 : 0}
+        activeFilterCount={resourceFilter !== 'all' ? 1 : 0}
       />
 
-      <FilterPanel isOpen={isFilterOpen} onReset={() => setModuleFilter('all')}>
+      <FilterPanel isOpen={isFilterOpen} onReset={() => setResourceFilter('all')}>
         <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Module nghiệp vụ</label>
+          <label className="text-2xs font-bold text-[#20272E] block mb-1">Loại tài nguyên</label>
           <select
-            value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
+            value={resourceFilter}
+            onChange={(e) => setResourceFilter(e.target.value)}
             className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
           >
-            <option value="all">Tất cả module</option>
-            <option value="users">Người dùng (Users)</option>
-            <option value="sessions">Phiên đăng nhập (Sessions)</option>
-            <option value="content">Nội dung & Bài học (Content)</option>
-            <option value="settings">Cài đặt (Settings)</option>
-            <option value="ai">AI & Tác vụ</option>
+            <option value="all">Tất cả tài nguyên</option>
+            <option value="user">Người dùng (User)</option>
+            <option value="session">Phiên đăng nhập (Session)</option>
+            <option value="role">Vai trò (Role)</option>
+            <option value="module">Học phần (Module)</option>
+            <option value="assessment">Đề thi (Assessment)</option>
+            <option value="settings">Cấu hình (Settings)</option>
           </select>
         </div>
       </FilterPanel>
@@ -155,69 +208,64 @@ export const AuditLogsPage: React.FC = () => {
         isLoading={isLoading}
         error={error}
         onRetry={loadLogs}
-        keyExtractor={(l) => l.id}
         onRowClick={(l) => setSelectedLog(l)}
+        keyExtractor={(l) => l.id}
       />
 
-      {/* SideDrawer for inspecting before/after diffs */}
+      {/* Delete Audit Log Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletingLog}
+        onClose={() => setDeletingLog(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa bản ghi kiểm toán"
+        message={`Bạn có chắc chắn muốn xóa bản ghi kiểm toán #${deletingLog?.id} (${deletingLog?.action}) không? Hành động này sẽ gỡ bỏ bản ghi khỏi nhật ký truy vết.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
+      />
+
+      {/* Detail Drawer */}
       <SideDrawer
         isOpen={!!selectedLog}
         onClose={() => setSelectedLog(null)}
-        title="Chi tiết Nhật ký Kiểm toán"
-        subtitle={selectedLog?.id}
+        title="Chi tiết sự kiện kiểm toán"
+        badge={selectedLog ? <StatusBadge status={selectedLog.status} /> : undefined}
       >
         {selectedLog && (
           <div className="space-y-4 text-xs">
             <div>
-              <span className="text-[#68727D] block mb-1">Thời gian thực hiện</span>
-              <strong className="text-sm text-[#20272E]">{selectedLog.timestamp}</strong>
+              <span className="text-[#68727D] block mb-1">Mã định danh (Log ID)</span>
+              <span className="font-mono text-[#20272E] bg-[#F7F8FA] p-2 rounded block">
+                {selectedLog.id}
+              </span>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Admin thao tác</span>
-              <div className="font-semibold text-sm text-[#20272E]">{selectedLog.actorName}</div>
-              <span className="text-2xs font-mono text-[#68727D]">Vai trò: {selectedLog.actorRole}</span>
+              <span className="text-[#68727D] block mb-1">Thời gian ghi nhận</span>
+              <span className="text-[#20272E]">{selectedLog.timestamp}</span>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Hành động thực hiện</span>
-              <span className="font-bold text-sm text-[#28665F]">{selectedLog.actionLabel}</span>
-              <div className="text-2xs text-[#68727D] font-mono mt-0.5">Module: {selectedLog.module}</div>
+              <span className="text-[#68727D] block mb-1">Người thực hiện</span>
+              <strong className="text-sm text-[#20272E]">{selectedLog.actorName}</strong>
+              <span className="text-2xs text-[#68727D] block">IP: {selectedLog.ipAddress}</span>
             </div>
             <div>
-              <span className="text-[#68727D] block mb-1">Đối tượng bị tác động</span>
-              <div className="p-2.5 rounded-lg bg-[#F7F8FA] border border-[#E3E7EB] font-medium text-[#20272E]">
-                {selectedLog.targetName}
-                <div className="text-2xs text-[#68727D] font-mono mt-0.5">ID: {selectedLog.targetId}</div>
-              </div>
+              <span className="text-[#68727D] block mb-1">Hành động thực thi</span>
+              <span className="font-mono font-bold text-[#28665F] bg-[#EAF3F1] px-2 py-0.5 rounded">
+                {selectedLog.action}
+              </span>
+            </div>
+            <div>
+              <span className="text-[#68727D] block mb-1">Phân hệ & Đối tượng</span>
+              <span className="text-[#20272E] capitalize font-medium">
+                {selectedLog.module}: {selectedLog.targetName}
+              </span>
             </div>
             {selectedLog.reason && (
-              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg">
-                <span className="font-bold text-amber-900 block mb-0.5">Lý do ghi nhận:</span>
-                <span className="text-amber-800 leading-relaxed">{selectedLog.reason}</span>
-              </div>
-            )}
-            <div>
-              <span className="text-[#68727D] block mb-1">Địa chỉ IP máy chủ / Client</span>
-              <strong className="font-mono text-[#20272E]">{selectedLog.ipAddress}</strong>
-            </div>
-
-            {/* Before / After State Diff */}
-            {(selectedLog.beforeState || selectedLog.afterState) && (
-              <div className="space-y-2 pt-2 border-t border-[#E3E7EB]">
-                <span className="font-bold text-[#20272E] block">Biến động dữ liệu (State Changes):</span>
-                <div className="grid grid-cols-2 gap-2 text-2xs">
-                  <div className="p-2 rounded bg-rose-50 border border-rose-200">
-                    <span className="font-bold text-rose-800 block mb-1">Trước khi sửa:</span>
-                    <pre className="font-mono text-rose-700 whitespace-pre-wrap">
-                      {JSON.stringify(selectedLog.beforeState, null, 2)}
-                    </pre>
-                  </div>
-                  <div className="p-2 rounded bg-emerald-50 border border-emerald-200">
-                    <span className="font-bold text-emerald-800 block mb-1">Sau khi sửa:</span>
-                    <pre className="font-mono text-emerald-700 whitespace-pre-wrap">
-                      {JSON.stringify(selectedLog.afterState, null, 2)}
-                    </pre>
-                  </div>
-                </div>
+              <div>
+                <span className="text-[#68727D] block mb-1">Lý do & Ghi chú</span>
+                <p className="p-3 bg-[#F7F8FA] border border-[#E3E7EB] rounded-lg text-[#20272E] leading-relaxed">
+                  {selectedLog.reason}
+                </p>
               </div>
             )}
           </div>

@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Plus } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Search, Trash2, SlidersHorizontal, BookOpen, Layers } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
-import { DataToolbar } from '../../components/DataToolbar'
-import { FilterPanel } from '../../components/FilterPanel'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
-import { AdminQuestion } from '../../types/admin'
+import { AdminQuestion, ContentSkill, QuestionType } from '../../types/admin'
 
 export const QuestionBankPage: React.FC = () => {
   const navigate = useNavigate()
@@ -16,24 +16,24 @@ export const QuestionBankPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filters
   const [search, setSearch] = useState('')
-  const [skillFilter, setSkillFilter] = useState('all')
-  const [diffFilter, setDiffFilter] = useState('all')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [skillFilter, setSkillFilter] = useState<ContentSkill | 'all'>('all')
+  const [typeFilter, setTypeFilter] = useState<QuestionType | 'all'>('all')
 
-  // Sorting
-  const [sortColumn, setSortColumn] = useState<string>('code')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  // Delete State
+  const [deletingQuestion, setDeletingQuestion] = useState<AdminQuestion | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleSort = (key: string) => {
-    if (sortColumn === key) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortColumn(key)
-      setSortDirection('asc')
-    }
-  }
+  // Feedback State
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    title: string
+    message: string
+  } | null>(null)
+
+  useEffect(() => {
+    loadQuestions()
+  }, [])
 
   const loadQuestions = async () => {
     try {
@@ -48,49 +48,57 @@ export const QuestionBankPage: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    loadQuestions()
-  }, [])
+  const handleConfirmDelete = async () => {
+    if (!deletingQuestion) return
+    try {
+      setIsDeleting(true)
+      await adminService.deleteQuestion(deletingQuestion.id)
+      setQuestions((prev) => prev.filter((item) => item.id !== deletingQuestion.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa câu hỏi thành công',
+        message: `Đã xóa câu hỏi mã "${deletingQuestion.code}" khỏi ngân hàng đề.`,
+      })
+      setDeletingQuestion(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa câu hỏi thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa câu hỏi',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
-  const filtered = useMemo(() => {
-    const list = questions.filter((q) => {
-      const matchSearch =
-        q.prompt.toLowerCase().includes(search.toLowerCase()) ||
-        q.code.toLowerCase().includes(search.toLowerCase())
-
-      const matchSkill = skillFilter === 'all' || q.skill === skillFilter
-      const matchDiff = diffFilter === 'all' || q.difficulty === diffFilter
-
-      return matchSearch && matchSkill && matchDiff
-    })
-
-    return [...list].sort((a, b) => {
-      let cmp = 0
-      if (sortColumn === 'code') cmp = a.code.localeCompare(b.code)
-      else if (sortColumn === 'skill') cmp = a.skill.localeCompare(b.skill)
-      else if (sortColumn === 'difficulty') cmp = a.difficulty.localeCompare(b.difficulty)
-      else if (sortColumn === 'status') cmp = a.status.localeCompare(b.status)
-      return sortDirection === 'asc' ? cmp : -cmp
-    })
-  }, [questions, search, skillFilter, diffFilter, sortColumn, sortDirection])
+  const filtered = questions.filter((q) => {
+    const matchesSearch =
+      q.code.toLowerCase().includes(search.toLowerCase()) ||
+      q.prompt.toLowerCase().includes(search.toLowerCase())
+    const matchesSkill = skillFilter === 'all' || q.skill === skillFilter
+    const matchesType = typeFilter === 'all' || q.type === typeFilter
+    return matchesSearch && matchesSkill && matchesType
+  })
 
   const columns: Column<AdminQuestion>[] = [
     {
       key: 'code',
       header: 'Mã câu hỏi',
-      width: '130px',
-      sortable: true,
-      render: (q) => <span className="font-mono font-bold text-xs text-[#28665F]">{q.code}</span>,
+      render: (q) => (
+        <span className="font-mono text-xs font-bold text-[#20272E] bg-slate-100 px-2 py-0.5 rounded">
+          {q.code}
+        </span>
+      ),
     },
     {
       key: 'prompt',
       header: 'Nội dung câu hỏi',
       render: (q) => (
-        <div>
-          <div className="font-medium text-xs text-[#20272E] max-w-md line-clamp-2">{q.prompt}</div>
-          <div className="text-2xs text-[#68727D] mt-0.5">
-            Dạng bài: <span className="font-semibold text-[#20272E]">{q.type}</span>
-          </div>
+        <div className="space-y-0.5 max-w-md">
+          <p className="font-medium text-xs sm:text-sm text-[#20272E] line-clamp-2">{q.prompt}</p>
+          {q.passageSnippet && (
+            <p className="text-2xs text-[#68727D] italic line-clamp-1">Trích đoạn: &ldquo;{q.passageSnippet}&rdquo;</p>
+          )}
         </div>
       ),
     },
@@ -98,10 +106,15 @@ export const QuestionBankPage: React.FC = () => {
       key: 'skill',
       header: 'Kỹ năng',
       render: (q) => (
-        <span className="capitalize text-xs font-semibold px-2 py-0.5 rounded bg-[#F7F8FA] border border-[#E3E7EB]">
+        <span className="capitalize text-2xs font-bold px-2 py-0.5 rounded-full bg-[#28665F]/10 text-[#28665F] border border-[#28665F]/20">
           {q.skill}
         </span>
       ),
+    },
+    {
+      key: 'type',
+      header: 'Dạng bài',
+      render: (q) => <span className="text-xs text-[#68727D] font-medium">{q.type}</span>,
     },
     {
       key: 'difficulty',
@@ -132,16 +145,20 @@ export const QuestionBankPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Chi tiết',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (q) => (
         <button
           type="button"
-          onClick={() => navigate(`/admin/question-bank/${q.id}`)}
-          className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-          title="Xem chi tiết câu hỏi"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingQuestion(q)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa câu hỏi này"
         >
-          <Eye className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
       ),
     },
@@ -151,7 +168,7 @@ export const QuestionBankPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Ngân hàng Câu hỏi Tập trung (Item Bank)"
-        subtitle={`Quản lý toàn bộ câu hỏi tái sử dụng trong bài luyện, placement test và mock test (${filtered.length} câu)`}
+        subtitle={`Quản lý toàn bộ câu hỏi tái sử dụng trong bài luyện, placement test và mock test (${filtered.length} câu). Nhấp vào hàng để xem chi tiết & chỉnh sửa`}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -161,34 +178,39 @@ export const QuestionBankPage: React.FC = () => {
               className="font-bold shadow-xs"
               leftIcon={<Plus className="w-4 h-4" />}
             >
-              Question Set Builder (Nhập hàng loạt)
+              Question Set Builder
             </Button>
           </div>
         }
       />
 
-      <DataToolbar
-        searchPlaceholder="Tìm theo mã câu hỏi hoặc từ khóa trong đề..."
-        searchValue={search}
-        onSearchChange={setSearch}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        activeFilterCount={(skillFilter !== 'all' ? 1 : 0) + (diffFilter !== 'all' ? 1 : 0)}
-      />
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
-      <FilterPanel
-        isOpen={isFilterOpen}
-        onReset={() => {
-          setSkillFilter('all')
-          setDiffFilter('all')
-        }}
-      >
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Kỹ năng</label>
+      {/* Filters Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <input
+            type="text"
+            placeholder="Tìm theo mã câu hỏi hoặc từ khóa nội dung..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full text-xs sm:text-sm pl-9 pr-4 py-2 rounded-lg border border-[#E3E7EB] bg-[#F7F8FA] focus:bg-white focus:border-[#28665F] outline-none transition-all"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
           <select
             value={skillFilter}
-            onChange={(e) => setSkillFilter(e.target.value)}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
+            onChange={(e) => setSkillFilter(e.target.value as any)}
+            className="text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 py-1.5 text-[#20272E] font-medium outline-none focus:border-[#28665F]"
           >
             <option value="all">Tất cả kỹ năng</option>
             <option value="listening">Listening</option>
@@ -196,34 +218,43 @@ export const QuestionBankPage: React.FC = () => {
             <option value="writing">Writing</option>
             <option value="speaking">Speaking</option>
           </select>
-        </div>
 
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Độ khó</label>
           <select
-            value={diffFilter}
-            onChange={(e) => setDiffFilter(e.target.value)}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            className="text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 py-1.5 text-[#20272E] font-medium outline-none focus:border-[#28665F]"
           >
-            <option value="all">Tất cả độ khó</option>
-            <option value="easy">Easy (Band 5.0 - 6.0)</option>
-            <option value="medium">Medium (Band 6.5 - 7.5)</option>
-            <option value="hard">Hard (Band 8.0+)</option>
+            <option value="all">Tất cả dạng bài</option>
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="matching">Matching</option>
+            <option value="fill_in_the_blank">Fill in Blank</option>
+            <option value="essay">Essay</option>
+            <option value="cue_card">Speaking Cue Card</option>
           </select>
         </div>
-      </FilterPanel>
+      </div>
 
       <DataTable
         columns={columns}
         data={filtered}
         isLoading={isLoading}
         error={error}
-        onRetry={loadQuestions}
-        keyExtractor={(q) => q.id}
         onRowClick={(q) => navigate(`/admin/question-bank/${q.id}`)}
-        sortColumn={sortColumn}
-        sortDirection={sortDirection}
-        onSort={handleSort}
+        keyExtractor={(q) => q.id}
+        emptyTitle="Không tìm thấy câu hỏi nào"
+        emptyDescription="Thử thay đổi từ khóa tìm kiếm hoặc lọc theo kỹ năng khác."
+      />
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletingQuestion}
+        onClose={() => setDeletingQuestion(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa câu hỏi"
+        message={`Bạn có chắc chắn muốn xóa câu hỏi mã "${deletingQuestion?.code}" không? Hành động này sẽ gỡ bỏ câu hỏi khỏi ngân hàng đề.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
       />
     </div>
   )

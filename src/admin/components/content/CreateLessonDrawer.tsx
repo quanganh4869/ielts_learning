@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Sparkles, Save, BookOpen } from 'lucide-react'
+import { Sparkles, Save, BookOpen, Edit2 } from 'lucide-react'
 import { AdminModal } from '../AdminModal'
 import { FormField } from '../FormField'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { Button } from '@/components/common/Button'
+import { StatusBadge } from '../StatusBadge'
 import { AdminLesson, AdminModule, ContentSkill, ContentStatus } from '../../types/admin'
 import { adminService } from '../../services/adminService'
 import { cn } from '@/utils/cn'
@@ -13,7 +15,7 @@ export interface LessonModalProps {
   onSuccess: (lesson: AdminLesson, isEdit: boolean) => void
   onError: (errorMessage: string) => void
   initialData?: AdminLesson | null
-  mode?: 'create' | 'edit'
+  mode?: 'create' | 'edit' | 'view'
 }
 
 export const LessonModal: React.FC<LessonModalProps> = ({
@@ -24,7 +26,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   initialData,
   mode = 'create',
 }) => {
-  const isEdit = mode === 'edit' || !!initialData
+  const [currentMode, setCurrentMode] = useState<'create' | 'edit' | 'view'>(mode)
 
   const [title, setTitle] = useState('')
   const [moduleId, setModuleId] = useState('')
@@ -41,6 +43,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [hasShake, setHasShake] = useState(false)
+  const [isConfirmSaveOpen, setIsConfirmSaveOpen] = useState(false)
+
+  useEffect(() => {
+    setCurrentMode(mode)
+  }, [mode, isOpen])
 
   useEffect(() => {
     adminService.getModules().then((list) => {
@@ -58,8 +65,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
       setSkill(initialData.skill || 'reading')
       setLevel(initialData.level || 'Band 6.0 - 7.0')
       setEstimatedMinutes(initialData.estimatedMinutes || 30)
-      setHasAudio(!!initialData.hasAudio)
-      setHasPassage(!!initialData.hasPassage)
+      setHasAudio(initialData.hasAudio || false)
+      setHasPassage(initialData.hasPassage || false)
       setQuestionCount(initialData.questionCount || 5)
       setContentSummary(initialData.contentSummary || '')
       setStatus(initialData.status || 'published')
@@ -81,8 +88,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
   const validate = (): boolean => {
     const errs: Record<string, string> = {}
     if (!title.trim()) errs.title = 'Tên bài học không được để trống.'
-    if (!moduleId) errs.moduleId = 'Vui lòng chọn module trực thuộc.'
-    if (estimatedMinutes < 5) errs.estimatedMinutes = 'Thời lượng học tối thiểu là 5 phút.'
+    if (!moduleId) errs.moduleId = 'Vui lòng chọn học phần trực thuộc.'
+    if (estimatedMinutes <= 0) errs.estimatedMinutes = 'Thời lượng học phải lớn hơn 0.'
 
     setErrors(errs)
     if (Object.keys(errs).length > 0) {
@@ -93,48 +100,55 @@ export const LessonModal: React.FC<LessonModalProps> = ({
     return true
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRequestSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) {
-      onError('Vui lòng kiểm tra lại thông tin bài học.')
+      onError('Vui lòng kiểm tra lại các trường bài học.')
       return
     }
 
-    setIsSubmitting(true)
-    const selectedMod = modules.find((m) => m.id === moduleId)
+    if (currentMode === 'edit') {
+      setIsConfirmSaveOpen(true)
+    } else {
+      executeSave()
+    }
+  }
 
+  const executeSave = async () => {
+    setIsSubmitting(true)
     try {
-      if (isEdit && initialData) {
+      if (currentMode === 'edit' && initialData) {
         const updated = await adminService.updateLesson(initialData.id, {
           title: title.trim(),
           moduleId,
-          moduleTitle: selectedMod?.title || initialData.moduleTitle,
           skill,
           level,
-          estimatedMinutes: Number(estimatedMinutes),
+          estimatedMinutes,
           hasAudio,
           hasPassage,
-          questionCount: Number(questionCount),
+          questionCount,
           contentSummary: contentSummary.trim(),
           status,
         })
         onSuccess(updated, true)
       } else {
+        const modTitle = modules.find((m) => m.id === moduleId)?.title || ''
         const created = await adminService.createLesson({
           title: title.trim(),
           moduleId,
-          moduleTitle: selectedMod?.title || 'Chủ đề IELTS',
+          moduleTitle: modTitle,
           skill,
           level,
-          estimatedMinutes: Number(estimatedMinutes),
+          estimatedMinutes,
           hasAudio,
           hasPassage,
-          questionCount: Number(questionCount),
+          questionCount,
           contentSummary: contentSummary.trim(),
           status,
         })
         onSuccess(created, false)
       }
+      setIsConfirmSaveOpen(false)
       onClose()
     } catch (err) {
       setHasShake(true)
@@ -145,186 +159,215 @@ export const LessonModal: React.FC<LessonModalProps> = ({
     }
   }
 
+  const isView = currentMode === 'view'
+  const isEdit = currentMode === 'edit'
+  const currentModuleName = modules.find((m) => m.id === (initialData?.moduleId || moduleId))?.title || 'Chưa gắn module'
+
   return (
-    <AdminModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEdit ? `Chỉnh sửa bài học: ${initialData?.title || title}` : 'Soạn Bài Học Mới'}
-      subtitle={isEdit ? 'Chỉnh sửa tài liệu đọc, audio, số lượng câu hỏi và thời lượng' : 'Thiết lập giáo trình bài giảng tương tác và kết nối bài tập thực hành'}
-      icon={<BookOpen className="w-5 h-5" />}
-      badge={{
-        text: isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
-        variant: isEdit ? 'amber' : 'teal',
-      }}
-      maxWidth="max-w-2xl"
-      footer={
-        <>
-          <div className="text-xs text-[#68727D] hidden sm:block">
-            {isEdit ? `Mã bài học: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
-          </div>
-          <div className="flex items-center gap-2.5 ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleSubmit}
-              isLoading={isSubmitting}
-              className="font-bold shadow-xs"
-              leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-            >
-              {isEdit ? 'Lưu thay đổi' : 'Lưu bài học'}
-            </Button>
-          </div>
-        </>
-      }
-    >
-      <form onSubmit={handleSubmit} className={cn('space-y-4', hasShake && 'animate-shake')}>
-        <FormField
-          label="Tên bài giảng / Bài học (*)"
-          required
-          error={errors.title}
-          helperText="Ví dụ: Skimming & Scanning Foundation, Dealing with Heading Traps..."
-        >
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nhập tiêu đề bài học..."
-            className={cn(
-              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm text-[#20272E] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
-              errors.title ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
+    <>
+      <AdminModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={
+          isView
+            ? `Chi tiết bài học: ${initialData?.title || title}`
+            : isEdit
+            ? `Chỉnh sửa bài học: ${initialData?.title || title}`
+            : 'Thêm bài học mới (Curriculum Lesson)'
+        }
+        subtitle={
+          isView
+            ? 'Xem thông tin nội dung bài học và nhấn "Chỉnh sửa" nếu muốn cập nhật'
+            : isEdit
+            ? 'Chỉnh sửa tài liệu đọc, bài tập thực hành và cấu hình bài học'
+            : 'Tạo bài học chi tiết với tài liệu nghe/đọc, câu hỏi thực hành và lý thuyết trọng tâm'
+        }
+        icon={<BookOpen className="w-5 h-5" />}
+        badge={{
+          text: isView ? 'Xem chi tiết' : isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
+          variant: isView ? 'blue' : isEdit ? 'amber' : 'teal',
+        }}
+        maxWidth="max-w-2xl"
+        footer={
+          isView ? (
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs text-[#68727D]">Mã bài học: #{initialData?.id}</span>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                  Đóng
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setCurrentMode('edit')}
+                  leftIcon={<Edit2 className="w-4 h-4" />}
+                >
+                  Chỉnh sửa bài học này
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-xs text-[#68727D] hidden sm:block">
+                {isEdit ? `Đang chỉnh sửa mã: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
+              </div>
+              <div className="flex items-center gap-2.5 ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (isEdit && initialData) setCurrentMode('view')
+                    else onClose()
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isEdit ? 'Quay lại xem' : 'Hủy bỏ'}
+                </Button>
+                <Button
+                  type="submit"
+                  form="lesson-form"
+                  variant="primary"
+                  size="sm"
+                  isLoading={isSubmitting}
+                  leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                >
+                  {isEdit ? 'Lưu thay đổi' : 'Tạo bài học'}
+                </Button>
+              </div>
+            </>
+          )
+        }
+      >
+        {isView && initialData ? (
+          <div className="p-6 space-y-5">
+            <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-[#E3E7EB]">
+              <div>
+                <h2 className="text-xl font-black text-[#20272E]">{initialData.title}</h2>
+                <p className="text-xs text-[#68727D] font-medium mt-1">
+                  Học phần: <span className="font-bold text-[#20272E]">{currentModuleName}</span>
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#28665F]/10 text-[#28665F] uppercase border border-[#28665F]/20">
+                    {initialData.skill}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    {initialData.level}
+                  </span>
+                  <span className="text-xs text-[#68727D] font-medium">
+                    {initialData.estimatedMinutes} phút • {initialData.questionCount} câu hỏi
+                  </span>
+                </div>
+              </div>
+              <StatusBadge status={initialData.status} />
+            </div>
+
+            {initialData.contentSummary && (
+              <div>
+                <h4 className="text-xs font-bold uppercase text-[#68727D] tracking-wider mb-1">
+                  Tóm tắt nội dung lý thuyết
+                </h4>
+                <div className="p-4 rounded-xl bg-white border border-[#E3E7EB] text-xs sm:text-sm text-[#20272E] leading-relaxed">
+                  {initialData.contentSummary}
+                </div>
+              </div>
             )}
-          />
-        </FormField>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label="Thuộc Module / Chủ đề (*)" required error={errors.moduleId}>
-            <select
-              value={moduleId}
-              onChange={(e) => setModuleId(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-semibold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            >
-              {modules.map((m) => (
-                <option key={m.id} value={m.id}>
-                  [{m.skill.toUpperCase()}] {m.title}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          <FormField label="Kỹ năng trọng tâm (*)">
-            <select
-              value={skill}
-              onChange={(e) => setSkill(e.target.value as ContentSkill)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            >
-              <option value="listening">Listening (Kỹ năng Nghe)</option>
-              <option value="reading">Reading (Kỹ năng Đọc)</option>
-              <option value="writing">Writing (Kỹ năng Viết)</option>
-              <option value="speaking">Speaking (Kỹ năng Nói)</option>
-              <option value="vocabulary">Vocabulary (Kho Từ vựng)</option>
-              <option value="grammar">Grammar (Hệ Ngữ pháp)</option>
-            </select>
-          </FormField>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <FormField label="Trình độ mục tiêu">
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            >
-              <option value="Foundation (Band 4.0 - 5.0)">Foundation (Band 4.0 - 5.0)</option>
-              <option value="Band 5.0 - 6.0">Intermediate (Band 5.0 - 6.0)</option>
-              <option value="Band 6.0 - 7.0">Advanced (Band 6.0 - 7.0)</option>
-              <option value="Band 7.5 - 9.0">Mastery (Band 7.5 - 9.0)</option>
-            </select>
-          </FormField>
-
-          <FormField label="Thời lượng dự kiến (*)" error={errors.estimatedMinutes}>
-            <div className="relative">
+          </div>
+        ) : (
+          <form
+            id="lesson-form"
+            onSubmit={handleRequestSubmit}
+            className={cn('p-6 space-y-4', hasShake && 'animate-shake')}
+            noValidate
+          >
+            <FormField label="Tên bài học (Lesson Title)" required error={errors.title}>
               <input
-                type="number"
-                min={5}
-                max={180}
-                value={estimatedMinutes}
-                onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
-                className="w-full h-10 pl-3.5 pr-12 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
+                type="text"
+                placeholder="e.g. Scanning Strategies for Passage 3, Academic Collocations Drill"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full text-sm font-semibold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-2xs text-[#68727D] font-bold">
-                phút
-              </span>
+            </FormField>
+
+            <FormField label="Thuộc học phần (Parent Module)" required error={errors.moduleId}>
+              <select
+                value={moduleId}
+                onChange={(e) => setModuleId(e.target.value)}
+                className="w-full text-sm font-medium rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+              >
+                {modules.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    [{m.skill.toUpperCase()}] {m.title} ({m.level})
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField label="Kỹ năng chính">
+                <select
+                  value={skill}
+                  onChange={(e) => setSkill(e.target.value as ContentSkill)}
+                  className="w-full text-sm font-bold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none uppercase"
+                >
+                  <option value="reading">Reading</option>
+                  <option value="listening">Listening</option>
+                  <option value="writing">Writing</option>
+                  <option value="speaking">Speaking</option>
+                  <option value="grammar">Grammar</option>
+                </select>
+              </FormField>
+
+              <FormField label="Thời lượng học (phút)" error={errors.estimatedMinutes}>
+                <input
+                  type="number"
+                  min={5}
+                  max={180}
+                  value={estimatedMinutes}
+                  onChange={(e) => setEstimatedMinutes(parseInt(e.target.value) || 0)}
+                  className="w-full text-sm font-mono rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+                />
+              </FormField>
+
+              <FormField label="Trạng thái">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as ContentStatus)}
+                  className="w-full text-sm rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+                >
+                  <option value="published">Xuất bản (Published)</option>
+                  <option value="draft">Bản nháp (Draft)</option>
+                  <option value="archived">Lưu trữ (Archived)</option>
+                </select>
+              </FormField>
             </div>
-          </FormField>
 
-          <FormField label="Trạng thái">
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-semibold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            >
-              <option value="published">Xuất bản ngay</option>
-              <option value="draft">Bản nháp</option>
-              <option value="review">Chờ duyệt</option>
-            </select>
-          </FormField>
-        </div>
+            <FormField label="Tóm tắt lý thuyết trọng tâm (Summary)">
+              <textarea
+                rows={3}
+                placeholder="Nội dung tóm lược kiến thức cần đạt trong bài học này..."
+                value={contentSummary}
+                onChange={(e) => setContentSummary(e.target.value)}
+                className="w-full text-sm rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none resize-none"
+              />
+            </FormField>
+          </form>
+        )}
+      </AdminModal>
 
-        {/* Tùy chọn media & bài tập */}
-        <div className="p-4 rounded-xl bg-[#FAFBFB] border border-[#E3E7EB] grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={hasAudio}
-              onChange={(e) => setHasAudio(e.target.checked)}
-              className="w-4 h-4 rounded text-[#28665F] focus:ring-[#28665F]/20"
-            />
-            <div>
-              <div className="text-xs font-bold text-[#20272E]">Tích hợp Audio / Giọng đọc</div>
-              <div className="text-2xs text-[#68727D]">Bật phát audio mp3 cho bài nghe / shadowing</div>
-            </div>
-          </label>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={hasPassage}
-              onChange={(e) => setHasPassage(e.target.checked)}
-              className="w-4 h-4 rounded text-[#28665F] focus:ring-[#28665F]/20"
-            />
-            <div>
-              <div className="text-xs font-bold text-[#20272E]">Có bài đọc (Passage) / Bài mẫu</div>
-              <div className="text-2xs text-[#68727D]">Chia màn hình song song giữa bài đọc và câu hỏi</div>
-            </div>
-          </label>
-        </div>
-
-        <FormField
-          label="Tóm tắt nội dung bài học"
-          helperText="Mô tả mục tiêu đầu ra và kiến thức học viên sẽ đạt được sau bài học"
-        >
-          <textarea
-            rows={3}
-            value={contentSummary}
-            onChange={(e) => setContentSummary(e.target.value)}
-            placeholder="Tóm tắt ngắn gọn các kiến thức trọng tâm..."
-            className="w-full p-3 rounded-xl border border-[#E3E7EB] bg-white text-sm text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all resize-none"
-          />
-        </FormField>
-      </form>
-    </AdminModal>
+      {/* Confirmation Dialog before saving edits */}
+      <ConfirmDialog
+        isOpen={isConfirmSaveOpen}
+        onClose={() => setIsConfirmSaveOpen(false)}
+        onConfirm={executeSave}
+        title="Xác nhận lưu thay đổi bài học"
+        message={`Bạn có chắc chắn muốn cập nhật bài học "${title}" không?`}
+        confirmLabel="Lưu thay đổi"
+        cancelLabel="Kiểm tra lại"
+        severity="info"
+      />
+    </>
   )
 }
-
-// Backward compatible export
-export const CreateLessonDrawer = LessonModal

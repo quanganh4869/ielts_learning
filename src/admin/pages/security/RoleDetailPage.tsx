@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Check, X } from 'lucide-react'
+import { Check, X, Edit2, Save } from 'lucide-react'
+import { Button } from '@/components/common/Button'
 import { DetailHeader } from '../../components/DetailHeader'
 import { DetailSection } from '../../components/DetailSection'
 import { PageSkeleton } from '../../components/PageSkeleton'
 import { ErrorState } from '../../components/ErrorState'
+import { AdminModal } from '../../components/AdminModal'
+import { FormField } from '../../components/FormField'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { adminService } from '../../services/adminService'
 import { AdminRole, SystemModule, PermissionAction } from '../../types/admin'
 
@@ -42,6 +47,16 @@ export const RoleDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Edit State
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isConfirmSaveOpen, setIsConfirmSaveOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; title: string; message: string } | null>(null)
+
+  // Form Fields
+  const [displayName, setDisplayName] = useState('')
+  const [description, setDescription] = useState('')
+
   useEffect(() => {
     let mounted = true
     const load = async () => {
@@ -51,7 +66,11 @@ export const RoleDetailPage: React.FC = () => {
         setError(null)
         const data = await adminService.getRoleById(roleId)
         if (!data) throw new Error('Không tìm thấy vai trò')
-        if (mounted) setRole(data)
+        if (mounted) {
+          setRole(data)
+          setDisplayName(data.displayName)
+          setDescription(data.description)
+        }
       } catch (err) {
         if (mounted) setError(err instanceof Error ? err.message : 'Lỗi tải chi tiết vai trò')
       } finally {
@@ -73,9 +92,38 @@ export const RoleDetailPage: React.FC = () => {
       .then((data) => {
         if (!data) throw new Error('Không tìm thấy vai trò')
         setRole(data)
+        setDisplayName(data.displayName)
+        setDescription(data.description)
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Lỗi tải chi tiết vai trò'))
       .finally(() => setIsLoading(false))
+  }
+
+  const handleExecuteSave = async () => {
+    if (!role) return
+    try {
+      setIsSubmitting(true)
+      const updated = await adminService.updateRole(role.id, {
+        displayName: displayName.trim(),
+        description: description.trim(),
+      })
+      setRole(updated)
+      setIsConfirmSaveOpen(false)
+      setIsEditOpen(false)
+      setFeedback({
+        type: 'success',
+        title: 'Cập nhật thành công',
+        message: `Đã cập nhật thông tin vai trò "${updated.displayName}".`,
+      })
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Cập nhật thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi cập nhật vai trò',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isLoading) return <PageSkeleton type="detail" />
@@ -90,6 +138,15 @@ export const RoleDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       <DetailHeader
         backTo="/admin/security/roles"
         backLabel="Quay lại danh sách vai trò"
@@ -99,6 +156,17 @@ export const RoleDetailPage: React.FC = () => {
           <span className="text-2xs font-bold px-2 py-0.5 rounded bg-[#EAF3F1] text-[#28665F]">
             {role.userCount} tài khoản đang áp dụng
           </span>
+        }
+        actions={
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsEditOpen(true)}
+            className="h-9 px-3.5 bg-[#28665F] hover:bg-[#20524C] text-white font-semibold text-xs rounded-lg"
+            leftIcon={<Edit2 className="w-3.5 h-3.5" />}
+          >
+            Chỉnh sửa vai trò
+          </Button>
         }
       />
 
@@ -144,6 +212,62 @@ export const RoleDetailPage: React.FC = () => {
           </table>
         </div>
       </DetailSection>
+
+      {/* Edit Role Modal */}
+      <AdminModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Chỉnh sửa vai trò"
+        subtitle={`Cập nhật vai trò "${role.displayName}" (${role.name})`}
+        maxWidth="max-w-lg"
+        footer={
+          <div className="flex items-center justify-end gap-2.5">
+            <Button variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsConfirmSaveOpen(true)}
+              className="bg-[#28665F] hover:bg-[#20524C] text-white"
+              leftIcon={<Save className="w-3.5 h-3.5" />}
+            >
+              Lưu thay đổi
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <FormField label="Tên hiển thị vai trò" required>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full h-9 px-3 rounded-lg border border-[#E3E7EB] text-xs font-semibold focus:outline-none focus:border-[#28665F]"
+            />
+          </FormField>
+
+          <FormField label="Mô tả chức trách" required>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full p-3 rounded-lg border border-[#E3E7EB] text-xs focus:outline-none focus:border-[#28665F]"
+            />
+          </FormField>
+        </div>
+      </AdminModal>
+
+      {/* Confirmation Dialog on Save */}
+      <ConfirmDialog
+        isOpen={isConfirmSaveOpen}
+        onClose={() => setIsConfirmSaveOpen(false)}
+        onConfirm={handleExecuteSave}
+        title="Xác nhận cập nhật vai trò"
+        message={`Bạn có chắc chắn muốn lưu các thay đổi cho vai trò "${role.displayName}" không?`}
+        confirmLabel={isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+        severity="info"
+      />
     </div>
   )
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Sparkles, Save, Upload, FileCheck, HardDrive } from 'lucide-react'
+import { Sparkles, Save, Upload, FileCheck, HardDrive, Edit2 } from 'lucide-react'
 import { AdminModal } from '../AdminModal'
 import { FormField } from '../FormField'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { Button } from '@/components/common/Button'
 import { AdminMediaAsset } from '../../types/admin'
 import { adminService } from '../../services/adminService'
@@ -13,7 +14,7 @@ export interface MediaModalProps {
   onSuccess: (media: AdminMediaAsset, isEdit: boolean) => void
   onError: (errorMessage: string) => void
   initialData?: AdminMediaAsset | null
-  mode?: 'create' | 'edit'
+  mode?: 'create' | 'edit' | 'view'
 }
 
 export const MediaModal: React.FC<MediaModalProps> = ({
@@ -24,7 +25,7 @@ export const MediaModal: React.FC<MediaModalProps> = ({
   initialData,
   mode = 'create',
 }) => {
-  const isEdit = mode === 'edit' || !!initialData
+  const [currentMode, setCurrentMode] = useState<'create' | 'edit' | 'view'>(mode)
 
   const [fileName, setFileName] = useState('')
   const [fileType, setFileType] = useState<'audio' | 'document' | 'image'>('audio')
@@ -34,6 +35,11 @@ export const MediaModal: React.FC<MediaModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [hasShake, setHasShake] = useState(false)
+  const [isConfirmSaveOpen, setIsConfirmSaveOpen] = useState(false)
+
+  useEffect(() => {
+    setCurrentMode(mode)
+  }, [mode, isOpen])
 
   useEffect(() => {
     if (initialData && isOpen) {
@@ -59,13 +65,14 @@ export const MediaModal: React.FC<MediaModalProps> = ({
     if (file.type.startsWith('audio/')) setFileType('audio')
     else if (file.type.startsWith('image/')) setFileType('image')
     else setFileType('document')
-    setUrl(`https://storage.ieltsplatform.edu.vn/uploads/${Date.now()}-${file.name}`)
+
+    setUrl(`/assets/media/${encodeURIComponent(file.name)}`)
   }
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {}
     if (!fileName.trim()) errs.fileName = 'Tên tệp không được để trống.'
-    if (!url.trim()) errs.url = 'Đường dẫn URL lưu trữ không được để trống.'
+    if (!url.trim()) errs.url = 'Đường dẫn tệp (URL) không được để trống.'
 
     setErrors(errs)
     if (Object.keys(errs).length > 0) {
@@ -76,163 +83,250 @@ export const MediaModal: React.FC<MediaModalProps> = ({
     return true
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRequestSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) {
-      onError('Vui lòng kiểm tra lại thông tin tệp tải lên.')
+      onError('Vui lòng kiểm tra lại thông tin tệp tài nguyên.')
       return
     }
 
+    if (currentMode === 'edit') {
+      setIsConfirmSaveOpen(true)
+    } else {
+      executeSave()
+    }
+  }
+
+  const executeSave = async () => {
     setIsSubmitting(true)
     try {
-      if (isEdit && initialData) {
+      if (currentMode === 'edit' && initialData) {
         const updated = await adminService.updateMedia(initialData.id, {
           fileName: fileName.trim(),
           fileType,
-          fileSizeKb: Number(fileSizeKb),
+          fileSizeKb,
           url: url.trim(),
         })
         onSuccess(updated, true)
       } else {
-        const created = await adminService.createMedia({
+        const created = await adminService.uploadMedia({
           fileName: fileName.trim(),
           fileType,
-          fileSizeKb: Number(fileSizeKb),
+          fileSizeKb,
           url: url.trim(),
-          usedInCount: 0,
         })
         onSuccess(created, false)
       }
+      setIsConfirmSaveOpen(false)
       onClose()
     } catch (err) {
       setHasShake(true)
       setTimeout(() => setHasShake(false), 500)
-      onError(err instanceof Error ? err.message : 'Lỗi khi lưu tệp media')
+      onError(err instanceof Error ? err.message : 'Lỗi khi lưu tệp đa phương tiện')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const isView = currentMode === 'view'
+  const isEdit = currentMode === 'edit'
+
   return (
-    <AdminModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEdit ? `Chỉnh sửa tệp Media: ${initialData?.fileName || fileName}` : 'Tải Lên Tệp Media Mới'}
-      subtitle={isEdit ? 'Chỉnh sửa tên tệp, định dạng và đường dẫn lưu trữ đám mây' : 'Tải lên Audio nghe, PDF đề thi hoặc hình ảnh minh họa cho ngân hàng đề'}
-      icon={<HardDrive className="w-5 h-5" />}
-      badge={{
-        text: isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
-        variant: isEdit ? 'amber' : 'teal',
-      }}
-      maxWidth="max-w-xl"
-      footer={
-        <>
-          <div className="text-xs text-[#68727D] hidden sm:block">
-            {isEdit ? `Mã tài nguyên: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
-          </div>
-          <div className="flex items-center gap-2.5 ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleSubmit}
-              isLoading={isSubmitting}
-              className="font-bold shadow-xs"
-              leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-            >
-              {isEdit ? 'Lưu thay đổi' : 'Lưu tệp vào kho'}
-            </Button>
-          </div>
-        </>
-      }
-    >
-      <form onSubmit={handleSubmit} className={cn('space-y-4', hasShake && 'animate-shake')}>
-        {!isEdit && (
-          <div className="border-2 border-dashed border-[#E3E7EB] hover:border-[#28665F] rounded-2xl p-6 text-center bg-[#FAFBFB] transition-colors relative cursor-pointer">
-            <input
-              type="file"
-              onChange={handleSimulateFileSelect}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-            />
-            <div className="w-12 h-12 mx-auto rounded-full bg-[#28665F]/10 flex items-center justify-center text-[#28665F] mb-3">
-              <Upload className="w-6 h-6" />
+    <>
+      <AdminModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={
+          isView
+            ? `Chi tiết tệp: ${initialData?.fileName || fileName}`
+            : isEdit
+            ? `Chỉnh sửa tệp: ${initialData?.fileName || fileName}`
+            : 'Tải lên tài nguyên mới (Upload Media Asset)'
+        }
+        subtitle={
+          isView
+            ? 'Xem thông tin tệp đa phương tiện và nhấn "Chỉnh sửa" nếu muốn cập nhật'
+            : isEdit
+            ? 'Cập nhật tên tệp, đường dẫn liên kết hoặc định dạng lưu trữ'
+            : 'Đăng tải audio bài nghe IELTS, hình ảnh biểu đồ Task 1 hoặc tài liệu đọc PDF'
+        }
+        icon={<HardDrive className="w-5 h-5" />}
+        badge={{
+          text: isView ? 'Xem chi tiết' : isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
+          variant: isView ? 'blue' : isEdit ? 'amber' : 'teal',
+        }}
+        maxWidth="max-w-xl"
+        footer={
+          isView ? (
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs text-[#68727D]">Mã tệp: #{initialData?.id}</span>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                  Đóng
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setCurrentMode('edit')}
+                  leftIcon={<Edit2 className="w-4 h-4" />}
+                >
+                  Chỉnh sửa tệp này
+                </Button>
+              </div>
             </div>
-            <div className="text-sm font-bold text-[#20272E]">
-              Kéo thả tệp vào đây hoặc <span className="text-[#28665F] underline">chọn từ máy tính</span>
+          ) : (
+            <>
+              <div className="text-xs text-[#68727D] hidden sm:block">
+                {isEdit ? `Đang chỉnh sửa mã: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
+              </div>
+              <div className="flex items-center gap-2.5 ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (isEdit && initialData) setCurrentMode('view')
+                    else onClose()
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isEdit ? 'Quay lại xem' : 'Hủy bỏ'}
+                </Button>
+                <Button
+                  type="submit"
+                  form="media-form"
+                  variant="primary"
+                  size="sm"
+                  isLoading={isSubmitting}
+                  leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+                >
+                  {isEdit ? 'Lưu thay đổi' : 'Tải lên ngay'}
+                </Button>
+              </div>
+            </>
+          )
+        }
+      >
+        {isView && initialData ? (
+          <div className="p-6 space-y-5">
+            <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-[#E3E7EB]">
+              <div>
+                <h2 className="text-lg font-black text-[#20272E] break-all">{initialData.fileName}</h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#28665F]/10 text-[#28665F] uppercase border border-[#28665F]/20">
+                    {initialData.fileType}
+                  </span>
+                  <span className="text-xs font-semibold text-[#68727D]">
+                    Dung lượng: {(initialData.fileSizeKb / 1024).toFixed(2)} MB ({initialData.fileSizeKb} KB)
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="text-2xs text-[#68727D] mt-1">
-              Hỗ trợ MP3, WAV, AAC, PDF, PNG, JPG (Tối đa 50MB)
+
+            <div className="space-y-3">
+              <div>
+                <span className="text-2xs font-bold uppercase text-[#68727D] block mb-1">
+                  Đường dẫn tài nguyên (Public URL)
+                </span>
+                <div className="p-3 rounded-xl bg-white border border-[#E3E7EB] font-mono text-xs text-[#28665F] break-all">
+                  {initialData.url}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-2xs font-bold uppercase text-[#68727D] block mb-1">
+                  Thời điểm tải lên
+                </span>
+                <span className="text-xs text-[#68727D]">
+                  {initialData.uploadedAt ? new Date(initialData.uploadedAt).toLocaleString('vi-VN') : 'Không rõ'}
+                </span>
+              </div>
             </div>
           </div>
+        ) : (
+          <form
+            id="media-form"
+            onSubmit={handleRequestSubmit}
+            className={cn('p-6 space-y-4', hasShake && 'animate-shake')}
+            noValidate
+          >
+            {/* Upload Drag & Drop Box */}
+            <div className="border-2 border-dashed border-[#E3E7EB] hover:border-[#28665F] rounded-2xl p-5 text-center bg-[#FAFBFB] transition-colors relative cursor-pointer group">
+              <input
+                type="file"
+                onChange={handleSimulateFileSelect}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+              <div className="w-10 h-10 rounded-xl bg-[#28665F]/10 text-[#28665F] mx-auto flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+                <Upload className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-bold text-[#20272E]">
+                Nhấp để chọn tệp hoặc kéo thả tệp vào đây
+              </p>
+              <p className="text-2xs text-[#68727D] mt-0.5">
+                Hỗ trợ MP3, WAV, PNG, JPG, PDF (tối đa 50MB)
+              </p>
+            </div>
+
+            <FormField label="Tên tệp hiển thị" required error={errors.fileName}>
+              <input
+                type="text"
+                placeholder="e.g. Cambridge_18_Test_1_Section_4.mp3"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                className="w-full text-sm font-semibold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+              />
+            </FormField>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Định dạng tệp">
+                <select
+                  value={fileType}
+                  onChange={(e) => setFileType(e.target.value as any)}
+                  className="w-full text-sm font-bold rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none uppercase"
+                >
+                  <option value="audio">Audio (Bài nghe MP3)</option>
+                  <option value="document">Document (Tài liệu PDF)</option>
+                  <option value="image">Image (Hình ảnh đề thi)</option>
+                </select>
+              </FormField>
+
+              <FormField label="Dung lượng ước tính (KB)">
+                <input
+                  type="number"
+                  min={1}
+                  value={fileSizeKb}
+                  onChange={(e) => setFileSizeKb(parseInt(e.target.value) || 0)}
+                  className="w-full text-sm font-mono rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+                />
+              </FormField>
+            </div>
+
+            <FormField label="Đường dẫn tệp (URL / Storage Key)" required error={errors.url}>
+              <input
+                type="text"
+                placeholder="e.g. /assets/audio/listening_part_4.mp3"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="w-full text-xs font-mono rounded-xl border border-[#E3E7EB] bg-white px-3.5 py-2.5 focus:border-[#28665F] focus:ring-1 focus:ring-[#28665F] outline-none"
+              />
+            </FormField>
+          </form>
         )}
+      </AdminModal>
 
-        <FormField label="Tên tệp lưu trữ (*)" required error={errors.fileName}>
-          <input
-            type="text"
-            value={fileName}
-            onChange={(e) => setFileName(e.target.value)}
-            placeholder="cambridge_19_test1_section1.mp3"
-            className={cn(
-              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm text-[#20272E] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
-              errors.fileName ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
-            )}
-          />
-        </FormField>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label="Định dạng media (*)">
-            <select
-              value={fileType}
-              onChange={(e) => setFileType(e.target.value as any)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            >
-              <option value="audio">Audio (MP3 / WAV âm thanh)</option>
-              <option value="document">Document (PDF đề thi / Passage)</option>
-              <option value="image">Image (Hình ảnh sơ đồ / Slices)</option>
-            </select>
-          </FormField>
-
-          <FormField label="Dung lượng tệp (KB)">
-            <input
-              type="number"
-              min={1}
-              value={fileSizeKb}
-              onChange={(e) => setFileSizeKb(Number(e.target.value))}
-              className="w-full h-10 px-3.5 rounded-xl border border-[#E3E7EB] bg-white text-sm font-mono text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
-            />
-          </FormField>
-        </div>
-
-        <FormField
-          label="Đường dẫn tĩnh / URL lưu trữ (*)"
-          required
-          error={errors.url}
-          helperText="Đường dẫn phục vụ trực tuyến trên hệ thống CDN hoặc Public server"
-        >
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://storage.ieltsplatform.edu.vn/uploads/..."
-            className={cn(
-              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm font-mono text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
-              errors.url ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
-            )}
-          />
-        </FormField>
-      </form>
-    </AdminModal>
+      {/* Confirmation Dialog before saving edits */}
+      <ConfirmDialog
+        isOpen={isConfirmSaveOpen}
+        onClose={() => setIsConfirmSaveOpen(false)}
+        onConfirm={executeSave}
+        title="Xác nhận lưu thay đổi tệp tài nguyên"
+        message={`Bạn có chắc chắn muốn cập nhật thông tin tệp "${fileName}" không?`}
+        confirmLabel="Lưu thay đổi"
+        cancelLabel="Kiểm tra lại"
+        severity="info"
+      />
+    </>
   )
 }
-
-// Backward compatible export
-export const CreateMediaDrawer = MediaModal

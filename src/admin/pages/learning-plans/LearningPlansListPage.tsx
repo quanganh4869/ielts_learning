@@ -1,45 +1,45 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Eye, Compass, Plus, Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Search, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
-import { DataToolbar } from '../../components/DataToolbar'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { LearningPlanModal } from '../../components/content/CreateLearningPlanDrawer'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
 import { AdminLearningPlan } from '../../types/admin'
-import { LearningPlanModal } from '../../components/content/CreateLearningPlanDrawer'
-import { FeedbackOverlay } from '../../components/FeedbackOverlay'
-import { cn } from '@/utils/cn'
 
 export const LearningPlansListPage: React.FC = () => {
-  const navigate = useNavigate()
   const [plans, setPlans] = useState<AdminLearningPlan[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
-  // Sorting
-  const [sortColumn, setSortColumn] = useState<string>('title')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const [sortPreset, setSortPreset] = useState<string>('title_asc')
-
-  // Modal State (Create & Edit)
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingPlan, setEditingPlan] = useState<AdminLearningPlan | null>(null)
-  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create')
+  const [selectedPlan, setSelectedPlan] = useState<AdminLearningPlan | null>(null)
 
-  // Delete Dialog State
+  // Delete State
   const [deletingPlan, setDeletingPlan] = useState<AdminLearningPlan | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Feedback State
+  // Feedback Toast
   const [feedback, setFeedback] = useState<{
-    type: 'success' | 'error' | null
+    type: 'success' | 'error'
     title: string
-    message?: string
-  }>({ type: null, title: '' })
+    message: string
+  } | null>(null)
+
+  // Sorting
+  const [sortColumn, setSortColumn] = useState<string>('order')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [sortPreset, setSortPreset] = useState<string>('custom')
+
+  useEffect(() => {
+    loadPlans()
+  }, [])
 
   const loadPlans = async () => {
     try {
@@ -48,50 +48,46 @@ export const LearningPlansListPage: React.FC = () => {
       const data = await adminService.getLearningPlans()
       setPlans(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải lộ trình học')
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách lộ trình')
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadPlans()
-  }, [])
-
   const handleOpenCreate = () => {
-    setEditingPlan(null)
+    setSelectedPlan(null)
+    setModalMode('create')
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = (plan: AdminLearningPlan) => {
-    setEditingPlan(plan)
+  const handleOpenDetail = (plan: AdminLearningPlan) => {
+    setSelectedPlan(plan)
+    setModalMode('view')
     setIsModalOpen(true)
   }
 
   const handleModalSuccess = (savedPlan: AdminLearningPlan, isEdit: boolean) => {
     if (isEdit) {
-      setPlans((prev) => prev.map((p) => (p.id === savedPlan.id ? savedPlan : p)))
+      setPlans((prev) => prev.map((item) => (item.id === savedPlan.id ? savedPlan : item)))
       setFeedback({
         type: 'success',
-        title: 'Cập nhật lộ trình học thành công!',
+        title: 'Cập nhật lộ trình thành công!',
         message: `Đã lưu các thay đổi cho lộ trình "${savedPlan.title}".`,
       })
     } else {
       setPlans((prev) => [savedPlan, ...prev])
       setFeedback({
         type: 'success',
-        title: 'Tạo lộ trình học mới thành công!',
-        message: `Lộ trình "${savedPlan.title}" (Mục tiêu Band ${savedPlan.targetBand}) đã được khởi tạo và lưu trữ an toàn.`,
+        title: 'Thêm lộ trình mới thành công!',
+        message: `Lộ trình "${savedPlan.title}" đã được lưu vào hệ thống.`,
       })
     }
-    setHighlightedId(savedPlan.id)
-    setTimeout(() => setHighlightedId(null), 3000)
   }
 
   const handleModalError = (msg: string) => {
     setFeedback({
       type: 'error',
-      title: 'Không thể lưu lộ trình',
+      title: 'Thao tác không thành công',
       message: msg,
     })
   }
@@ -101,11 +97,11 @@ export const LearningPlansListPage: React.FC = () => {
     try {
       setIsDeleting(true)
       await adminService.deleteLearningPlan(deletingPlan.id)
-      setPlans((prev) => prev.filter((p) => p.id !== deletingPlan.id))
+      setPlans((prev) => prev.filter((item) => item.id !== deletingPlan.id))
       setFeedback({
         type: 'success',
-        title: 'Đã xóa lộ trình học thành công',
-        message: `Lộ trình "${deletingPlan.title}" đã được xóa khỏi hệ thống.`,
+        title: 'Đã xóa lộ trình học',
+        message: `Đã xóa lộ trình "${deletingPlan.title}" khỏi hệ thống.`,
       })
       setDeletingPlan(null)
     } catch (err) {
@@ -119,6 +115,7 @@ export const LearningPlansListPage: React.FC = () => {
     }
   }
 
+  // Handle Reorder Up / Down
   const handleMoveOrder = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     if (targetIndex < 0 || targetIndex >= plans.length) return
@@ -133,18 +130,18 @@ export const LearningPlansListPage: React.FC = () => {
     try {
       await adminService.reorderLearningPlans(newPlans.map((p) => p.id))
     } catch (e) {
-      console.warn('Reorder plans error:', e)
+      console.warn('Reorder error:', e)
     }
   }
 
   const handleSort = (columnKey: string) => {
+    setSortPreset('column')
     if (sortColumn === columnKey) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortColumn(columnKey)
       setSortDirection('asc')
     }
-    setSortPreset('custom')
   }
 
   const handleSortPresetChange = (preset: string) => {
@@ -162,12 +159,12 @@ export const LearningPlansListPage: React.FC = () => {
         setSortColumn('targetBand')
         setSortDirection('desc')
         break
-      case 'band_asc':
-        setSortColumn('targetBand')
-        setSortDirection('asc')
+      case 'duration_desc':
+        setSortColumn('durationWeeks')
+        setSortDirection('desc')
         break
-      case 'enrollments_desc':
-        setSortColumn('activeEnrollments')
+      case 'students_desc':
+        setSortColumn('activeStudentsCount')
         setSortDirection('desc')
         break
       case 'newest':
@@ -193,12 +190,12 @@ export const LearningPlansListPage: React.FC = () => {
       let cmp = 0
       if (sortColumn === 'title') {
         cmp = a.title.localeCompare(b.title)
-      } else if (sortColumn === 'code') {
-        cmp = a.code.localeCompare(b.code)
       } else if (sortColumn === 'targetBand') {
-        cmp = (a.targetBand || 0) - (b.targetBand || 0)
-      } else if (sortColumn === 'activeEnrollments') {
-        cmp = (a.activeEnrollments || 0) - (b.activeEnrollments || 0)
+        cmp = a.targetBand - b.targetBand
+      } else if (sortColumn === 'durationWeeks') {
+        cmp = a.durationWeeks - b.durationWeeks
+      } else if (sortColumn === 'activeEnrollments' || (sortColumn as string) === 'activeStudentsCount') {
+        cmp = a.activeEnrollments - b.activeEnrollments
       } else if (sortColumn === 'status') {
         cmp = a.status.localeCompare(b.status)
       } else if (sortColumn === 'updatedAt') {
@@ -215,7 +212,7 @@ export const LearningPlansListPage: React.FC = () => {
       width: '80px',
       align: 'center',
       render: (_, index = 0) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           <span className="font-mono text-2xs text-[#68727D] w-5 text-right">{index + 1}</span>
           <div className="flex flex-col">
             <button
@@ -242,25 +239,15 @@ export const LearningPlansListPage: React.FC = () => {
     },
     {
       key: 'title',
-      header: 'Lộ trình học',
+      header: 'Lộ trình học (Learning Plan)',
       sortable: true,
       render: (p) => (
-        <div className={cn('flex items-center gap-3 transition-all duration-300', p.id === highlightedId && 'p-1 rounded-lg bg-emerald-50 text-emerald-900 ring-2 ring-emerald-300')}>
-          <div className="p-2 rounded-lg bg-[#28665F]/10 text-[#28665F] shrink-0">
-            <Compass className="w-4 h-4" />
-          </div>
-          <div>
-            <span
-              className="font-extrabold text-sm text-[#20272E] hover:text-[#28665F] transition-colors cursor-pointer"
-              onClick={() => handleOpenEdit(p)}
-            >
-              {p.title}
-            </span>
-            <div className="text-2xs text-[#68727D] flex items-center gap-2 mt-0.5">
-              <span className="font-mono text-[#28665F] font-semibold">{p.code}</span>
-              <span>•</span>
-              <span className="capitalize">{p.testType}</span>
-            </div>
+        <div className="space-y-0.5">
+          <span className="font-bold text-sm text-[#20272E] block">{p.title}</span>
+          <div className="flex items-center gap-1.5 text-2xs text-[#68727D]">
+            <span className="font-mono bg-slate-100 px-1.5 py-0.2 rounded font-semibold">{p.code}</span>
+            <span>•</span>
+            <span className="capitalize">{p.testType}</span>
           </div>
         </div>
       ),
@@ -268,43 +255,30 @@ export const LearningPlansListPage: React.FC = () => {
     {
       key: 'targetBand',
       header: 'Mục tiêu Band',
-      align: 'center',
       sortable: true,
       render: (p) => (
-        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#EAF3F1] font-extrabold text-xs text-[#28665F] border border-[#28665F]/20">
-          {p.targetBand.toFixed(1)}
+        <span className="font-bold text-xs px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+          Band {p.targetBand.toFixed(1)}
         </span>
       ),
     },
     {
       key: 'durationWeeks',
       header: 'Thời lượng',
-      align: 'center',
+      sortable: true,
       render: (p) => (
-        <div className="text-xs">
-          <div className="font-bold text-[#20272E]">{p.durationWeeks} tuần</div>
-          <div className="text-2xs text-[#68727D]">{p.phaseCount} giai đoạn</div>
-        </div>
-      ),
-    },
-    {
-      key: 'lessonCount',
-      header: 'Số bài học',
-      align: 'center',
-      render: (p) => (
-        <span className="font-semibold text-xs text-[#20272E] bg-slate-100 px-2.5 py-0.5 rounded-full">
-          {p.lessonCount} bài
+        <span className="text-xs font-semibold text-[#20272E]">
+          {p.durationWeeks} tuần ({p.phaseCount} phases)
         </span>
       ),
     },
     {
       key: 'activeEnrollments',
       header: 'Học viên',
-      align: 'center',
       sortable: true,
       render: (p) => (
-        <span className="font-extrabold text-xs text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
-          {p.activeEnrollments} đang học
+        <span className="text-xs font-bold text-[#28665F] bg-[#28665F]/10 px-2 py-0.5 rounded-full">
+          {p.activeEnrollments} người
         </span>
       ),
     },
@@ -316,36 +290,21 @@ export const LearningPlansListPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Thao tác',
-      align: 'right',
-      width: '140px',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (p) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => navigate(`/admin/learning-plans/${p.id}`)}
-            className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
-            title="Xem chi tiết lộ trình"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOpenEdit(p)}
-            className="p-1.5 text-slate-500 hover:text-[#28665F] hover:bg-[#28665F]/10 rounded-lg transition-colors"
-            title="Chỉnh sửa lộ trình"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeletingPlan(p)}
-            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-            title="Xóa lộ trình"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingPlan(p)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa lộ trình này"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       ),
     },
   ]
@@ -354,7 +313,7 @@ export const LearningPlansListPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Quản lý Lộ trình Học tập (Learning Plans)"
-        subtitle="Quản lý cấu trúc các khóa học, phân kỳ mục tiêu điểm số và chương trình học theo giai đoạn"
+        subtitle="Hệ thống kế hoạch học tập cá nhân hóa chuẩn IELTS theo mục tiêu điểm và số tuần. Nhấp vào hàng để xem chi tiết & chỉnh sửa"
         actions={
           <Button
             variant="primary"
@@ -368,43 +327,46 @@ export const LearningPlansListPage: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-[#E3E7EB] shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <DataToolbar
-            searchPlaceholder="Tìm kiếm theo tên lộ trình, mã code hoặc trình độ..."
-            searchValue={search}
-            onSearchChange={setSearch}
-            showFilterToggle={false}
-            className="flex-1"
-          />
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-semibold text-[#68727D] flex items-center gap-1">
-              <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
-            </span>
-            <select
-              value={sortPreset}
-              onChange={(e) => handleSortPresetChange(e.target.value)}
-              className="h-9.5 px-3 rounded-lg border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all cursor-pointer"
-            >
-              <option value="title_asc">Tên lộ trình (A ➔ Z)</option>
-              <option value="title_desc">Tên lộ trình (Z ➔ A)</option>
-              <option value="band_desc">Target Band (Cao ➔ Thấp)</option>
-              <option value="band_asc">Target Band (Thấp ➔ Cao)</option>
-              <option value="enrollments_desc">Số học viên (Đông nhất)</option>
-              <option value="newest">Mới cập nhật nhất</option>
-              <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
-            </select>
-          </div>
+      {/* Search Toolbar & Sort Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <input
+            type="text"
+            placeholder="Tìm theo tên lộ trình, mã code hoặc cấp độ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full text-xs sm:text-sm pl-9 pr-4 py-2 rounded-lg border border-[#E3E7EB] bg-[#F7F8FA] focus:bg-white focus:border-[#28665F] outline-none transition-all"
+          />
         </div>
 
-        <div className="flex items-center justify-between text-2xs text-[#68727D] pt-1 border-t border-slate-100">
-          <div>
-            Hiển thị <span className="font-bold text-[#20272E]">{sortedAndFiltered.length}</span> / {plans.length} lộ trình học
-          </div>
-          <div className="text-right">
-            Nhấn vào tiêu đề cột để đảo chiều sắp xếp (Tăng/Giảm)
-          </div>
+        {/* Quick Sort Presets */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider flex items-center gap-1">
+            <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
+          </span>
+          <select
+            value={sortPreset}
+            onChange={(e) => handleSortPresetChange(e.target.value)}
+            className="text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 py-1.5 text-[#20272E] font-medium outline-none focus:border-[#28665F]"
+          >
+            <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
+            <option value="title_asc">Tên lộ trình (A → Z)</option>
+            <option value="title_desc">Tên lộ trình (Z → A)</option>
+            <option value="band_desc">Target Band cao nhất</option>
+            <option value="duration_desc">Thời lượng dài nhất</option>
+            <option value="students_desc">Học viên đông nhất</option>
+            <option value="newest">Mới cập nhật nhất</option>
+          </select>
         </div>
       </div>
 
@@ -413,44 +375,38 @@ export const LearningPlansListPage: React.FC = () => {
         data={sortedAndFiltered}
         isLoading={isLoading}
         error={error}
-        onRetry={loadPlans}
-        keyExtractor={(p) => p.id}
+        onRowClick={handleOpenDetail}
         sortColumn={sortColumn}
         sortDirection={sortDirection}
         onSort={handleSort}
+        keyExtractor={(p) => p.id}
+        emptyTitle="Không tìm thấy lộ trình học nào"
+        emptyDescription="Thử thay đổi từ khóa tìm kiếm hoặc bấm Tạo lộ trình mới."
       />
 
-      {/* Creation & Edit Window Modal */}
+      {/* Learning Plan Modal (Create, Edit & View Detail) */}
       <LearningPlanModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          setEditingPlan(null)
+          setSelectedPlan(null)
         }}
         onSuccess={handleModalSuccess}
         onError={handleModalError}
-        initialData={editingPlan}
-        mode={editingPlan ? 'edit' : 'create'}
+        initialData={selectedPlan}
+        mode={modalMode}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={!!deletingPlan}
         onClose={() => setDeletingPlan(null)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa lộ trình học"
-        message={`Bạn có chắc chắn muốn xóa lộ trình "${deletingPlan?.title}" (${deletingPlan?.code}) khỏi hệ thống? Thao tác này sẽ xóa vĩnh viễn và không thể hoàn tác.`}
+        message={`Bạn có chắc chắn muốn xóa lộ trình "${deletingPlan?.title}" không? Hành động này không thể hoàn tác.`}
         confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
         severity="danger"
-      />
-
-      {/* Feedback Overlay */}
-      <FeedbackOverlay
-        type={feedback.type}
-        animationType={feedback.type === 'success' ? 'module_added' : 'error_feedback'}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback({ type: null, title: '' })}
       />
     </div>
   )

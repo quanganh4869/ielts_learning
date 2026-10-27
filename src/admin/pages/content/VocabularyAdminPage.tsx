@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Filter, Sparkles } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Search, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
-import { DataToolbar } from '../../components/DataToolbar'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { VocabularyModal } from '../../components/content/CreateVocabularyDrawer'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
 import { AdminVocabularyWord } from '../../types/admin'
-import { VocabularyModal } from '../../components/content/CreateVocabularyDrawer'
-import { FeedbackOverlay } from '../../components/FeedbackOverlay'
-import { cn } from '@/utils/cn'
 
 export const VocabularyAdminPage: React.FC = () => {
   const [vocab, setVocab] = useState<AdminVocabularyWord[]>([])
@@ -18,53 +16,58 @@ export const VocabularyAdminPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
-  // Sorting state
-  const [sortColumn, setSortColumn] = useState<string>('word')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const [sortPreset, setSortPreset] = useState<string>('word_asc')
-
-  // Modal State (Create & Edit)
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingWord, setEditingWord] = useState<AdminVocabularyWord | null>(null)
-  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create')
+  const [selectedWord, setSelectedWord] = useState<AdminVocabularyWord | null>(null)
 
   // Delete Dialog State
   const [deletingWord, setDeletingWord] = useState<AdminVocabularyWord | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Feedback State
+  // Action Feedback Toast / Alert
   const [feedback, setFeedback] = useState<{
-    type: 'success' | 'error' | null
+    type: 'success' | 'error'
     title: string
-    message?: string
-  }>({ type: null, title: '' })
+    message: string
+  } | null>(null)
 
-  const loadData = async () => {
+  // Highlighting recently added/updated row
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+
+  // Sorting State
+  const [sortColumn, setSortColumn] = useState<string>('order')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [sortPreset, setSortPreset] = useState<string>('custom')
+
+  useEffect(() => {
+    loadVocab()
+  }, [])
+
+  const loadVocab = async () => {
     try {
       setIsLoading(true)
       setError(null)
       const data = await adminService.getVocabulary()
       setVocab(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải kho từ vựng')
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách từ vựng')
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  // Handle open create modal
+  // Open Create Modal
   const handleOpenCreate = () => {
-    setEditingWord(null)
+    setSelectedWord(null)
+    setModalMode('create')
     setIsModalOpen(true)
   }
 
-  // Handle open edit modal
-  const handleOpenEdit = (item: AdminVocabularyWord) => {
-    setEditingWord(item)
+  // Open Detail / View Modal (Row Click)
+  const handleOpenDetail = (word: AdminVocabularyWord) => {
+    setSelectedWord(word)
+    setModalMode('view')
     setIsModalOpen(true)
   }
 
@@ -140,18 +143,18 @@ export const VocabularyAdminPage: React.FC = () => {
     }
   }
 
-  // Sorting Handler
+  // Sorting Header Click
   const handleSort = (columnKey: string) => {
+    setSortPreset('column')
     if (sortColumn === columnKey) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortColumn(columnKey)
       setSortDirection('asc')
     }
-    setSortPreset('custom')
   }
 
-  // Apply Preset Sorting
+  // Change Sort Preset
   const handleSortPresetChange = (preset: string) => {
     setSortPreset(preset)
     switch (preset) {
@@ -218,10 +221,10 @@ export const VocabularyAdminPage: React.FC = () => {
     {
       key: 'order',
       header: 'Thứ tự',
-      width: '90px',
+      width: '80px',
       align: 'center',
       render: (_, index = 0) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
           <span className="font-mono text-2xs text-[#68727D] w-5 text-right">{index + 1}</span>
           <div className="flex flex-col">
             <button
@@ -248,31 +251,26 @@ export const VocabularyAdminPage: React.FC = () => {
     },
     {
       key: 'word',
-      header: 'Từ vựng & Phiên âm',
+      header: 'Từ vựng (Headword)',
       sortable: true,
       render: (v) => (
-        <div className={cn('transition-all duration-300', v.id === highlightedId && 'p-1 rounded-lg bg-emerald-50 text-emerald-900 ring-2 ring-emerald-300')}>
+        <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-sm text-[#20272E]">{v.word}</span>
-            <span className="text-2xs text-[#28665F] font-semibold bg-[#28665F]/10 px-1.5 py-0.5 rounded">
-              {v.partOfSpeech}
+            <span
+              className={`font-black text-sm text-[#20272E] ${
+                highlightedId === v.id ? 'text-[#28665F] underline font-extrabold' : ''
+              }`}
+            >
+              {v.word}
             </span>
+            {v.phonetic && (
+              <span className="font-mono text-2xs text-[#68727D] bg-slate-100 px-1.5 py-0.5 rounded">
+                {v.phonetic}
+              </span>
+            )}
+            <span className="text-2xs text-[#68727D] uppercase font-bold tracking-wider">({v.partOfSpeech})</span>
           </div>
-          {v.phonetic && (
-            <div className="text-2xs text-[#68727D] font-mono mt-0.5">{v.phonetic}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'definitionVi',
-      header: 'Định nghĩa & Ví dụ',
-      render: (v) => (
-        <div className="text-xs max-w-md">
-          <div className="font-medium text-[#20272E] line-clamp-1">{v.definitionVi}</div>
-          <div className="text-2xs text-[#68727D] italic mt-0.5 line-clamp-2">
-            &ldquo;{v.exampleEn}&rdquo;
-          </div>
+          <p className="text-xs text-[#68727D] line-clamp-1 italic">{v.definitionVi}</p>
         </div>
       ),
     },
@@ -300,28 +298,21 @@ export const VocabularyAdminPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Thao tác',
-      align: 'right',
-      width: '120px',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (v) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleOpenEdit(v)}
-            className="p-1.5 text-slate-500 hover:text-[#28665F] hover:bg-[#28665F]/10 rounded-lg transition-colors"
-            title="Chỉnh sửa từ vựng"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeletingWord(v)}
-            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-            title="Xóa từ vựng"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingWord(v)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa từ vựng này"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       ),
     },
   ]
@@ -330,7 +321,7 @@ export const VocabularyAdminPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Quản lý Kho Từ vựng (Vocabulary Bank)"
-        subtitle="Hệ thống quản lý từ vựng học thuật, cấp độ CEFR, ngữ cảnh câu và trạng thái xuất bản"
+        subtitle="Hệ thống quản lý từ vựng học thuật, cấp độ CEFR. Nhấp vào hàng để xem chi tiết & chỉnh sửa"
         actions={
           <Button
             variant="primary"
@@ -339,49 +330,51 @@ export const VocabularyAdminPage: React.FC = () => {
             className="font-bold shadow-xs"
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            Thêm từ mới
+            Thêm từ vựng mới
           </Button>
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-[#E3E7EB] shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <DataToolbar
-            searchPlaceholder="Tìm kiếm theo từ tiếng Anh, nghĩa tiếng Việt hoặc chủ đề..."
-            searchValue={search}
-            onSearchChange={setSearch}
-            showFilterToggle={false}
-            className="flex-1"
-          />
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
-          {/* Sắp xếp selector */}
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-semibold text-[#68727D] flex items-center gap-1">
-              <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
-            </span>
-            <select
-              value={sortPreset}
-              onChange={(e) => handleSortPresetChange(e.target.value)}
-              className="h-9.5 px-3 rounded-lg border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all cursor-pointer"
-            >
-              <option value="word_asc">Từ vựng (A ➔ Z)</option>
-              <option value="word_desc">Từ vựng (Z ➔ A)</option>
-              <option value="cefr_desc">Cấp độ CEFR (Cao ➔ Thấp)</option>
-              <option value="cefr_asc">Cấp độ CEFR (Thấp ➔ Cao)</option>
-              <option value="newest">Mới cập nhật nhất</option>
-              <option value="oldest">Cũ nhất</option>
-              <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
-            </select>
-          </div>
+      {/* Search Toolbar & Sort Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <input
+            type="text"
+            placeholder="Tìm theo từ vựng, nghĩa tiếng Việt hoặc chủ đề..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full text-xs sm:text-sm pl-9 pr-4 py-2 rounded-lg border border-[#E3E7EB] bg-[#F7F8FA] focus:bg-white focus:border-[#28665F] outline-none transition-all"
+          />
         </div>
 
-        <div className="flex items-center justify-between text-2xs text-[#68727D] pt-1 border-t border-slate-100">
-          <div>
-            Hiển thị <span className="font-bold text-[#20272E]">{sortedAndFiltered.length}</span> / {vocab.length} từ vựng
-          </div>
-          <div className="text-right">
-            Nhấn vào tiêu đề cột để đảo chiều sắp xếp (Tăng/Giảm)
-          </div>
+        {/* Quick Sort Presets */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider flex items-center gap-1">
+            <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
+          </span>
+          <select
+            value={sortPreset}
+            onChange={(e) => handleSortPresetChange(e.target.value)}
+            className="text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 py-1.5 text-[#20272E] font-medium outline-none focus:border-[#28665F]"
+          >
+            <option value="custom">Thứ tự tùy chỉnh (Kéo/Đẩy)</option>
+            <option value="word_asc">Từ vựng (A → Z)</option>
+            <option value="word_desc">Từ vựng (Z → A)</option>
+            <option value="cefr_asc">Cấp độ CEFR (Thấp → Cao)</option>
+            <option value="cefr_desc">Cấp độ CEFR (Cao → Thấp)</option>
+            <option value="newest">Mới cập nhật nhất</option>
+            <option value="oldest">Cũ nhất</option>
+          </select>
         </div>
       </div>
 
@@ -390,44 +383,38 @@ export const VocabularyAdminPage: React.FC = () => {
         data={sortedAndFiltered}
         isLoading={isLoading}
         error={error}
-        onRetry={loadData}
-        keyExtractor={(v) => v.id}
+        onRowClick={handleOpenDetail}
         sortColumn={sortColumn}
         sortDirection={sortDirection}
         onSort={handleSort}
+        keyExtractor={(v) => v.id}
+        emptyTitle="Không tìm thấy từ vựng nào"
+        emptyDescription="Thử thay đổi từ khóa tìm kiếm hoặc bấm Thêm từ vựng mới."
       />
 
-      {/* Creation & Edit Window Modal */}
+      {/* Vocabulary Modal (Create, Edit & View Detail) */}
       <VocabularyModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false)
-          setEditingWord(null)
+          setSelectedWord(null)
         }}
         onSuccess={handleModalSuccess}
         onError={handleModalError}
-        initialData={editingWord}
-        mode={editingWord ? 'edit' : 'create'}
+        initialData={selectedWord}
+        mode={modalMode}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={!!deletingWord}
         onClose={() => setDeletingWord(null)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa từ vựng"
-        message={`Bạn có chắc chắn muốn xóa từ vựng "${deletingWord?.word}" (${deletingWord?.cefrLevel}) khỏi hệ thống? Thao tác này sẽ xóa vĩnh viễn và không thể hoàn tác.`}
+        message={`Bạn có chắc chắn muốn xóa từ vựng "${deletingWord?.word}" (${deletingWord?.cefrLevel}) không? Hành động này không thể hoàn tác.`}
         confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
         severity="danger"
-      />
-
-      {/* Feedback Overlay */}
-      <FeedbackOverlay
-        type={feedback.type}
-        animationType={feedback.type === 'success' ? 'data_saved' : 'error_feedback'}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback({ type: null, title: '' })}
       />
     </div>
   )

@@ -1117,6 +1117,53 @@ export const adminService = {
     return users[index]
   },
 
+  async updateUser(userId: string, updates: Partial<UserAccount>, reason = 'Cập nhật thông tin tài khoản'): Promise<UserAccount> {
+    await delay(200)
+    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    const index = users.findIndex((u) => u.id === userId)
+    if (index === -1) throw new Error('Không tìm thấy tài khoản người dùng')
+
+    const before = { ...users[index] }
+    const updated = { ...users[index], ...updates }
+    users[index] = updated
+    saveToStorage(KEY_USERS, users)
+
+    await this.recordAuditLog(
+      'user_update',
+      'Cập nhật thông tin học viên',
+      'users',
+      userId,
+      updated.fullName,
+      reason,
+      before as unknown as Record<string, unknown>,
+      updated as unknown as Record<string, unknown>
+    )
+
+    return updated
+  },
+
+  async deleteUser(userId: string, reason = 'Xóa tài khoản người dùng'): Promise<boolean> {
+    await delay(200)
+    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    const target = users.find((u) => u.id === userId)
+    if (!target) throw new Error('Không tìm thấy tài khoản để xóa')
+
+    const filtered = users.filter((u) => u.id !== userId)
+    saveToStorage(KEY_USERS, filtered)
+
+    await this.recordAuditLog(
+      'user_suspend',
+      'Xóa vĩnh viễn tài khoản',
+      'users',
+      userId,
+      target.fullName,
+      reason,
+      target as unknown as Record<string, unknown>
+    )
+
+    return true
+  },
+
   // --------------------------------------------------------------------------
   // 3. SESSION MANAGEMENT
   // --------------------------------------------------------------------------
@@ -1199,12 +1246,28 @@ export const adminService = {
     return count
   },
 
+  async deleteSession(sessionId: string): Promise<boolean> {
+    await delay(150)
+    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    const filtered = sessions.filter((s) => s.id !== sessionId)
+    saveToStorage(KEY_SESSIONS, filtered)
+    return true
+  },
+
   // --------------------------------------------------------------------------
   // 4. LOGIN EVENTS
   // --------------------------------------------------------------------------
   async getLoginEvents(): Promise<LoginEvent[]> {
     await delay(120)
     return getFromStorage<LoginEvent[]>(KEY_LOGIN_EVENTS, SEED_LOGIN_EVENTS)
+  },
+
+  async deleteLoginEvent(eventId: string): Promise<boolean> {
+    await delay(150)
+    const events = getFromStorage<LoginEvent[]>(KEY_LOGIN_EVENTS, SEED_LOGIN_EVENTS)
+    const filtered = events.filter((e) => e.id !== eventId)
+    saveToStorage(KEY_LOGIN_EVENTS, filtered)
+    return true
   },
 
   // --------------------------------------------------------------------------
@@ -1308,6 +1371,14 @@ export const adminService = {
   async getEnrollments(): Promise<AdminEnrollment[]> {
     await delay(120)
     return getFromStorage<AdminEnrollment[]>(KEY_ENROLLMENTS, SEED_ENROLLMENTS)
+  },
+
+  async deleteEnrollment(enrollmentId: string): Promise<boolean> {
+    await delay(150)
+    const enrollments = getFromStorage<AdminEnrollment[]>(KEY_ENROLLMENTS, SEED_ENROLLMENTS)
+    const filtered = enrollments.filter((e) => e.id !== enrollmentId)
+    saveToStorage(KEY_ENROLLMENTS, filtered)
+    return true
   },
 
   // --------------------------------------------------------------------------
@@ -1688,6 +1759,10 @@ export const adminService = {
     return newMedia
   },
 
+  async uploadMedia(data: Omit<AdminMediaAsset, 'id' | 'uploadedAt' | 'uploadedBy' | 'usedInCount'>): Promise<AdminMediaAsset> {
+    return this.createMedia({ ...data, usedInCount: 0 })
+  },
+
   async updateMedia(id: string, data: Partial<AdminMediaAsset>): Promise<AdminMediaAsset> {
     await delay(150)
     const media = getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
@@ -1760,6 +1835,87 @@ export const adminService = {
     return questions.find((q) => q.id === id) || null
   },
 
+  async createQuestion(data: Omit<AdminQuestion, 'id' | 'updatedAt' | 'usageCount'>): Promise<AdminQuestion> {
+    await delay(150)
+    const questions = getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+    const newQuestion: AdminQuestion = {
+      ...data,
+      id: `q-${Date.now().toString().slice(-5)}`,
+      usageCount: 0,
+      updatedAt: new Date().toISOString(),
+    }
+    const updated = [newQuestion, ...questions]
+    saveToStorage(KEY_QUESTIONS, updated)
+    await this.recordAuditLog(
+      'question_create',
+      'Tạo câu hỏi mới',
+      'question_bank',
+      newQuestion.id,
+      newQuestion.code,
+      'Thêm mới câu hỏi vào ngân hàng đề'
+    )
+    return newQuestion
+  },
+
+  async updateQuestion(id: string, data: Partial<AdminQuestion>): Promise<AdminQuestion> {
+    await delay(150)
+    const questions = getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+    const idx = questions.findIndex((q) => q.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy câu hỏi để cập nhật')
+    const updatedQuestion: AdminQuestion = {
+      ...questions[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+    }
+    questions[idx] = updatedQuestion
+    saveToStorage(KEY_QUESTIONS, questions)
+    await this.recordAuditLog(
+      'question_update',
+      'Cập nhật câu hỏi',
+      'question_bank',
+      id,
+      updatedQuestion.code,
+      'Chỉnh sửa nội dung câu hỏi'
+    )
+    return updatedQuestion
+  },
+
+  async deleteQuestion(id: string): Promise<boolean> {
+    await delay(150)
+    const questions = getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+    const target = questions.find((q) => q.id === id)
+    const filtered = questions.filter((q) => q.id !== id)
+    saveToStorage(KEY_QUESTIONS, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'question_update',
+        'Xóa câu hỏi',
+        'question_bank',
+        id,
+        target.code,
+        'Xóa câu hỏi khỏi ngân hàng đề'
+      )
+    }
+    return true
+  },
+
+  async reorderQuestions(orderedIds: string[]): Promise<AdminQuestion[]> {
+    await delay(100)
+    const questions = getFromStorage<AdminQuestion[]>(KEY_QUESTIONS, SEED_QUESTIONS)
+    const map = new Map(questions.map((q) => [q.id, q]))
+    const reordered: AdminQuestion[] = []
+    orderedIds.forEach((id) => {
+      const q = map.get(id)
+      if (q) reordered.push(q)
+    })
+    questions.forEach((q) => {
+      if (!orderedIds.includes(q.id)) reordered.push(q)
+    })
+    saveToStorage(KEY_QUESTIONS, reordered)
+    return reordered
+  },
+
   async getAssessments(): Promise<AdminAssessment[]> {
     await delay(120)
     return getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
@@ -1771,6 +1927,90 @@ export const adminService = {
     return list.find((a) => a.id === id) || null
   },
 
+  async createAssessment(data: Omit<AdminAssessment, 'id' | 'updatedAt' | 'updatedBy' | 'totalAttempts' | 'avgBandScore'>): Promise<AdminAssessment> {
+    await delay(150)
+    const list = getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+    const newAssessment: AdminAssessment = {
+      ...data,
+      id: `asm-${Date.now().toString().slice(-5)}`,
+      totalAttempts: 0,
+      avgBandScore: 0,
+      updatedAt: new Date().toISOString(),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    const updated = [newAssessment, ...list]
+    saveToStorage(KEY_ASSESSMENTS, updated)
+    await this.recordAuditLog(
+      'assessment_publish',
+      'Tạo đề thi mới',
+      'assessments',
+      newAssessment.id,
+      newAssessment.title,
+      'Thêm bài kiểm tra mới'
+    )
+    return newAssessment
+  },
+
+  async updateAssessment(id: string, data: Partial<AdminAssessment>): Promise<AdminAssessment> {
+    await delay(150)
+    const list = getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+    const idx = list.findIndex((a) => a.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy bài thi để cập nhật')
+    const updatedItem: AdminAssessment = {
+      ...list[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    list[idx] = updatedItem
+    saveToStorage(KEY_ASSESSMENTS, list)
+    await this.recordAuditLog(
+      'assessment_publish',
+      'Cập nhật bài thi',
+      'assessments',
+      id,
+      updatedItem.title,
+      'Chỉnh sửa cấu hình bài thi'
+    )
+    return updatedItem
+  },
+
+  async deleteAssessment(id: string): Promise<boolean> {
+    await delay(150)
+    const list = getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+    const target = list.find((a) => a.id === id)
+    const filtered = list.filter((a) => a.id !== id)
+    saveToStorage(KEY_ASSESSMENTS, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'assessment_publish',
+        'Xóa bài thi',
+        'assessments',
+        id,
+        target.title,
+        'Xóa đề thi khỏi hệ thống'
+      )
+    }
+    return true
+  },
+
+  async reorderAssessments(orderedIds: string[]): Promise<AdminAssessment[]> {
+    await delay(100)
+    const list = getFromStorage<AdminAssessment[]>(KEY_ASSESSMENTS, SEED_ASSESSMENTS)
+    const map = new Map(list.map((a) => [a.id, a]))
+    const reordered: AdminAssessment[] = []
+    orderedIds.forEach((id) => {
+      const a = map.get(id)
+      if (a) reordered.push(a)
+    })
+    list.forEach((a) => {
+      if (!orderedIds.includes(a.id)) reordered.push(a)
+    })
+    saveToStorage(KEY_ASSESSMENTS, reordered)
+    return reordered
+  },
+
   async getAttempts(): Promise<AdminAssessmentAttempt[]> {
     await delay(120)
     return getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
@@ -1780,6 +2020,14 @@ export const adminService = {
     await delay(80)
     const list = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
     return list.find((a) => a.id === id) || null
+  },
+
+  async deleteAssessmentAttempt(attemptId: string): Promise<boolean> {
+    await delay(150)
+    const attempts = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
+    const filtered = attempts.filter((a) => a.id !== attemptId)
+    saveToStorage(KEY_ATTEMPTS, filtered)
+    return true
   },
 
   // --------------------------------------------------------------------------
@@ -1794,6 +2042,60 @@ export const adminService = {
     await delay(80)
     const list = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     return list.find((p) => p.id === id) || null
+  },
+
+  async createServicePlan(data: Omit<AdminServicePlan, 'id' | 'updatedAt' | 'activeSubscribers'>): Promise<AdminServicePlan> {
+    await delay(150)
+    const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+    const newPlan: AdminServicePlan = {
+      ...data,
+      id: `plan-srv-${Date.now().toString().slice(-4)}`,
+      activeSubscribers: 0,
+      updatedAt: new Date().toISOString().substring(0, 10),
+    }
+    const updated = [newPlan, ...plans]
+    saveToStorage(KEY_SERVICE_PLANS, updated)
+    return newPlan
+  },
+
+  async updateServicePlan(id: string, data: Partial<AdminServicePlan>): Promise<AdminServicePlan> {
+    await delay(150)
+    const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+    const idx = plans.findIndex((p) => p.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy gói dịch vụ')
+    const updatedPlan: AdminServicePlan = {
+      ...plans[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString().substring(0, 10),
+    }
+    plans[idx] = updatedPlan
+    saveToStorage(KEY_SERVICE_PLANS, plans)
+    return updatedPlan
+  },
+
+  async deleteServicePlan(id: string): Promise<boolean> {
+    await delay(150)
+    const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+    const filtered = plans.filter((p) => p.id !== id)
+    saveToStorage(KEY_SERVICE_PLANS, filtered)
+    return true
+  },
+
+  async reorderServicePlans(orderedIds: string[]): Promise<AdminServicePlan[]> {
+    await delay(100)
+    const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
+    const map = new Map(plans.map((p) => [p.id, p]))
+    const reordered: AdminServicePlan[] = []
+    orderedIds.forEach((id) => {
+      const p = map.get(id)
+      if (p) reordered.push(p)
+    })
+    plans.forEach((p) => {
+      if (!orderedIds.includes(p.id)) reordered.push(p)
+    })
+    saveToStorage(KEY_SERVICE_PLANS, reordered)
+    return reordered
   },
 
   // --------------------------------------------------------------------------
@@ -1841,6 +2143,14 @@ export const adminService = {
     return updated
   },
 
+  async deleteAiTask(taskId: string): Promise<boolean> {
+    await delay(150)
+    const tasks = getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
+    const filtered = tasks.filter((t) => t.id !== taskId)
+    saveToStorage(KEY_AI_TASKS, filtered)
+    return true
+  },
+
   // --------------------------------------------------------------------------
   // 10. ROLES & AUDIT LOGS
   // --------------------------------------------------------------------------
@@ -1855,9 +2165,77 @@ export const adminService = {
     return roles.find((r) => r.id === id) || null
   },
 
+  async createRole(data: Omit<AdminRole, 'id' | 'createdAt' | 'updatedAt' | 'userCount'>): Promise<AdminRole> {
+    await delay(150)
+    const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+    const now = new Date().toISOString().substring(0, 10)
+    const newRole: AdminRole = {
+      ...data,
+      id: `role-${Date.now().toString().slice(-4)}`,
+      userCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    }
+    const updated = [newRole, ...roles]
+    saveToStorage(KEY_ROLES, updated)
+    return newRole
+  },
+
+  async updateRole(id: string, data: Partial<AdminRole>): Promise<AdminRole> {
+    await delay(150)
+    const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+    const idx = roles.findIndex((r) => r.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy vai trò')
+    const updatedRole: AdminRole = {
+      ...roles[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString().substring(0, 10),
+    }
+    roles[idx] = updatedRole
+    saveToStorage(KEY_ROLES, roles)
+    return updatedRole
+  },
+
+  async deleteRole(id: string): Promise<boolean> {
+    await delay(150)
+    const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+    const target = roles.find((r) => r.id === id)
+    if (target?.isSystem) {
+      throw new Error('Không thể xóa vai trò hệ thống mặc định')
+    }
+    const filtered = roles.filter((r) => r.id !== id)
+    saveToStorage(KEY_ROLES, filtered)
+    return true
+  },
+
+  async reorderRoles(orderedIds: string[]): Promise<AdminRole[]> {
+    await delay(100)
+    const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
+    const map = new Map(roles.map((r) => [r.id, r]))
+    const reordered: AdminRole[] = []
+    orderedIds.forEach((id) => {
+      const r = map.get(id)
+      if (r) reordered.push(r)
+    })
+    roles.forEach((r) => {
+      if (!orderedIds.includes(r.id)) reordered.push(r)
+    })
+    saveToStorage(KEY_ROLES, reordered)
+    return reordered
+  },
+
   async getAuditLogs(): Promise<AdminAuditLog[]> {
     await delay(120)
     return getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
+  },
+
+  async deleteAuditLog(logId: string): Promise<boolean> {
+    await delay(150)
+    const logs = getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
+    const filtered = logs.filter((l) => l.id !== logId)
+    saveToStorage(KEY_AUDIT_LOGS, filtered)
+    return true
   },
 
   // --------------------------------------------------------------------------

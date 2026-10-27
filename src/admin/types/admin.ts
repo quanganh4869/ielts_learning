@@ -54,6 +54,7 @@ export interface AdminUser {
 // User Accounts & Authentication
 // ----------------------------------------------------------------------------
 export type UserStatus = 'active' | 'suspended' | 'locked' | 'pending_verification'
+export type UserRole = 'student' | 'admin'
 export type AuthProviderType = 'password' | 'google' | 'apple' | 'magic_link'
 
 export interface UserAccount {
@@ -61,7 +62,7 @@ export interface UserAccount {
   email: string
   fullName: string
   avatarUrl?: string
-  role: 'student' | 'admin'
+  role: UserRole
   status: UserStatus
   targetBand: number
   currentBand?: number
@@ -73,6 +74,13 @@ export interface UserAccount {
   createdAt: string
   lastActiveAt: string
   sessionsCount: number
+  isOnboarded?: boolean
+  stats?: {
+    totalStudyMinutes: number
+    completedLessons: number
+    masteredVocabulary: number
+    mockTestsTaken: number
+  }
 }
 
 export type SessionStatus = 'active' | 'expired' | 'revoked'
@@ -89,6 +97,9 @@ export interface UserSession {
   os: string
   browser: string
   locationEstimate?: string
+  location?: string
+  deviceName?: string
+  isActive?: boolean
   authMethod: AuthProviderType
   status: SessionStatus
   createdAt: string
@@ -121,6 +132,8 @@ export interface LoginEvent {
   ipAddress: string
   userAgent: string
   deviceInfo: string
+  device?: string
+  location?: string
   correlationId: string
 }
 

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CreditCard, Eye, Plus } from 'lucide-react'
-import { Button } from '@/components/common/Button'
+import { Plus, Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
-import { DataToolbar } from '../../components/DataToolbar'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { FeedbackOverlay } from '../../components/FeedbackOverlay'
+import { Button } from '@/components/common/Button'
 import { adminService } from '../../services/adminService'
 import { AdminServicePlan } from '../../types/admin'
 
@@ -15,18 +15,21 @@ export const ServicePlansListPage: React.FC = () => {
   const [plans, setPlans] = useState<AdminServicePlan[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
+
+  // Delete State
+  const [deletingPlan, setDeletingPlan] = useState<AdminServicePlan | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Feedback State
   const [feedback, setFeedback] = useState<{
-    isOpen: boolean
     type: 'success' | 'error'
     title: string
     message: string
-  }>({
-    isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
-  })
+  } | null>(null)
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const loadData = async () => {
     try {
@@ -41,46 +44,51 @@ export const ServicePlansListPage: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const filtered = useMemo(() => {
-    return plans.filter(
-      (p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.code.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [plans, search])
-
-  const formatVnd = (amount: number) => {
-    if (amount === 0) return 'Miễn phí (Free)'
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  const handleConfirmDelete = async () => {
+    if (!deletingPlan) return
+    try {
+      setIsDeleting(true)
+      await adminService.deleteServicePlan(deletingPlan.id)
+      setPlans((prev) => prev.filter((item) => item.id !== deletingPlan.id))
+      setFeedback({
+        type: 'success',
+        title: 'Đã xóa gói dịch vụ',
+        message: `Đã xóa gói "${deletingPlan.name}" khỏi hệ thống.`,
+      })
+      setDeletingPlan(null)
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Xóa gói dịch vụ thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi khi xóa gói',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const columns: Column<AdminServicePlan>[] = [
     {
       key: 'name',
-      header: 'Gói dịch vụ',
+      header: 'Tên gói dịch vụ',
       render: (p) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#EAF3F1] text-[#28665F] flex items-center justify-center shrink-0">
-            <CreditCard className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="font-bold text-xs text-[#20272E] hover:text-[#28665F] transition-colors">{p.name}</div>
-            <div className="text-2xs text-[#68727D] font-mono">{p.code}</div>
-          </div>
+        <div className="space-y-0.5">
+          <span className="font-bold text-sm text-[#20272E] block">{p.name}</span>
+          <span className="text-2xs text-[#68727D] font-mono">{p.code}</span>
         </div>
       ),
     },
     {
       key: 'price',
-      header: 'Mức phí & Chu kỳ',
+      header: 'Mức phí',
       render: (p) => (
-        <div>
-          <span className="font-bold text-xs text-[#20272E]">{formatVnd(p.priceVnd)}</span>
-          <div className="text-2xs text-[#68727D] capitalize">Chu kỳ: {p.billingCycle}</div>
+        <div className="text-xs">
+          <span className="font-bold text-[#28665F]">
+            {p.priceVnd === 0 ? 'Miễn phí' : `${p.priceVnd.toLocaleString('vi-VN')} VND`}
+          </span>
+          <div className="text-2xs text-[#68727D] capitalize">
+            Chu kỳ: {p.billingCycle}
+          </div>
         </div>
       ),
     },
@@ -88,14 +96,12 @@ export const ServicePlansListPage: React.FC = () => {
       key: 'activeSubscribers',
       header: 'Học viên đăng ký',
       render: (p) => (
-        <span className="font-semibold text-xs text-[#20272E]">
-          {p.activeSubscribers.toLocaleString('vi-VN')} học viên
-        </span>
+        <span className="font-semibold text-xs text-[#20272E]">{p.activeSubscribers.toLocaleString('vi-VN')} người dùng</span>
       ),
     },
     {
       key: 'limits',
-      header: 'Hạn mức AI & Thi thử',
+      header: 'Hạn mức AI Scoring',
       render: (p) => (
         <div className="text-2xs text-[#68727D]">
           <div>Writing: {p.limits.aiWritingReviewsPerDay}/ngày</div>
@@ -110,16 +116,20 @@ export const ServicePlansListPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Chi tiết',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (p) => (
         <button
           type="button"
-          onClick={() => navigate(`/admin/service-plans/${p.id}`)}
-          className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-          title="Xem cấu hình gói"
+          onClick={(e) => {
+            e.stopPropagation()
+            setDeletingPlan(p)
+          }}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          title="Xóa gói dịch vụ này"
         >
-          <Eye className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
       ),
     },
@@ -129,19 +139,19 @@ export const ServicePlansListPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Quản lý Gói dịch vụ & Quyền lợi (Service Plans)"
-        subtitle="Cấu hình các gói thuê bao thương mại, mức giá, hạn mức sử dụng AI và quyền truy cập phòng thi"
+        subtitle="Cấu hình các gói thuê bao thương mại, mức giá, hạn mức sử dụng AI. Nhấp vào hàng để xem chi tiết & chỉnh sửa"
         actions={
           <Button
             variant="primary"
             size="sm"
             onClick={() => {
               setFeedback({
-                isOpen: true,
                 type: 'success',
-                title: 'Khởi tạo gói dịch vụ',
-                message: 'Chức năng khai báo cấu hình gói thuê bao thương mại và hạn mức AI đang sẵn sàng.',
+                title: 'Tạo gói mới',
+                message: 'Vui lòng thiết lập gói dịch vụ mới trong trình soạn thảo.',
               })
             }}
+            className="font-bold shadow-xs"
             leftIcon={<Plus className="w-4 h-4" />}
           >
             Tạo gói dịch vụ mới
@@ -149,29 +159,35 @@ export const ServicePlansListPage: React.FC = () => {
         }
       />
 
-      <DataToolbar
-        searchPlaceholder="Tìm theo tên gói hoặc mã định danh..."
-        searchValue={search}
-        onSearchChange={setSearch}
-        showFilterToggle={false}
-      />
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={plans}
         isLoading={isLoading}
         error={error}
-        onRetry={loadData}
-        keyExtractor={(p) => p.id}
         onRowClick={(p) => navigate(`/admin/service-plans/${p.id}`)}
+        keyExtractor={(p) => p.id}
+        emptyTitle="Chưa có gói dịch vụ nào"
       />
 
-      <FeedbackOverlay
-        isOpen={feedback.isOpen}
-        type={feedback.type}
-        title={feedback.title}
-        message={feedback.message}
-        onClose={() => setFeedback((f) => ({ ...f, isOpen: false }))}
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!deletingPlan}
+        onClose={() => setDeletingPlan(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa gói dịch vụ"
+        message={`Bạn có chắc chắn muốn xóa gói "${deletingPlan?.name}" không? Hành động này không thể hoàn tác.`}
+        confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+        cancelLabel="Hủy bỏ"
+        severity="danger"
       />
     </div>
   )

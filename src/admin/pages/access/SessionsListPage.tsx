@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, ShieldBan } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { DataToolbar } from '../../components/DataToolbar'
-import { FilterPanel } from '../../components/FilterPanel'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { FeedbackOverlay } from '../../components/FeedbackOverlay'
 import { adminService } from '../../services/adminService'
 import { UserSession } from '../../types/admin'
 
@@ -18,9 +18,7 @@ export const SessionsListPage: React.FC = () => {
 
   // Filters
   const [search, setSearch] = useState('')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [deviceFilter, setDeviceFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'revoked' | 'expired'>('all')
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -31,6 +29,18 @@ export const SessionsListPage: React.FC = () => {
     isOpen: boolean
     session: UserSession | null
   }>({ isOpen: false, session: null })
+  const [isRevoking, setIsRevoking] = useState(false)
+
+  // Feedback State
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error'
+    title: string
+    message: string
+  } | null>(null)
+
+  useEffect(() => {
+    loadSessions()
+  }, [])
 
   const loadSessions = async () => {
     try {
@@ -39,51 +49,54 @@ export const SessionsListPage: React.FC = () => {
       const data = await adminService.getSessions()
       setSessions(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách phiên đăng nhập')
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách phiên')
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    loadSessions()
-  }, [])
+  const handleConfirmRevoke = async (reason: string) => {
+    if (!revokeDialog.session) return
+    try {
+      setIsRevoking(true)
+      await adminService.revokeSession(revokeDialog.session.id, reason)
+      setSessions((prev) =>
+        prev.map((s) => (s.id === revokeDialog.session?.id ? { ...s, status: 'revoked', isActive: false } : s))
+      )
+      setFeedback({
+        type: 'success',
+        title: 'Đã thu hồi phiên đăng nhập',
+        message: `Đã thu hồi phiên truy cập của ${revokeDialog.session.userEmail}. Lý do: ${reason || 'Yêu cầu quản trị'}.`,
+      })
+      setRevokeDialog({ isOpen: false, session: null })
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        title: 'Thu hồi thất bại',
+        message: err instanceof Error ? err.message : 'Lỗi thu hồi phiên đăng nhập',
+      })
+    } finally {
+      setIsRevoking(false)
+    }
+  }
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((s) => {
       const matchSearch =
-        s.userName.toLowerCase().includes(search.toLowerCase()) ||
         s.userEmail.toLowerCase().includes(search.toLowerCase()) ||
-        s.id.toLowerCase().includes(search.toLowerCase()) ||
-        s.ipAddress.includes(search)
-
+        s.userName.toLowerCase().includes(search.toLowerCase()) ||
+        s.ipAddress.includes(search) ||
+        s.id.toLowerCase().includes(search.toLowerCase())
       const matchStatus = statusFilter === 'all' || s.status === statusFilter
-      const matchDevice = deviceFilter === 'all' || s.deviceType === deviceFilter
-
-      return matchSearch && matchStatus && matchDevice
+      return matchSearch && matchStatus
     })
-  }, [sessions, search, statusFilter, deviceFilter])
+  }, [sessions, search, statusFilter])
 
-  const totalPages = Math.ceil(filteredSessions.length / pageSize)
+  const totalPages = Math.ceil(filteredSessions.length / pageSize) || 1
   const paginatedSessions = useMemo(() => {
     const start = (currentPage - 1) * pageSize
     return filteredSessions.slice(start, start + pageSize)
   }, [filteredSessions, currentPage, pageSize])
-
-  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (deviceFilter !== 'all' ? 1 : 0)
-
-  const handleResetFilters = () => {
-    setSearch('')
-    setStatusFilter('all')
-    setDeviceFilter('all')
-    setCurrentPage(1)
-  }
-
-  const handleRevokeConfirm = async (reason: string) => {
-    if (!revokeDialog.session) return
-    await adminService.revokeSession(revokeDialog.session.id, reason)
-    await loadSessions()
-  }
 
   const columns: Column<UserSession>[] = [
     {
@@ -91,37 +104,26 @@ export const SessionsListPage: React.FC = () => {
       header: 'Người dùng',
       render: (s) => (
         <div>
-          <div className="font-bold text-[#20272E] flex items-center gap-1.5">
-            <span>{s.userName}</span>
+          <span className="font-semibold text-xs sm:text-sm text-[#20272E] block">{s.userName}</span>
+          <span className="text-2xs text-[#68727D] block">{s.userEmail}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'device',
+      header: 'Thiết bị & Vị trí IP',
+      render: (s) => (
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-[#20272E]">
+            <span className="font-medium">{s.deviceName || s.browser}</span>
+            <span className="text-2xs text-[#68727D]">({s.os})</span>
             {s.isCurrentAdminSession && (
-              <span className="text-2xs bg-[#EAF3F1] text-[#28665F] font-bold px-1.5 py-0.5 rounded">
-                Phiên của bạn
+              <span className="bg-[#EAF3F1] text-[#28665F] text-2xs font-bold px-1.5 py-0.2 rounded">
+                Phiên này
               </span>
             )}
           </div>
-          <div className="text-2xs text-[#68727D] font-mono">{s.userEmail}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'id',
-      header: 'Mã phiên & Token',
-      render: (s) => (
-        <div>
-          <span className="font-mono text-xs font-semibold text-[#20272E]">{s.id}</span>
-          <div className="text-2xs text-[#68727D] font-mono">{s.maskedToken}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'client',
-      header: 'Thiết bị & IP',
-      render: (s) => (
-        <div>
-          <div className="font-semibold text-xs text-[#20272E]">
-            {s.os} • {s.browser}
-          </div>
-          <div className="text-2xs text-[#68727D] font-mono">
+          <div className="text-2xs text-[#68727D]">
             IP: {s.ipAddress} {s.locationEstimate && `(${s.locationEstimate})`}
           </div>
         </div>
@@ -144,29 +146,32 @@ export const SessionsListPage: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'Thao tác',
-      align: 'right',
+      header: '',
+      align: 'center',
+      width: '60px',
       render: (s) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => navigate(`/admin/access/sessions/${s.id}`)}
-            className="p-1.5 text-[#68727D] hover:text-[#28665F] hover:bg-[#EAF3F1] rounded-lg transition-colors"
-            title="Xem chi tiết phiên"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          {s.status === 'active' && !s.isCurrentAdminSession && (
-            <button
-              type="button"
-              onClick={() => setRevokeDialog({ isOpen: true, session: s })}
-              className="p-1.5 text-[#68727D] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-              title="Thu hồi phiên đăng nhập"
-            >
-              <ShieldBan className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setRevokeDialog({ isOpen: true, session: s })
+          }}
+          disabled={s.status !== 'active' || s.isCurrentAdminSession}
+          className={`p-1.5 rounded-lg transition-colors ${
+            s.status !== 'active' || s.isCurrentAdminSession
+              ? 'text-slate-200 cursor-not-allowed'
+              : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer'
+          }`}
+          title={
+            s.isCurrentAdminSession
+              ? 'Không thể xóa phiên của chính bạn'
+              : s.status !== 'active'
+              ? 'Phiên đã kết thúc'
+              : 'Xóa / Thu hồi phiên đăng nhập'
+          }
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       ),
     },
   ]
@@ -174,68 +179,66 @@ export const SessionsListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Phiên đăng nhập"
-        subtitle={`Theo dõi các phiên kết nối đang mở, phát hiện đăng nhập đa thiết bị và thu hồi quyền truy cập (${filteredSessions.length} phiên)`}
+        title="Quản lý Phiên Đăng nhập"
+        subtitle={`Giám sát và kiểm soát các phiên đăng nhập đang hoạt động trên toàn hệ thống (${filteredSessions.length} phiên). Nhấp vào hàng để xem chi tiết`}
       />
 
+      {feedback && (
+        <FeedbackOverlay
+          type={feedback.type}
+          title={feedback.title}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       <DataToolbar
-        searchPlaceholder="Tìm theo tên học viên, email, session ID hoặc IP..."
+        searchPlaceholder="Tìm kiếm theo email, IP, ID phiên..."
         searchValue={search}
         onSearchChange={(v) => {
           setSearch(v)
           setCurrentPage(1)
         }}
-        isFilterOpen={isFilterOpen}
-        onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
-        activeFilterCount={activeFilterCount}
+        filters={[
+          {
+            key: 'status',
+            label: 'Trạng thái',
+            value: statusFilter,
+            options: [
+              { label: 'Tất cả trạng thái', value: 'all' },
+              { label: 'Đang hoạt động', value: 'active' },
+              { label: 'Đã thu hồi', value: 'revoked' },
+              { label: 'Hết hạn', value: 'expired' },
+            ],
+            onChange: (v: string) => {
+              setStatusFilter(v as any)
+              setCurrentPage(1)
+            },
+          },
+        ]}
+        onReset={() => {
+          setSearch('')
+          setStatusFilter('all')
+          setCurrentPage(1)
+        }}
+        isFiltered={search !== '' || statusFilter !== 'all'}
       />
-
-      <FilterPanel isOpen={isFilterOpen} onReset={handleResetFilters}>
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Trạng thái phiên</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Còn hiệu lực (Active)</option>
-            <option value="expired">Đã hết hạn (Expired)</option>
-            <option value="revoked">Đã bị thu hồi (Revoked)</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="text-2xs font-bold text-[#20272E] block mb-1">Loại thiết bị</label>
-          <select
-            value={deviceFilter}
-            onChange={(e) => {
-              setDeviceFilter(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="w-full h-8 text-xs rounded border border-[#E3E7EB] bg-white px-2 focus:outline-none focus:border-[#28665F]"
-          >
-            <option value="all">Tất cả thiết bị</option>
-            <option value="desktop">Máy tính (Desktop)</option>
-            <option value="mobile">Điện thoại (Mobile)</option>
-            <option value="tablet">Máy tính bảng (Tablet)</option>
-          </select>
-        </div>
-      </FilterPanel>
 
       <DataTable
         columns={columns}
         data={paginatedSessions}
         isLoading={isLoading}
         error={error}
-        onRetry={loadSessions}
-        keyExtractor={(s) => s.id}
         onRowClick={(s) => navigate(`/admin/access/sessions/${s.id}`)}
-        isFiltered={activeFilterCount > 0 || search.length > 0}
-        onResetFilters={handleResetFilters}
+        keyExtractor={(s) => s.id}
+        emptyTitle="Không tìm thấy phiên đăng nhập"
+        emptyDescription="Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm."
+        isFiltered={search !== '' || statusFilter !== 'all'}
+        onResetFilters={() => {
+          setSearch('')
+          setStatusFilter('all')
+          setCurrentPage(1)
+        }}
         pagination={{
           currentPage,
           totalPages,
@@ -245,17 +248,17 @@ export const SessionsListPage: React.FC = () => {
         }}
       />
 
-      {/* Revoke Session Confirm Dialog */}
+      {/* Revoke / Delete Session Dialog */}
       <ConfirmDialog
         isOpen={revokeDialog.isOpen}
         onClose={() => setRevokeDialog({ isOpen: false, session: null })}
-        onConfirm={handleRevokeConfirm}
-        title="Thu hồi phiên đăng nhập"
-        message={`Bạn có chắc chắn muốn thu hồi phiên ${revokeDialog.session?.id} của người dùng ${revokeDialog.session?.userName}? Thiết bị này (${revokeDialog.session?.os} - ${revokeDialog.session?.browser}) sẽ bị ngắt kết nối ngay lập tức.`}
+        onConfirm={handleConfirmRevoke}
+        title="Xác nhận xóa / thu hồi phiên đăng nhập"
+        message={`Bạn có chắc chắn muốn thu hồi phiên đăng nhập trên thiết bị ${revokeDialog.session?.deviceName || revokeDialog.session?.browser} của ${revokeDialog.session?.userName} không? Người dùng sẽ bị đăng xuất ngay lập tức.`}
+        confirmLabel={isRevoking ? 'Đang thu hồi...' : 'Xác nhận xóa phiên'}
         severity="danger"
-        confirmLabel="Xác nhận thu hồi"
-        requireReason={true}
-        scopeWarning="Token phiên sẽ bị vô hiệu hóa trên toàn bộ hạ tầng backend."
+        requireReason
+        reasonPlaceholder="Nhập lý do thu hồi phiên đăng nhập..."
       />
     </div>
   )
