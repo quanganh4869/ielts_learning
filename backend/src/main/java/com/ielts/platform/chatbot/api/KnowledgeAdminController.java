@@ -8,7 +8,9 @@ import com.ielts.platform.common.PageResponse;
 import com.ielts.platform.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,10 +36,17 @@ public class KnowledgeAdminController {
     @Data
     public static class IngestTextRequest {
         @NotBlank(message = "Tiêu đề không được để trống")
+        @Size(min = 3, max = 255, message = "Tiêu đề phải từ 3 đến 255 ký tự")
         private String title;
+
+        @Size(max = 100, message = "Danh mục không được vượt quá 100 ký tự")
         private String category;
+
+        @Size(max = 255, message = "Tên tệp nguồn không được vượt quá 255 ký tự")
         private String sourceFilename;
+
         @NotBlank(message = "Nội dung không được để trống")
+        @Size(min = 10, max = 100000, message = "Nội dung phải từ 10 đến 100,000 ký tự")
         private String content;
     }
 
@@ -75,7 +84,7 @@ public class KnowledgeAdminController {
     @PostMapping("/ingest")
     @Operation(summary = "Thêm và phân đoạn một tài liệu mới vào Knowledge Base")
     public ResponseEntity<ApiResponse<KnowledgeDocument>> ingestDocument(
-            @RequestBody IngestTextRequest request,
+            @Valid @RequestBody IngestTextRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system_admin";

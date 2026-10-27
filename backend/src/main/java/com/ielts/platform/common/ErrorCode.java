@@ -10,6 +10,7 @@ public enum ErrorCode {
     BAD_REQUEST("INVALID_ARGUMENT", "Invalid argument provided in request", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED("UNAUTHORIZED", "Full authentication is required to access this resource", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("FORBIDDEN", "You do not have permission to perform this action", HttpStatus.FORBIDDEN),
+    TOO_MANY_REQUESTS("TOO_MANY_REQUESTS", "Rate limit exceeded. Please try again later.", HttpStatus.TOO_MANY_REQUESTS),
     BUSINESS_RULE_VIOLATION("BUSINESS_RULE_VIOLATION", "The operation violates a core business rule", HttpStatus.UNPROCESSABLE_ENTITY),
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "An unexpected internal error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
 

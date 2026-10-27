@@ -1,8 +1,12 @@
 package com.ielts.platform.admin.users.dto;
 
 import com.ielts.platform.admin.users.model.UserEntity;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,17 +41,25 @@ public class UserDtos {
     @AllArgsConstructor
     public static class CreateUserRequest {
         @NotBlank(message = "Name cannot be empty")
+        @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
         private String name;
 
         @NotBlank(message = "Email cannot be empty")
         @Email(message = "Invalid email format")
+        @Size(max = 255, message = "Email cannot exceed 255 characters")
         private String email;
 
         @NotBlank(message = "Password cannot be empty")
+        @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
         private String password;
 
+        @DecimalMin(value = "0.0", inclusive = true, message = "Target band must be >= 0.0")
+        @DecimalMax(value = "9.0", inclusive = true, message = "Target band must be <= 9.0")
         private BigDecimal targetBand;
+
+        @Size(max = 1024, message = "Avatar URL cannot exceed 1024 characters")
         private String avatarUrl;
+
         private List<String> roleIds;
     }
 
@@ -56,9 +68,16 @@ public class UserDtos {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateUserRequest {
+        @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
         private String name;
+
+        @DecimalMin(value = "0.0", inclusive = true, message = "Target band must be >= 0.0")
+        @DecimalMax(value = "9.0", inclusive = true, message = "Target band must be <= 9.0")
         private BigDecimal targetBand;
+
+        @Size(max = 1024, message = "Avatar URL cannot exceed 1024 characters")
         private String avatarUrl;
+
         private List<String> roleIds;
     }
 
@@ -68,7 +87,10 @@ public class UserDtos {
     @AllArgsConstructor
     public static class UpdateUserStatusRequest {
         @NotBlank(message = "Status is required")
+        @Pattern(regexp = "^(ACTIVE|INACTIVE|SUSPENDED|BANNED)$", message = "Status must be ACTIVE, INACTIVE, SUSPENDED, or BANNED")
         private String status;
+
+        @Size(max = 500, message = "Reason cannot exceed 500 characters")
         private String reason;
     }
 
@@ -77,8 +99,14 @@ public class UserDtos {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateProfileRequest {
+        @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
         private String name;
+
+        @DecimalMin(value = "0.0", inclusive = true, message = "Target band must be >= 0.0")
+        @DecimalMax(value = "9.0", inclusive = true, message = "Target band must be <= 9.0")
         private BigDecimal targetBand;
+
+        @Size(max = 1024, message = "Avatar URL cannot exceed 1024 characters")
         private String avatarUrl;
     }
 }

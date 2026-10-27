@@ -7,6 +7,7 @@ import com.ielts.platform.security.PermissionConstants;
 import com.ielts.platform.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,7 +41,7 @@ public class ServicePlanController {
     @PreAuthorize("hasAuthority('" + PermissionConstants.SYSTEM_SETTINGS_MANAGE + "')")
     @Operation(summary = "Create subscription tier")
     public ApiResponse<ServicePlanDtos.Response> createPlan(
-            @RequestBody ServicePlanDtos.UpsertRequest request,
+            @Valid @RequestBody ServicePlanDtos.UpsertRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";
@@ -53,7 +54,7 @@ public class ServicePlanController {
     @Operation(summary = "Update subscription tier")
     public ApiResponse<ServicePlanDtos.Response> updatePlan(
             @PathVariable String id,
-            @RequestBody ServicePlanDtos.UpsertRequest request,
+            @Valid @RequestBody ServicePlanDtos.UpsertRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";

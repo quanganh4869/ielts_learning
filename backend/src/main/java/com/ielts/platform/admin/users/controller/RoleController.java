@@ -6,6 +6,7 @@ import com.ielts.platform.common.ApiResponse;
 import com.ielts.platform.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class RoleController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Create custom RBAC role")
     public ApiResponse<RoleDtos.Response> createRole(
-            @RequestBody RoleDtos.UpsertRequest request,
+            @Valid @RequestBody RoleDtos.UpsertRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";
@@ -52,7 +53,7 @@ public class RoleController {
     @Operation(summary = "Update role permissions")
     public ApiResponse<RoleDtos.Response> updateRole(
             @PathVariable String id,
-            @RequestBody RoleDtos.UpsertRequest request,
+            @Valid @RequestBody RoleDtos.UpsertRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";

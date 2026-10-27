@@ -1,7 +1,10 @@
 package com.ielts.platform.common;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,12 +23,38 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRateLimitExceeded(RateLimitExceededException ex) {
+        log.warn("Rate limit exceeded: retryAfter={}s, message={}", ex.getRetryAfterSeconds(), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
+                .body(ApiResponse.error(ex.getErrorCode().getCode(), ex.getMessage()));
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
         log.warn("Business exception: code={}, message={}", ex.getErrorCode().getCode(), ex.getMessage());
         return ResponseEntity
                 .status(ex.getErrorCode().getHttpStatus())
                 .body(ApiResponse.error(ex.getErrorCode().getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> fieldErrors = new HashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            fieldErrors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        }
+        log.warn("Constraint violation: {}", fieldErrors);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Map<String, String>>builder()
+                        .success(false)
+                        .errorCode(ErrorCode.BAD_REQUEST.getCode())
+                        .message("Validation failed for input constraints")
+                        .data(fieldErrors)
+                        .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

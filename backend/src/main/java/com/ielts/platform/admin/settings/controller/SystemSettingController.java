@@ -1,5 +1,6 @@
 package com.ielts.platform.admin.settings.controller;
 
+import com.ielts.platform.admin.settings.dto.UpdateSettingRequest;
 import com.ielts.platform.admin.settings.model.SystemSettingEntity;
 import com.ielts.platform.admin.settings.service.SystemSettingService;
 import com.ielts.platform.common.ApiResponse;
@@ -7,13 +8,13 @@ import com.ielts.platform.security.PermissionConstants;
 import com.ielts.platform.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/settings")
@@ -35,12 +36,11 @@ public class SystemSettingController {
     @Operation(summary = "Update an individual configuration key")
     public ApiResponse<SystemSettingEntity> updateSetting(
             @PathVariable String key,
-            @RequestBody Map<String, String> body,
+            @Valid @RequestBody UpdateSettingRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";
         String adminName = principal != null ? principal.getName() : "System";
-        String value = body.get("value");
-        return ApiResponse.ok("Setting updated", service.updateSetting(key, value, adminId, adminName));
+        return ApiResponse.ok("Setting updated", service.updateSetting(key, request.getValue(), adminId, adminName));
     }
 }

@@ -2,8 +2,11 @@ package com.ielts.platform.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ielts.platform.common.ApiResponse;
+import com.ielts.platform.security.ClientIpResolver;
 import com.ielts.platform.security.CookieOrHeaderBearerTokenResolver;
 import com.ielts.platform.security.CsrfCookieFilter;
+import com.ielts.platform.security.RateLimitingFilter;
+import com.ielts.platform.security.SlidingWindowRateLimiter;
 import com.ielts.platform.security.SpaCsrfTokenRequestHandler;
 import com.ielts.platform.security.supabase.SupabaseAudienceValidator;
 import com.ielts.platform.security.supabase.SupabaseJwtAuthenticationConverter;
@@ -55,6 +58,20 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
+    public SlidingWindowRateLimiter slidingWindowRateLimiter() {
+        return new SlidingWindowRateLimiter();
+    }
+
+    @Bean
+    public RateLimitingFilter rateLimitingFilter(
+            SlidingWindowRateLimiter slidingWindowRateLimiter,
+            RateLimitingProperties rateLimitingProperties,
+            ClientIpResolver clientIpResolver
+    ) {
+        return new RateLimitingFilter(slidingWindowRateLimiter, rateLimitingProperties, clientIpResolver, objectMapper);
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -100,7 +117,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, RateLimitingFilter rateLimitingFilter) throws Exception {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName(null);
 
@@ -127,6 +144,7 @@ public class SecurityConfig {
                         )
                 )
                 .addFilterAfter(new CsrfCookieFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
+                .addFilterAfter(rateLimitingFilter, org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter.class)
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
                         .contentTypeOptions(content -> {})

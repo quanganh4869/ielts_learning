@@ -19,6 +19,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -58,13 +61,24 @@ public class AuthController {
     private final UserProvisioningService userProvisioningService;
     private final ObjectMapper objectMapper;
 
-    public record SessionRequest(String accessToken, String refreshToken) {}
-    public record RefreshTokenRequest(String refreshToken) {}
+    public record SessionRequest(
+            @NotBlank(message = "Access token is required")
+            @Size(max = 8192, message = "Access token length is invalid")
+            String accessToken,
+
+            @Size(max = 8192, message = "Refresh token length is invalid")
+            String refreshToken
+    ) {}
+
+    public record RefreshTokenRequest(
+            @Size(max = 8192, message = "Refresh token length is invalid")
+            String refreshToken
+    ) {}
 
     @PostMapping("/session")
     @Operation(summary = "Exchange client-side Supabase tokens for HttpOnly access and refresh cookies")
     public ResponseEntity<ApiResponse<AuthProfileResponse>> establishSession(
-            @RequestBody SessionRequest request,
+            @Valid @RequestBody SessionRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {

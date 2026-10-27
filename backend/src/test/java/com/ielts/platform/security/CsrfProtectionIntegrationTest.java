@@ -5,6 +5,7 @@ import com.ielts.platform.admin.users.repository.LoginEventRepository;
 import com.ielts.platform.admin.users.repository.UserSessionRepository;
 import com.ielts.platform.admin.users.service.UserService;
 import com.ielts.platform.config.AuthProperties;
+import com.ielts.platform.config.RateLimitingProperties;
 import com.ielts.platform.config.SecurityConfig;
 import com.ielts.platform.config.SupabaseProperties;
 import com.ielts.platform.security.supabase.SupabaseJwtAuthenticationConverter;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {AuthController.class})
-@Import({SecurityConfig.class, AuthProperties.class, SupabaseProperties.class})
+@Import({SecurityConfig.class, AuthProperties.class, SupabaseProperties.class, RateLimitingProperties.class})
 class CsrfProtectionIntegrationTest {
 
     @Autowired

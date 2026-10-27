@@ -72,7 +72,7 @@ public class UserController {
     @Operation(summary = "Update user details")
     public ApiResponse<UserDtos.UserResponse> updateUser(
             @PathVariable String id,
-            @RequestBody UserDtos.UpdateUserRequest request,
+            @Valid @RequestBody UserDtos.UpdateUserRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         String adminId = principal != null ? principal.getId() : "system";
@@ -118,7 +118,7 @@ public class UserController {
     @PatchMapping("/users/me")
     @Operation(summary = "Update current authenticated user profile")
     public ApiResponse<UserDtos.UserResponse> updateMyProfile(
-            @RequestBody UserDtos.UpdateProfileRequest request,
+            @Valid @RequestBody UserDtos.UpdateProfileRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         if (principal == null) {
