@@ -132,6 +132,106 @@ public class StudyService {
         userVocabularyRepository.delete(entity);
     }
 
+    @Transactional
+    public UserVocabularyDto updateVocabularyMastery(String id, int masteryLevel, UserPrincipal principal) {
+        UserVocabularyEntity entity = userVocabularyRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Vocabulary item not found"));
+
+        ownershipService.assertOwnerOrAdmin(entity.getUser().getId(), principal, "vocabulary item");
+        entity.setMasteryLevel(Math.max(0, Math.min(masteryLevel, 3)));
+        UserVocabularyEntity saved = userVocabularyRepository.save(entity);
+        return toUserVocabularyDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public LearnerSummaryDto getLearnerSummary(UserPrincipal principal) {
+        UserEntity user = getAuthenticatedUserEntity(principal);
+
+        long practiceCount = practiceSessionRepository.countByUserIdAndStatus(user.getId(), "COMPLETED");
+        long attemptCount = assessmentAttemptRepository.countByUserIdAndStatus(user.getId(), "COMPLETED");
+        long vocabCount = userVocabularyRepository.countByUserId(user.getId());
+
+        java.util.List<AssessmentAttemptEntity> attempts = assessmentAttemptRepository.findByUserIdOrderByStartedAtDesc(user.getId());
+        java.util.List<PracticeSessionEntity> sessions = practiceSessionRepository.findByUserIdOrderByStartedAtDesc(user.getId());
+
+        // Calculate average / current band
+        BigDecimal currentBand = user.getTargetBand() != null ? user.getTargetBand().subtract(BigDecimal.valueOf(0.5)) : BigDecimal.valueOf(6.5);
+        if (!attempts.isEmpty() && attempts.get(0).getBandScore() != null) {
+            currentBand = attempts.get(0).getBandScore();
+        }
+
+        // Calculate total study hours
+        double totalSeconds = 0;
+        for (AssessmentAttemptEntity att : attempts) {
+            totalSeconds += att.getTimeSpentSeconds();
+        }
+        for (PracticeSessionEntity sess : sessions) {
+            totalSeconds += 900; // default 15 min per practice session
+        }
+        double totalHours = Math.round((totalSeconds / 3600.0) * 10.0) / 10.0;
+
+        // Skill band scores breakdown
+        java.util.Map<String, BigDecimal> skillScores = new java.util.HashMap<>();
+        skillScores.put("LISTENING", BigDecimal.valueOf(6.5));
+        skillScores.put("READING", BigDecimal.valueOf(6.5));
+        skillScores.put("WRITING", BigDecimal.valueOf(6.0));
+        skillScores.put("SPEAKING", BigDecimal.valueOf(6.0));
+
+        for (PracticeSessionEntity s : sessions) {
+            if (s.getBandScore() != null && s.getSkill() != null) {
+                skillScores.put(s.getSkill().toUpperCase(), s.getBandScore());
+            }
+        }
+
+        int streak = (practiceCount + attemptCount > 0) ? Math.min((int) (practiceCount + attemptCount), 7) : 0;
+
+        return LearnerSummaryDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .targetBand(user.getTargetBand() != null ? user.getTargetBand() : BigDecimal.valueOf(7.0))
+                .currentBand(currentBand)
+                .completedPracticeSessions(practiceCount)
+                .completedTestAttempts(attemptCount)
+                .vocabularyCount(vocabCount)
+                .streakDays(streak)
+                .totalStudyHours(Math.max(totalHours, 0.5))
+                .skillScores(skillScores)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<AssessmentSummaryDto> getAvailableAssessments() {
+        return assessmentRepository.findByStatusOrderByCreatedAtDesc("PUBLISHED").stream()
+                .map(a -> AssessmentSummaryDto.builder()
+                        .id(a.getId())
+                        .title(a.getTitle())
+                        .skill(a.getSkill())
+                        .type(a.getType())
+                        .timeLimitMinutes(a.getTimeLimitMinutes())
+                        .totalQuestions(a.getTotalQuestions())
+                        .passingScore(a.getPassingScore())
+                        .status(a.getStatus())
+                        .build())
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AssessmentSummaryDto getAssessmentDetails(String assessmentId) {
+        AssessmentEntity a = assessmentRepository.findById(assessmentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Assessment not found: " + assessmentId));
+        return AssessmentSummaryDto.builder()
+                .id(a.getId())
+                .title(a.getTitle())
+                .skill(a.getSkill())
+                .type(a.getType())
+                .timeLimitMinutes(a.getTimeLimitMinutes())
+                .totalQuestions(a.getTotalQuestions())
+                .passingScore(a.getPassingScore())
+                .status(a.getStatus())
+                .build();
+    }
+
     // --- Mock Test Attempts with Ownership ---
 
     @Transactional(readOnly = true)

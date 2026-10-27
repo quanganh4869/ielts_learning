@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { LearningPath } from '@/types/learningPath'
 import { MockTestResult } from '@/types/mockTest'
 import { mockLearningPath } from '@/services/mockData'
+import { apiService } from '@/services/apiService'
 import {
   UnifiedProgressMetrics,
   NextRecommendedAction,
@@ -194,6 +195,19 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveProgress(completedLessonIds, updated, mockTestResults)
       return updated
     })
+
+    // Persist real practice session to Spring Boot backend
+    apiService
+      .startPracticeSession(exerciseId.includes('lis') ? 'LISTENING' : exerciseId.includes('read') ? 'READING' : exerciseId.includes('wri') ? 'WRITING' : 'SPEAKING', exerciseId)
+      .then((sess) => {
+        apiService.completePracticeSession(
+          sess.id,
+          10,
+          Math.round(score / 10),
+          score >= 80 ? 7.5 : score >= 60 ? 6.5 : 5.5
+        )
+      })
+      .catch((e) => console.warn('Practice session async save error:', e))
   }, [completedLessonIds, mockTestResults])
 
   const recordMockTestResult = useCallback((result: MockTestResult) => {
@@ -202,6 +216,14 @@ export const LearningProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveProgress(completedLessonIds, completedExerciseIds, updated)
       return updated
     })
+
+    // Persist mock test attempt to Spring Boot backend
+    apiService
+      .submitMockTestSession(
+        result.testId,
+        result.sections.map((s) => ({ sectionName: s.sectionName, band: s.bandScore }))
+      )
+      .catch((e) => console.warn('Mock test async save error:', e))
   }, [completedLessonIds, completedExerciseIds])
 
   const toggleDailyTask = useCallback((taskId: string, completed: boolean) => {

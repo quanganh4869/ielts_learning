@@ -14,7 +14,8 @@ import { Button } from '@/components/common/Button'
 import { VocabularyCard } from '@/components/common/VocabularyCard'
 import { AnswerField } from '@/components/common/AnswerField'
 import { mockVocabularyItems, mockGrammarTopics } from '@/services/mockData'
-import { GrammarTopic } from '@/types/practice'
+import { GrammarTopic, VocabularyItem } from '@/types/practice'
+import { apiService } from '@/services/apiService'
 import { useLanguage } from '@/context/LanguageContext'
 import { useLearning } from '@/context/LearningContext'
 import { vocabIntelligenceService } from '@/services/learningRules'
@@ -38,6 +39,29 @@ import {
 // 1. VOCABULARY LIST
 export const VocabularyListPage: React.FC = () => {
   const { tText } = useLanguage()
+  const [vocabList, setVocabList] = useState<VocabularyItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+    apiService
+      .getVocabularyList()
+      .then((items) => {
+        if (isMounted) {
+          setVocabList(items)
+          setIsLoading(false)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setVocabList(mockVocabularyItems)
+          setIsLoading(false)
+        }
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -78,9 +102,19 @@ export const VocabularyListPage: React.FC = () => {
       </div>
 
       <div className="space-y-3">
-        {mockVocabularyItems.map((item) => (
-          <VocabularyCard key={item.id} item={item} />
-        ))}
+        {isLoading ? (
+          <div className="p-8 text-center text-xs text-[#68727D] bg-white border border-[#E3E7EB] rounded-2xl">
+            {tText('Đang tải danh sách từ vựng...', 'Loading vocabulary word bank...')}
+          </div>
+        ) : vocabList.length === 0 ? (
+          <div className="p-8 text-center text-xs text-[#9AA4AF] bg-white border border-[#E3E7EB] rounded-2xl">
+            {tText('Chưa có từ vựng nào trong kho học tập.', 'No vocabulary items found.')}
+          </div>
+        ) : (
+          vocabList.map((item) => (
+            <VocabularyCard key={item.id} item={item} />
+          ))
+        )}
       </div>
     </div>
   )

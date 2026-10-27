@@ -72,22 +72,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (response.status === 401) {
-        // If backend rejects or has not yet synced, safely fallback to Supabase session profile
+        // If backend rejects or has not yet synced, safely fallback to Supabase session profile (as student)
         if (isSupabaseConfigured()) {
           const { data: { session } } = await supabase.auth.getSession()
           if (session?.user) {
             const supaUser = session.user
             const email = (supaUser.email || '').toLowerCase().trim()
-            const ADMIN_EMAILS = ['anhquangnguyen2k4@gmail.com', 'quanganhqb04@gmail.com']
-            const isAdmin = ADMIN_EMAILS.includes(email)
             const fallbackUser: User = {
               id: supaUser.id,
               email,
               fullName: (supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || email.split('@')[0]) as string,
               avatarUrl: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
-              roles: isAdmin ? ['ROLE_ADMIN', 'ROLE_SUPER_ADMIN'] : ['ROLE_STUDENT'],
-              isAdmin,
-              role: isAdmin ? 'admin' : 'student',
+              roles: ['ROLE_USER'],
+              isAdmin: false,
+              role: 'student',
               targetBand: 7.0,
               testType: 'academic',
               currentBand: 6.5,

@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AssessmentRepository extends JpaRepository<AssessmentEntity, String> {
     Page<AssessmentEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    java.util.List<AssessmentEntity> findByStatusOrderByCreatedAtDesc(String status);
 }

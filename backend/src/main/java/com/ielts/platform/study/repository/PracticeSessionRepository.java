@@ -13,5 +13,9 @@ public interface PracticeSessionRepository extends JpaRepository<PracticeSession
 
     Page<PracticeSessionEntity> findByUserIdOrderByStartedAtDesc(String userId, Pageable pageable);
 
+    java.util.List<PracticeSessionEntity> findByUserIdOrderByStartedAtDesc(String userId);
+
+    long countByUserIdAndStatus(String userId, String status);
+
     Optional<PracticeSessionEntity> findByIdAndUserId(String id, String userId);
 }

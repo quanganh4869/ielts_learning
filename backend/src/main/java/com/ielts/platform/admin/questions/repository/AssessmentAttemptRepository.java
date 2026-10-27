@@ -27,5 +27,7 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
 
     List<AssessmentAttemptEntity> findTop10ByOrderByStartedAtDesc();
     Page<AssessmentAttemptEntity> findByUserIdOrderByStartedAtDesc(String userId, Pageable pageable);
+    List<AssessmentAttemptEntity> findByUserIdOrderByStartedAtDesc(String userId);
+    long countByUserIdAndStatus(String userId, String status);
     Optional<AssessmentAttemptEntity> findByIdAndUserId(String id, String userId);
 }

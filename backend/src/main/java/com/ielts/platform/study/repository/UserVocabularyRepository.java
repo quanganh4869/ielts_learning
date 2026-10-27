@@ -17,5 +17,7 @@ public interface UserVocabularyRepository extends JpaRepository<UserVocabularyEn
 
     boolean existsByUserIdAndWordIgnoreCase(String userId, String word);
 
+    long countByUserId(String userId);
+
     void deleteByIdAndUserId(String id, String userId);
 }

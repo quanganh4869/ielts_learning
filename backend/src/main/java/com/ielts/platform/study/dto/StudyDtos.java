@@ -126,4 +126,46 @@ public class StudyDtos {
         private Instant startedAt;
         private Instant completedAt;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateVocabularyMasteryRequest {
+        @NotNull(message = "Mastery level is required")
+        private Integer masteryLevel;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LearnerSummaryDto {
+        private String userId;
+        private String name;
+        private String email;
+        private BigDecimal targetBand;
+        private BigDecimal currentBand;
+        private long completedPracticeSessions;
+        private long completedTestAttempts;
+        private long vocabularyCount;
+        private int streakDays;
+        private double totalStudyHours;
+        private Map<String, BigDecimal> skillScores;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssessmentSummaryDto {
+        private String id;
+        private String title;
+        private String skill;
+        private String type;
+        private int timeLimitMinutes;
+        private int totalQuestions;
+        private BigDecimal passingScore;
+        private String status;
+    }
 }

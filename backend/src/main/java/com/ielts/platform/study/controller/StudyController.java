@@ -93,6 +93,40 @@ public class StudyController {
         return ApiResponse.ok("Vocabulary word deleted successfully", null);
     }
 
+    @PatchMapping("/user-vocabulary/{id}/mastery")
+    @Operation(summary = "Update vocabulary word mastery level (owner or admin)")
+    public ApiResponse<UserVocabularyDto> updateVocabularyMastery(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateVocabularyMasteryRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ApiResponse.ok(studyService.updateVocabularyMastery(id, request.getMasteryLevel(), principal));
+    }
+
+    // --- Learner Overview & Analytics ---
+
+    @GetMapping("/summary")
+    @Operation(summary = "Get aggregated study statistics and streak for the current learner")
+    public ApiResponse<LearnerSummaryDto> getLearnerSummary(
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ApiResponse.ok(studyService.getLearnerSummary(principal));
+    }
+
+    // --- Available Assessments for Learners ---
+
+    @GetMapping("/assessments")
+    @Operation(summary = "Get list of available published assessments and mock tests")
+    public ApiResponse<java.util.List<AssessmentSummaryDto>> getAvailableAssessments() {
+        return ApiResponse.ok(studyService.getAvailableAssessments());
+    }
+
+    @GetMapping("/assessments/{id}")
+    @Operation(summary = "Get assessment overview by ID")
+    public ApiResponse<AssessmentSummaryDto> getAssessmentDetails(@PathVariable String id) {
+        return ApiResponse.ok(studyService.getAssessmentDetails(id));
+    }
+
     // --- Test Attempts ---
 
     @GetMapping("/test-attempts")

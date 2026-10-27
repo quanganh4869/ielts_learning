@@ -4,7 +4,8 @@ import { Card } from '@/components/common/Card'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
 import { Modal } from '@/components/common/Modal'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth, BACKEND_URL } from '@/context/AuthContext'
+import { supabase } from '@/services/supabase'
 import { useToast } from '@/components/common/Toast'
 import { useLanguage } from '@/context/LanguageContext'
 
@@ -32,23 +33,45 @@ export const ProfilePage: React.FC = () => {
     }
   }
 
-  const applyUpdate = () => {
+  const applyUpdate = async () => {
     setIsSaving(true)
-    setTimeout(() => {
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data?.session?.access_token
+      if (token) {
+        await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: fullName,
+            targetBand: Number(targetBand),
+          }),
+        })
+      }
       updateUser({
         fullName,
         targetBand,
         testType,
         examDate,
       })
-      setIsSaving(false)
-      setShowConfirmModal(false)
       showToast({
         title: tText('Cập nhật thành công', 'Updated successfully'),
         description: tText('Thông tin hồ sơ và mục tiêu đã được lưu vào hệ thống.', 'Profile details and target band have been saved.'),
         type: 'success',
       })
-    }, 400)
+    } catch {
+      showToast({
+        title: tText('Lỗi lưu dữ liệu', 'Error saving profile'),
+        description: tText('Không thể kết nối máy chủ. Vui lòng thử lại sau.', 'Could not reach server. Please try again later.'),
+        type: 'error',
+      })
+    } finally {
+      setIsSaving(false)
+      setShowConfirmModal(false)
+    }
   }
 
   return (

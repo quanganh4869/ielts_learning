@@ -350,4 +350,80 @@ class StudyServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BUSINESS_RULE_VIOLATION);
     }
+
+    @Test
+    @DisplayName("13. getLearnerSummary aggregates statistics for authenticated learner")
+    void testGetLearnerSummary() {
+        when(userRepository.findById("usr_learner_a")).thenReturn(Optional.of(userEntityA));
+        when(practiceSessionRepository.countByUserIdAndStatus("usr_learner_a", "COMPLETED")).thenReturn(5L);
+        when(assessmentAttemptRepository.countByUserIdAndStatus("usr_learner_a", "COMPLETED")).thenReturn(2L);
+        when(userVocabularyRepository.countByUserId("usr_learner_a")).thenReturn(18L);
+
+        AssessmentAttemptEntity att1 = AssessmentAttemptEntity.builder()
+                .id("att_1")
+                .assessmentId("asm_1")
+                .userId("usr_learner_a")
+                .bandScore(BigDecimal.valueOf(7.0))
+                .timeSpentSeconds(3600)
+                .build();
+        when(assessmentAttemptRepository.findByUserIdOrderByStartedAtDesc("usr_learner_a")).thenReturn(List.of(att1));
+
+        PracticeSessionEntity sess1 = PracticeSessionEntity.builder()
+                .id("ps_1")
+                .user(userEntityA)
+                .skill("READING")
+                .bandScore(BigDecimal.valueOf(7.5))
+                .build();
+        when(practiceSessionRepository.findByUserIdOrderByStartedAtDesc("usr_learner_a")).thenReturn(List.of(sess1));
+
+        LearnerSummaryDto summary = studyService.getLearnerSummary(userA);
+
+        assertThat(summary).isNotNull();
+        assertThat(summary.getUserId()).isEqualTo("usr_learner_a");
+        assertThat(summary.getCompletedPracticeSessions()).isEqualTo(5L);
+        assertThat(summary.getCompletedTestAttempts()).isEqualTo(2L);
+        assertThat(summary.getVocabularyCount()).isEqualTo(18L);
+        assertThat(summary.getCurrentBand()).isEqualByComparingTo(BigDecimal.valueOf(7.0));
+        assertThat(summary.getStreakDays()).isGreaterThan(0);
+    }
+
+    @Test
+    @DisplayName("14. updateVocabularyMastery correctly updates level for owner")
+    void testUpdateVocabularyMastery() {
+        UserVocabularyEntity vocab = UserVocabularyEntity.builder()
+                .id("uv_1")
+                .user(userEntityA)
+                .word("scrutinize")
+                .definition("to examine closely")
+                .masteryLevel(1)
+                .build();
+
+        when(userVocabularyRepository.findById("uv_1")).thenReturn(Optional.of(vocab));
+        when(userVocabularyRepository.save(any(UserVocabularyEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        UserVocabularyDto updated = studyService.updateVocabularyMastery("uv_1", 3, userA);
+
+        assertThat(updated.getMasteryLevel()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("15. getAvailableAssessments returns published assessments")
+    void testGetAvailableAssessments() {
+        AssessmentEntity asm = AssessmentEntity.builder()
+                .id("asm_pub_1")
+                .title("Cambridge Practice 16")
+                .skill("ALL")
+                .type("MOCK_FULL")
+                .timeLimitMinutes(160)
+                .totalQuestions(80)
+                .status("PUBLISHED")
+                .build();
+
+        when(assessmentRepository.findByStatusOrderByCreatedAtDesc("PUBLISHED")).thenReturn(List.of(asm));
+
+        List<AssessmentSummaryDto> list = studyService.getAvailableAssessments();
+
+        assertThat(list).hasSize(1);
+        assertThat(list.get(0).getTitle()).isEqualTo("Cambridge Practice 16");
+    }
 }
