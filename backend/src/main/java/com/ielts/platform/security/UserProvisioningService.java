@@ -152,6 +152,95 @@ public class UserProvisioningService {
         return buildPrincipal(user, shouldBeAdmin, idToken, userInfo, attributes);
     }
 
+    /**
+     * Authenticates or provisions an internal user account from verified Supabase Auth JWT claims.
+     * Enforces token validation, verified email requirement, safe synchronization and strict Admin policy.
+     */
+    @Transactional
+    public UserPrincipal processSupabaseUser(
+            String sub,
+            String rawEmail,
+            boolean emailVerified,
+            String name,
+            String pictureUrl,
+            Map<String, Object> claims
+    ) {
+        if (sub == null || sub.isBlank()) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Supabase subject identifier is missing");
+        }
+        if (rawEmail == null || rawEmail.isBlank()) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Supabase account email is missing");
+        }
+        if (!emailVerified) {
+            log.warn("Supabase auth rejected: email not verified for sub={}", sub);
+            throw new org.springframework.security.authentication.BadCredentialsException("Email is not verified by authentication provider");
+        }
+
+        String normalizedEmail = rawEmail.trim().toLowerCase(Locale.ROOT);
+        boolean shouldBeAdmin = authProperties.isAdminEmail(normalizedEmail);
+
+        RoleEntity adminRole = getOrCreateRole("role_admin", ROLE_ADMIN_NAME, "Platform administrator with full administrative access");
+        RoleEntity studentRole = getOrCreateRole("role_student", ROLE_STUDENT_NAME, "Standard learner profile for IELTS Learning Platform");
+
+        // 1. Look up existing by (PROVIDER_GOOGLE, sub) or by userId = sub or email
+        UserEntity user = null;
+        Optional<OAuthIdentityEntity> identityOpt = oauthIdentityRepository.findByProviderAndProviderSubject(PROVIDER_GOOGLE, sub);
+        if (identityOpt.isPresent()) {
+            user = identityOpt.get().getUser();
+        } else {
+            Optional<UserEntity> byId = userRepository.findById(sub);
+            if (byId.isPresent()) {
+                user = byId.get();
+            } else {
+                Optional<UserEntity> byEmail = userRepository.findByEmail(normalizedEmail);
+                if (byEmail.isPresent()) {
+                    user = byEmail.get();
+                }
+            }
+        }
+
+        if (user != null) {
+            if (user.getStatus() == UserEntity.UserStatus.SUSPENDED) {
+                log.warn("Login attempt for suspended user ID: {}", user.getId());
+                throw new org.springframework.security.authentication.BadCredentialsException("User account is suspended");
+            }
+
+            if (name != null && !name.isBlank()) {
+                user.setName(name.trim());
+            }
+            if (pictureUrl != null && !pictureUrl.isBlank()) {
+                user.setAvatarUrl(pictureUrl);
+            }
+            user.setLastLogin(Instant.now());
+            syncUserRoles(user, shouldBeAdmin, adminRole, studentRole);
+            user = userRepository.save(user);
+
+            linkIdentity(user, sub, normalizedEmail, pictureUrl);
+            log.info("Synchronized existing user from Supabase Auth: ID={}", user.getId());
+        } else {
+            // 2. New user provisioning
+            String displayName = (name != null && !name.isBlank()) ? name.trim() : normalizedEmail.split("@")[0];
+            user = UserEntity.builder()
+                    .id(sub)
+                    .name(displayName)
+                    .email(normalizedEmail)
+                    .passwordHash(null)
+                    .status(UserEntity.UserStatus.ACTIVE)
+                    .avatarUrl(pictureUrl)
+                    .lastLogin(Instant.now())
+                    .roles(new HashSet<>())
+                    .build();
+
+            syncUserRoles(user, shouldBeAdmin, adminRole, studentRole);
+            user = userRepository.save(user);
+
+            linkIdentity(user, sub, normalizedEmail, pictureUrl);
+            log.info("Provisioned new internal user from Supabase Auth: ID={}", user.getId());
+        }
+
+        return buildPrincipal(user, shouldBeAdmin, null, null, claims);
+    }
+
     private void linkIdentity(UserEntity user, String sub, String email, String pictureUrl) {
         OAuthIdentityEntity identity = OAuthIdentityEntity.builder()
                 .id("oid_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16))

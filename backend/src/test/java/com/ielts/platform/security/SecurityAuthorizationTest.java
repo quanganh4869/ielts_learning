@@ -47,6 +47,9 @@ class SecurityAuthorizationTest {
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
 
+    @MockBean
+    private UserProvisioningService userProvisioningService;
+
     @Test
     @DisplayName("1. Unauthenticated request to Admin endpoint is blocked with 401 Unauthorized")
     void unauthenticatedRequestIsBlocked() throws Exception {

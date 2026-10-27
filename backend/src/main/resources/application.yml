@@ -79,6 +79,26 @@ management:
     health:
       show-details: when_authorized
 
+# Supabase Auth Configuration (Resource Server JWT verification)
+supabase:
+  url: ${SUPABASE_URL:}
+  jwks-uri: ${SUPABASE_JWKS_URI:}
+  jwt-secret: ${SUPABASE_JWT_SECRET:}
+  issuer: ${SUPABASE_ISSUER:}
+  audience: ${SUPABASE_AUDIENCE:authenticated}
+
+# Cloudflare R2 Storage (S3-compatible) Configuration
+cloudflare:
+  r2:
+    account-id: ${R2_ACCOUNT_ID:}
+    bucket-name: ${R2_BUCKET_NAME:ielts-platform-storage}
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    endpoint: ${R2_ENDPOINT:}
+    public-url-prefix: ${R2_PUBLIC_URL_PREFIX:}
+    upload-ttl-seconds: ${R2_UPLOAD_TTL_SECONDS:600}
+    download-ttl-seconds: ${R2_DOWNLOAD_TTL_SECONDS:900}
+
 # SpringDoc OpenAPI Swagger
 springdoc:
   api-docs:

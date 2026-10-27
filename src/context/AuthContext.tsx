@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User } from '@/types/auth'
 import { OnboardingData } from '@/types/onboarding'
 import { apiService } from '@/services/apiService'
+import { supabase, isSupabaseConfigured } from '@/services/supabase'
 
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
@@ -9,7 +10,8 @@ interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  loginWithGoogle: () => void
+  accessToken: string | null
+  loginWithGoogle: () => Promise<void>
   login: (email: string, pass: string) => Promise<void>
   register: (email: string, name: string, pass: string) => Promise<User>
   logout: () => Promise<void>
@@ -24,15 +26,21 @@ const STORAGE_KEY = 'ielts_platform_user_v1'
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const refreshUser = useCallback(async () => {
+  const syncBackendUser = useCallback(async (token: string | null): Promise<User | null> => {
     try {
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+        headers,
         credentials: 'include',
       })
 
@@ -57,47 +65,94 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           setUser(mappedUser)
           localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedUser))
-          return
+          return mappedUser
         }
       }
 
-      // If backend reports 401 Unauthorized, clear state
       if (response.status === 401) {
         setUser(null)
         localStorage.removeItem(STORAGE_KEY)
-        return
-      }
-
-      // Check localStorage if backend is unreachable during offline dev
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        setUser(JSON.parse(stored))
-      } else {
-        setUser(null)
+        return null
       }
     } catch {
       // Offline fallback: check localStorage
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         try {
-          setUser(JSON.parse(stored))
+          const parsed = JSON.parse(stored)
+          setUser(parsed)
+          return parsed
         } catch {
           setUser(null)
         }
-      } else {
-        setUser(null)
       }
+    }
+    return null
+  }, [])
+
+  const refreshUser = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      if (isSupabaseConfigured()) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          setAccessToken(session.access_token)
+          await syncBackendUser(session.access_token)
+          return
+        }
+      }
+      await syncBackendUser(accessToken)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [accessToken, syncBackendUser])
 
   useEffect(() => {
+    // 1. Initial session bootstrap
     refreshUser()
-  }, [refreshUser])
 
-  const loginWithGoogle = () => {
-    window.location.href = `${BACKEND_URL}/api/v1/oauth2/authorization/google`
+    // 2. Listen to official Supabase Auth state events (token refreshed, sign-in, sign-out)
+    if (isSupabaseConfigured()) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (session?.access_token) {
+              setAccessToken(session.access_token)
+              await syncBackendUser(session.access_token)
+            }
+          } else if (event === 'SIGNED_OUT') {
+            setAccessToken(null)
+            setUser(null)
+            localStorage.removeItem(STORAGE_KEY)
+          }
+        }
+      )
+
+      return () => {
+        subscription.unsubscribe()
+      }
+    }
+  }, [refreshUser, syncBackendUser])
+
+  const loginWithGoogle = async () => {
+    if (isSupabaseConfigured()) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+      if (error) {
+        throw error
+      }
+    } else {
+      // Fallback for local development if Supabase env credentials are not yet supplied
+      window.location.href = `${BACKEND_URL}/api/v1/oauth2/authorization/google`
+    }
   }
 
   const login = async (email: string, pass: string) => {
@@ -126,13 +181,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true)
     try {
+      if (isSupabaseConfigured()) {
+        await supabase.auth.signOut()
+      }
       await fetch(`${BACKEND_URL}/api/v1/auth/logout`, {
         method: 'POST',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
         credentials: 'include',
       })
     } catch (e) {
-      console.warn('Backend logout call warning:', e)
+      console.warn('Logout API warning:', e)
     } finally {
+      setAccessToken(null)
       setUser(null)
       localStorage.removeItem(STORAGE_KEY)
       setIsLoading(false)
@@ -165,6 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isLoading,
+        accessToken,
         loginWithGoogle,
         login,
         register,

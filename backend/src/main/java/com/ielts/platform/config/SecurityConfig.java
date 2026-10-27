@@ -2,12 +2,10 @@ package com.ielts.platform.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ielts.platform.common.ApiResponse;
-import com.ielts.platform.security.GoogleOidcUserService;
-import com.ielts.platform.security.JwtAuthenticationFilter;
-import com.ielts.platform.security.OAuth2AuthenticationFailureHandler;
-import com.ielts.platform.security.OAuth2AuthenticationSuccessHandler;
-import jakarta.servlet.http.HttpServletResponse;
+import com.ielts.platform.security.supabase.SupabaseAudienceValidator;
+import com.ielts.platform.security.supabase.SupabaseJwtAuthenticationConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -17,22 +15,28 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -40,10 +44,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final AuthProperties authProperties;
-    private final GoogleOidcUserService googleOidcUserService;
-    private final OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
-    private final OAuth2AuthenticationFailureHandler oauth2FailureHandler;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final SupabaseProperties supabaseProperties;
+    private final SupabaseJwtAuthenticationConverter supabaseJwtAuthenticationConverter;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -57,28 +59,52 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtDecoder jwtDecoder() {
+        String jwksUri = supabaseProperties.getEffectiveJwksUri();
+        if (StringUtils.hasText(jwksUri)) {
+            log.info("Configuring Supabase JWT Resource Server with JWKS URI: {}", jwksUri);
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
+            OAuth2TokenValidator<Jwt> defaultValidator = JwtValidators.createDefault();
+            OAuth2TokenValidator<Jwt> audienceValidator = new SupabaseAudienceValidator(supabaseProperties.getAudience());
+            decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(defaultValidator, audienceValidator));
+            return decoder;
+        }
+
+        String secret = supabaseProperties.getJwtSecret();
+        if (!StringUtils.hasText(secret)) {
+            // Safe fallback HMAC secret for testing / local execution without network JWKS
+            secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+        }
+
+        log.info("Configuring Supabase JWT Resource Server with symmetric HMAC-SHA256 signature verification");
+        SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(key).build();
+        OAuth2TokenValidator<Jwt> defaultValidator = JwtValidators.createDefault();
+        OAuth2TokenValidator<Jwt> audienceValidator = new SupabaseAudienceValidator(supabaseProperties.getAudience());
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(defaultValidator, audienceValidator));
+        return decoder;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // CSRF with HttpOnly=false cookie so frontend SPA can read XSRF-TOKEN and pass in X-XSRF-TOKEN
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers(
                                 "/auth/**",
-                                "/oauth2/**",
-                                "/login/**",
+                                "/storage/**",
+                                "/admin/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         )
                 )
-                // Session policy: IF_REQUIRED allows Spring Security to establish and manage the session cookie
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .maximumSessions(5)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public system endpoints
+                        // Public endpoints
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -86,32 +112,28 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info",
                                 "/auth/status",
-                                "/auth/logout",
-                                "/oauth2/**",
-                                "/login/**"
+                                "/auth/logout"
                         ).permitAll()
                         // Strict Admin-only endpoints
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                        // Authenticated endpoints
+                        // Protected Storage & User endpoints
+                        .requestMatchers("/storage/**").authenticated()
                         .requestMatchers("/auth/me").authenticated()
                         .anyRequest().authenticated()
                 )
-                // OAuth 2.0 / OpenID Connect Login configuration
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(googleOidcUserService)
+                // Supabase Auth JWT Resource Server
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(supabaseJwtAuthenticationConverter)
                         )
-                        .successHandler(oauth2SuccessHandler)
-                        .failureHandler(oauth2FailureHandler)
+                        .authenticationEntryPoint(restAuthenticationEntryPoint())
+                        .accessDeniedHandler(restAccessDeniedHandler())
                 )
-                // JSON exceptions instead of default HTML redirect
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint())
                         .accessDeniedHandler(restAccessDeniedHandler())
                 );
-
-        // Optional JWT filter if external bearer token is supplied
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -121,7 +143,7 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            ApiResponse<Void> apiResponse = ApiResponse.error("UNAUTHORIZED", "Authentication is required to access this resource");
+            ApiResponse<Void> apiResponse = ApiResponse.error("UNAUTHORIZED", "Authentication required: Valid Supabase access token is missing, expired, or invalid");
             response.getOutputStream().println(objectMapper.writeValueAsString(apiResponse));
         };
     }
@@ -131,7 +153,7 @@ public class SecurityConfig {
         return (request, response, accessDeniedException) -> {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            ApiResponse<Void> apiResponse = ApiResponse.error("FORBIDDEN", "You do not have administrative privileges to perform this action");
+            ApiResponse<Void> apiResponse = ApiResponse.error("FORBIDDEN", "Access denied: You do not have the required administrative or resource permission");
             response.getOutputStream().println(objectMapper.writeValueAsString(apiResponse));
         };
     }
@@ -139,7 +161,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.asList(authProperties.getCors().getAllowedOrigins().split(","));
+        String allowedOrigins = authProperties.getCors() != null && authProperties.getCors().getAllowedOrigins() != null
+                ? authProperties.getCors().getAllowedOrigins()
+                : "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173";
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
