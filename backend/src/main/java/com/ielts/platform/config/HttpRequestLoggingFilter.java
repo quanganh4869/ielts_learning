@@ -15,8 +15,8 @@ import java.io.IOException;
 /**
  * Visual HTTP Request & Protocol Logger Filter.
  * Prints clear visual indicators:
- *  - ✅ Green checkmark for successful protocol calls (HTTP 2xx, 3xx)
- *  - ❌ Red cross for failed or unauthorized protocol calls (HTTP 4xx, 5xx)
+ *  - ✅ [✔ SUCCESS] in Green for successful protocol calls (HTTP 2xx, 3xx)
+ *  - ❌ [✖ FAILED] in Red for failed or unauthorized protocol calls (HTTP 4xx, 5xx)
  * Displays HTTP Status, Method, Path, and latency duration in milliseconds.
  */
 @Slf4j
@@ -25,9 +25,9 @@ import java.io.IOException;
 public class HttpRequestLoggingFilter extends OncePerRequestFilter {
 
     private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_GREEN = "\u001B[32m";
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_CYAN = "\u001B[36m";
+    private static final String ANSI_GREEN = "\u001B[1;32m";
+    private static final String ANSI_RED = "\u001B[1;31m";
+    private static final String ANSI_CYAN = "\u001B[1;36m";
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -58,13 +58,13 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
             int status = response.getStatus();
 
             if (status >= 200 && status < 400) {
-                String logLine = String.format("%s✅ [%d]%s %s%-6s%s %s (%d ms)",
+                String logLine = String.format("%s✅ [✔ SUCCESS] [%d]%s %s%-6s%s %s (%d ms)",
                         ANSI_GREEN, status, ANSI_RESET,
                         ANSI_CYAN, method, ANSI_RESET,
                         fullPath, duration);
                 log.info(logLine);
             } else {
-                String logLine = String.format("%s❌ [%d]%s %s%-6s%s %s (%d ms)",
+                String logLine = String.format("%s❌ [✖ FAILED]  [%d]%s %s%-6s%s %s (%d ms)",
                         ANSI_RED, status, ANSI_RESET,
                         ANSI_CYAN, method, ANSI_RESET,
                         fullPath, duration);
