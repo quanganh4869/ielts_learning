@@ -116,8 +116,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers(
+                                "/swagger-ui",
+                                "/swagger-ui/",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
+                                "/swagger",
+                                "/docs",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/actuator/health",
                                 "/actuator/info",
