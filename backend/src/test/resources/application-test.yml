@@ -13,21 +13,38 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+    show-sql: false
   flyway:
     enabled: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+            scope:
+              - openid
+              - profile
+              - email
 
 app:
+  admin-email: "admin.test@example.com"
+  frontend-url: "http://localhost:5173"
   jwt:
     secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     expiration-ms: 3600000
     refresh-expiration-ms: 86400000
+  auth:
+    cookie-secure: false
+    session-timeout-seconds: 3600
+    redirect-allowlist:
+      - http://localhost:5173
+      - http://localhost:5173/admin
+      - http://localhost:5173/app/dashboard
   cors:
     allowed-origins: "*"
     allowed-methods: "*"
     allowed-headers: "*"
-    allow-credentials: false
+    allow-credentials: true
     max-age: 3600

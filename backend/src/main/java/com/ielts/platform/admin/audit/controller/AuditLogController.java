@@ -24,7 +24,7 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
     @Operation(summary = "Get paginated audit trail logs")
     public ApiResponse<PageResponse<AuditLogEntity>> getAuditLogs(
             @PageableDefault(size = 20) Pageable pageable

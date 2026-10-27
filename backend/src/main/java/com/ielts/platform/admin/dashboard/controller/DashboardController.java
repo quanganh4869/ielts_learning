@@ -21,7 +21,7 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/summary")
-    @PreAuthorize("hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
     @Operation(summary = "Get aggregated admin KPIs, 7-day activity metrics, and attention items")
     public ApiResponse<DashboardSummaryDto> getSummary() {
         return ApiResponse.ok(dashboardService.getDashboardSummary());

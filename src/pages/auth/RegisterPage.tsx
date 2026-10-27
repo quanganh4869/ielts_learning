@@ -1,8 +1,6 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { Input } from '@/components/common/Input'
-import { Button } from '@/components/common/Button'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/common/Card'
 import { BrandLogo } from '@/components/brand'
 import { useAuth } from '@/context/AuthContext'
@@ -10,41 +8,7 @@ import { useLanguage } from '@/context/LanguageContext'
 
 export const RegisterPage: React.FC = () => {
   const { tText } = useLanguage()
-  const { register } = useAuth()
-  const navigate = useNavigate()
-
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMessage(null)
-
-    if (!fullName || !email || !password) {
-      setErrorMessage(tText('Vui lòng điền đầy đủ các trường thông tin.', 'Please fill out all required fields.'))
-      return
-    }
-
-    if (password.length < 6) {
-      setErrorMessage(tText('Mật khẩu phải chứa ít nhất 6 ký tự.', 'Password must be at least 6 characters long.'))
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      await register(email, fullName, password)
-      // New user goes to onboarding flow
-      navigate('/onboarding')
-    } catch {
-      setErrorMessage(tText('Đã xảy ra lỗi khi tạo tài khoản. Vui lòng thử lại.', 'An error occurred while creating your account. Please try again.'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { loginWithGoogle, isLoading } = useAuth()
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#F7F8FA]">
@@ -53,76 +17,75 @@ export const RegisterPage: React.FC = () => {
           <div className="mb-4">
             <BrandLogo variant="horizontal" size="md" to="/" />
           </div>
-          <h1 className="text-2xl font-bold text-[#20272E]">{tText('Tạo tài khoản học tập', 'Create Free Account')}</h1>
-          <p className="text-sm text-[#68727D] mt-1">
-            {tText('Bắt đầu với bài kiểm tra năng lực và lộ trình cá nhân hóa', 'Start with a diagnostic placement test and tailored learning path')}
+          <h1 className="text-2xl font-bold text-[#20272E]">
+            {tText('Bắt đầu với IELTS Learning', 'Get Started with IELTS Learning')}
+          </h1>
+          <p className="text-sm text-[#68727D] mt-1 max-w-sm">
+            {tText(
+              'Tạo hồ sơ học tập và định hướng lộ trình band điểm mong muốn cùng AI Tutor',
+              'Create your learner profile and tailor your target band score with AI Tutor'
+            )}
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border border-[#E3E7EB] rounded-2xl shadow-xs">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {errorMessage && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-                {errorMessage}
+        <Card className="p-6 sm:p-8 bg-white border border-[#E3E7EB] rounded-2xl shadow-sm">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-[#F7F8FA] border border-[#E3E7EB] space-y-2 text-xs text-[#20272E]">
+              <div className="flex items-center gap-2 text-emerald-800 font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{tText('Tự động tạo hồ sơ ngay khi đăng nhập Google', 'Instant profile creation upon Google sign-in')}</span>
               </div>
-            )}
+              <div className="flex items-center gap-2 text-emerald-800 font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{tText('Không cần ghi nhớ thêm mật khẩu phức tạp', 'No need for separate passwords')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-emerald-800 font-semibold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{tText('Bảo mật danh tính qua chuẩn OpenID Connect', 'Protected by Google OpenID Connect standards')}</span>
+              </div>
+            </div>
 
-            <Input
-              label={tText('Họ và tên', 'Full Name')}
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={tText('Ví dụ: Nguyễn Văn An', 'e.g. John Doe')}
-              required
-            />
-
-            <Input
-              label={tText('Địa chỉ Email', 'Email Address')}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tenban@example.com"
-              required
-            />
-
-            <Input
-              label={tText('Mật khẩu (tối thiểu 6 ký tự)', 'Password (min. 6 characters)')}
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={tText('Tạo mật khẩu an toàn...', 'Create a secure password...')}
-              required
-              rightIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#68727D] hover:text-[#20272E] p-1"
-                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              }
-            />
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full mt-2"
-              isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+            <button
+              type="button"
+              onClick={loginWithGoogle}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm shadow-xs hover:shadow-sm transition-all focus:outline-hidden focus:ring-2 focus:ring-[#28665F]/30 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {tText('Tiếp tục Onboarding', 'Continue to Onboarding')}
-            </Button>
-          </form>
+              {/* Google G logo SVG */}
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.26 21.36 7.33 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.25C.45 8.16 0 9.98 0 12c0 2.02.45 3.84 1.25 5.43l4.03-3.14z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.57l4.03 3.14c.95-2.83 3.6-4.96 6.72-4.96z"
+                />
+              </svg>
+              <span>{tText('Đăng ký bằng tài khoản Google', 'Sign Up with Google')}</span>
+            </button>
 
-          <div className="mt-6 pt-6 border-t border-[#E3E7EB] text-center text-xs text-[#68727D]">
-            <span>{tText('Đã có tài khoản? ', 'Already have an account? ')}</span>
-            <Link to="/login" className="font-bold text-[#28665F] hover:underline">
-              {tText('Đăng nhập', 'Log in')}
-            </Link>
+            <div className="pt-4 border-t border-[#E3E7EB] text-center text-xs text-[#68727D]">
+              <span>{tText('Đã có tài khoản? ', 'Already have an account? ')}</span>
+              <Link to="/login" className="font-bold text-[#28665F] hover:underline">
+                {tText('Đăng nhập', 'Log in')}
+              </Link>
+            </div>
           </div>
         </Card>
+
+        <div className="mt-6 flex items-center justify-center gap-2 text-2xs text-[#68727D]">
+          <ShieldCheck className="w-4 h-4 text-[#28665F] shrink-0" />
+          <span>{tText('Được bảo vệ bởi giao thức Google OAuth 2.0', 'Protected by Google OAuth 2.0')}</span>
+        </div>
       </div>
     </div>
   )

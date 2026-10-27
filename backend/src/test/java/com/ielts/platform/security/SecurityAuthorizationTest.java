@@ -3,6 +3,10 @@ package com.ielts.platform.security;
 import com.ielts.platform.admin.dashboard.controller.DashboardController;
 import com.ielts.platform.admin.dashboard.dto.DashboardSummaryDto;
 import com.ielts.platform.admin.dashboard.service.DashboardService;
+import com.ielts.platform.admin.users.controller.AuthController;
+import com.ielts.platform.admin.users.repository.LoginEventRepository;
+import com.ielts.platform.admin.users.repository.UserSessionRepository;
+import com.ielts.platform.config.AuthProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +17,16 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.List;
 
-@WebMvcTest(controllers = DashboardController.class)
-@Import({SecurityTestConfig.class, JwtTokenProvider.class})
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = {DashboardController.class, AuthController.class})
+@Import({SecurityTestConfig.class, AuthProperties.class})
 class SecurityAuthorizationTest {
 
     @Autowired
@@ -31,8 +38,17 @@ class SecurityAuthorizationTest {
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @MockBean
+    private UserSessionRepository userSessionRepository;
+
+    @MockBean
+    private LoginEventRepository loginEventRepository;
+
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
     @Test
-    @DisplayName("Unauthenticated request to Admin Dashboard should be rejected with 401 Unauthorized")
+    @DisplayName("1. Unauthenticated request to Admin endpoint is blocked with 401 Unauthorized")
     void unauthenticatedRequestIsBlocked() throws Exception {
         mockMvc.perform(get("/admin/dashboard/summary")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -40,8 +56,8 @@ class SecurityAuthorizationTest {
     }
 
     @Test
-    @WithMockUser(username = "regular_student@example.com", authorities = {"ROLE_STUDENT"})
-    @DisplayName("Authenticated user without ADMIN_READ permission should be rejected with 403 Forbidden")
+    @WithMockUser(username = "regular_student@example.com", roles = {"STUDENT"})
+    @DisplayName("2. Student user calling Admin endpoint is blocked with 403 Forbidden")
     void studentWithoutPermissionIsForbidden() throws Exception {
         mockMvc.perform(get("/admin/dashboard/summary")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -49,8 +65,8 @@ class SecurityAuthorizationTest {
     }
 
     @Test
-    @WithMockUser(username = "admin@ieltsplatform.com", authorities = {PermissionConstants.ADMIN_READ})
-    @DisplayName("Admin with ADMIN_READ permission should access Dashboard successfully")
+    @WithMockUser(username = "admin@platform.edu.vn", roles = {"ADMIN"})
+    @DisplayName("3. Admin user calling Admin endpoint is allowed with 200 OK")
     void adminWithPermissionIsAllowed() throws Exception {
         when(dashboardService.getDashboardSummary()).thenReturn(
                 DashboardSummaryDto.builder()
@@ -67,5 +83,56 @@ class SecurityAuthorizationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.totalUsers").value(100));
+    }
+
+    @Test
+    @DisplayName("4. GET /auth/me returns safe profile and safe claims without secrets/tokens")
+    void getCurrentUserReturnsSafeProfile() throws Exception {
+        UserPrincipal principal = UserPrincipal.builder()
+                .id("u_test_123")
+                .email("admin@platform.edu.vn")
+                .name("Test Admin")
+                .avatarUrl("https://lh3.googleusercontent.com/pic.jpg")
+                .active(true)
+                .authorities(List.of(
+                        () -> "ROLE_ADMIN",
+                        () -> "ROLE_SUPER_ADMIN",
+                        () -> "USER_MANAGE"
+                ))
+                .build();
+
+        mockMvc.perform(get("/auth/me")
+                        .with(user(principal))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value("u_test_123"))
+                .andExpect(jsonPath("$.data.email").value("admin@platform.edu.vn"))
+                .andExpect(jsonPath("$.data.name").value("Test Admin"))
+                .andExpect(jsonPath("$.data.admin").value(true))
+                .andExpect(jsonPath("$.data.roles").isArray())
+                // Ensure no tokens, passwords or secrets are leaked
+                .andExpect(jsonPath("$.data.password").doesNotExist())
+                .andExpect(jsonPath("$.data.token").doesNotExist())
+                .andExpect(jsonPath("$.data.secret").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("5. POST /auth/logout invalidates session and clears cookie")
+    void logoutTerminatesSessionAndClearsCookie() throws Exception {
+        UserPrincipal principal = UserPrincipal.builder()
+                .id("u_test_123")
+                .email("user@example.com")
+                .name("Test User")
+                .active(true)
+                .authorities(List.of(() -> "ROLE_STUDENT"))
+                .build();
+
+        mockMvc.perform(post("/auth/logout")
+                        .with(user(principal))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(header().exists("Set-Cookie"));
     }
 }

@@ -3,6 +3,8 @@ export interface User {
   email: string
   fullName: string
   role?: 'admin' | 'student' | 'instructor'
+  roles?: string[]
+  isAdmin?: boolean
   avatarUrl?: string
   targetBand: number
   testType: 'academic' | 'general'

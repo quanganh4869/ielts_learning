@@ -32,12 +32,12 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAdmin?
     return <Navigate to={`/app/mock-tests/${attempt.testId}/session`} replace />
   }
 
-  // Require admin role
+  // Require admin role - strictly determined by backend granted roles/admin flag
   const isAdmin =
+    Boolean(user.isAdmin) ||
     user.role === 'admin' ||
-    user.email === 'admin@ieltsplatform.com' ||
-    user.email.includes('admin') ||
-    user.email === 'quanganh.ielts@example.com'
+    Boolean(user.roles?.includes('ROLE_ADMIN')) ||
+    Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
 
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/app/dashboard" replace />
