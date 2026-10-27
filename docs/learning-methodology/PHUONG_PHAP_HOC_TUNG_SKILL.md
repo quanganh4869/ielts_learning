@@ -14,7 +14,12 @@
 1. [Triết Lý Sư Phạm & Khung Kiến Trúc Tổng Thể](#1-triết-lý-sư-phạm--khung-kiến-trúc-tổng-thể)
 2. [Khảo Sát Năng Lực Đầu Vào & Cá Nhân Hóa Lộ Trình](#2-khảo-sát-năng-lực-đầu-vào--cá-nhân-hóa-lộ-trình)
 3. [Phương Pháp Học Kỹ Năng Nghe (Listening Methodology)](#3-phương-pháp-học-kỹ-năng-nghe-listening-methodology)
-4. [Phương Pháp Học Kỹ Năng Đọc (Reading Methodology)](#4-phương-pháp-học-kỹ-năng-đọc-reading-methodology)
+4. [Phương Pháp Học Kỹ Năng Đọc (Reading Methodology) & Gợi Ý Dàn Đề](#4-phương-pháp-học-kỹ-năng-đọc-reading-methodology)
+   * [4.1. Bộ Kỹ Thuật Đọc Chiến Lược](#41-bộ-kỹ-thuật-đọc-chiến-lược)
+   * [4.2. Khung Phân Biệt Tuyệt Đối True / False / Not Given & Yes / No / Not Given](#42-khung-phân-biệt-tuyệt-đối-true--false--not-given--yes--no--not-given)
+   * [4.3. Chiến Lược Cho Các Dạng Đọc Chuyên Biệt](#43-chiến-lược-cho-các-dạng-đọc-chuyên-biệt)
+   * [4.4. Quy Tắc Quản Trị Thời Gian & Phân Phối Năng Lượng](#44-quy-tắc-quản-trị-thời-gian--phân-phối-năng-lượng)
+   * [4.5. Khung Kiến Trúc Dàn Đề & Gợi Ý Chiến Lược Từng Bộ Đề Reading (Reading Blueprints)](#45-khung-kiến-trúc-dàn-đề--gợi-ý-chiến-lược-từng-bộ-đề-reading-reading-blueprints)
 5. [Phương Pháp Học Kỹ Năng Viết (Writing Methodology)](#5-phương-pháp-học-kỹ-năng-viết-writing-methodology)
 6. [Phương Pháp Học Kỹ Năng Nói (Speaking Methodology)](#6-phương-pháp-học-kỹ-năng-nói-speaking-methodology)
 7. [Động Cơ Từ Vựng Trung Tâm & Thuật Toán Spaced Repetition (Vocabulary Engine)](#7-động-cơ-từ-vựng-trung-tâm--thuật-toán-spaced-repetition-vocabulary-engine)
@@ -215,6 +220,121 @@ Quy chuẩn tham khảo tiêu chuẩn cho 60 phút thi Reading:
 * **Passage 3 (Độ khó 3/3):** Dành **23 phút** (Nhiều câu hỏi trừu tượng, lập luận phức tạp).
 
 Hệ thống theo dõi thời gian dừng lại trên từng câu hỏi (*Time per question*). Nếu một câu hỏi vượt quá **90 giây**, hệ thống kích hoạt gợi ý chiến thuật: *"Đánh dấu phân vân, chọn đáp án dự đoán khả dĩ nhất và chuyển sang câu tiếp theo để bảo toàn nhịp độ thi cử."*
+
+### 4.5. Khung Kiến Trúc Dàn Đề & Gợi Ý Chiến Lược Từng Bộ Đề Reading (Reading Blueprints)
+
+#### 4.5.1. Khái Niệm "Dàn Đề Reading" & Vai Trò Khảo Thí
+Một bài thi Academic Reading hoàn chỉnh gồm 3 bài đọc (Passages) với tổng cộng 40 câu hỏi, độ dài dao động từ 2,150 đến 2,750 từ. Một **Dàn Đề Reading (Reading Exam Blueprint)** là bản thiết kế chiến thuật mô tả:
+* Thể loại và văn phong bài đọc (Descriptive, Factual, Analytical, Discursive, Philosophical).
+* Độ dài và mật độ từ vựng học thuật (CEFR B1 đến C1/C2).
+* Cụm các dạng câu hỏi xuất hiện trong từng bài đọc (Question Clusters).
+* **Mối quan hệ trật tự thông tin:** Dạng câu hỏi lũy tiến theo thứ tự văn bản (In-order) vs. Dạng câu hỏi rải rác toàn bài (Out-of-order/Global).
+
+Mục tiêu của việc cung cấp **Gợi ý Dàn đề (Blueprint Briefing)** trước khi làm bài là giúp người học tiếp cận đề thi như một chiến lược gia: Nắm chắc cục diện, lựa chọn bài đọc thế mạnh, phân bổ thời gian thông minh và tuân thủ trật tự giải đề tối ưu, thay vì lao vào làm một mạch từ câu 1 đến câu 40 theo quán tính.
+
+#### 4.5.2. Nguyên Tắc Trật Tự Làm Bài Tối Ưu (Order of Attack Protocol)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 NGUYÊN TẮC TRẬT TỰ LÀM BÀI TRONG 1 PASSAGE                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ BƯỚC 1: Quét lướt 30 giây toàn bộ các nhóm câu hỏi của Passage             │
+│         - Xác định nhóm In-Order và nhóm Out-of-Order.                     │
+│         - Ghi nhớ các từ khóa neo (Tên riêng, số năm, thuật ngữ viết hoa).  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ BƯỚC 2: Giải quyết các dạng câu hỏi ĐỊNH VỊ DỄ & THEO THỨ TỰ (In-Order)    │
+│         - Gap-fill (Note / Table / Flow-chart / Sentence Completion)       │
+│         - True / False / Not Given (hoặc Yes / No / Not Given)              │
+│         - Diagram Labelling (vùng thông tin thường khu biệt ở 1-2 đoạn)     │
+│         ==> Tác dụng: Cày xới và hiểu sâu 60-70% nội dung văn bản.        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ BƯỚC 3: Giải quyết các dạng câu hỏi TOÀN BÀI / PHỨC TẠP (Out-of-Order)      │
+│         - Matching Information (Which paragraph contains...)               │
+│         - Matching Features (Nối quan điểm nhà khoa học với nghiên cứu)    │
+│         - Matching Headings (nếu làm theo phương pháp đọc đoạn nào chọn     │
+│           heading đoạn đó, hoặc chốt lại khi đã hiểu toàn bài)             │
+│         - Global Multiple Choice (Mục đích chính của tác giả)               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 4.5.3. Bốn Bộ Dàn Đề Mẫu Điển Hình & Gợi Ý Chiến Lược Từng Đề
+
+Hệ thống phân loại toàn bộ ngân hàng đề Reading (Cambridge, Collins, Task Sets) vào 4 khuôn mẫu Dàn đề (Archetypal Blueprints):
+
+##### Dàn Đề Mẫu 1: Dạng "Lịch Sử Phát Minh & Đổi Mới Công Nghệ" (Historical & Technological Blueprint)
+*Đặc trưng:* Thường gặp ở các đề thi Cambridge IELTS (ví dụ: Cambridge 14 Test 1, Cambridge 16 Test 2).
+
+| Phân Vùng | Chủ đề Văn Bản Mẫu | Cụm Dạng Câu Hỏi Điển Hình | Gợi Ý Trật Tự Giải Quyết Tối Ưu | Thời Gian Đề Xuất |
+| :---: | :--- | :--- | :--- | :---: |
+| **Passage 1** | *Lịch sử phát minh ra thủy tinh hoặc phương pháp làm giấy cổ đại* (Factual/Chronological, 750 từ, CEFR B1+) | • Câu 1–7: **Table / Note Completion** (In-order)<br>• Câu 8–13: **True / False / Not Given** (In-order) | Làm Câu 1–7 trước (từ khóa số năm rất dễ định vị) ➔ Sau đó làm Câu 8–13 trên các đoạn văn còn lại. | **15 – 17 phút** |
+| **Passage 2** | *Sự phát triển của phương tiện tự hành và hệ thống giao thông thông minh* (Analytical, 850 từ, CEFR B2+) | • Câu 14–19: **Matching Information** (Out-of-order)<br>• Câu 20–23: **Summary Completion with Box** (In-order)<br>• Câu 24–26: **Multiple Choice** (In-order) | Đọc lướt câu hỏi 14–19 để ghim từ khóa ➔ Làm Câu 20–23 (chỉ nằm ở 1-2 đoạn cụ thể) ➔ Làm Câu 24–26 ➔ Quay lại chốt Câu 14–19. | **19 – 20 phút** |
+| **Passage 3** | *Nguồn gốc nhận thức và sự tiến hóa của ngôn ngữ loài người* (Discursive/Theoretical, 950 từ, CEFR C1+) | • Câu 27–31: **Matching Headings** (Global)<br>• Câu 32–36: **Yes / No / Not Given** (In-order)<br>• Câu 37–40: **Pick 2 from 5** (Global/Analytical) | Đọc từng đoạn: Xác định ý chính để chọn Heading (Câu 27-31), đồng thời kiểm tra xem đoạn đó có dữ kiện trả lời cho Câu 32-36 hay không ➔ Xử lý Câu 37-40 cuối cùng. | **23 – 25 phút** |
+
+##### Dàn Đề Mẫu 2: Dạng "Sinh Thái Học, Động Thực Vật & Môi Trường Tự Nhiên" (Ecology & Natural Science Blueprint)
+*Đặc trưng:* Thường xuất hiện trong các bài thi khảo thí sinh thái học (ví dụ: Cambridge 15 Test 3, Cambridge 17 Test 1).
+
+| Phân Vùng | Chủ đề Văn Bản Mẫu | Cụm Dạng Câu Hỏi Điển Hình | Gợi Ý Trật Tự Giải Quyết Tối Ưu | Thời Gian Đề Xuất |
+| :---: | :--- | :--- | :--- | :---: |
+| **Passage 1** | *Tập tính săn mồi và khả năng định vị bằng sóng âm của loài dơi* (Descriptive, 800 từ, CEFR B1+) | • Câu 1–6: **Diagram / Flow-chart Labelling** (Khu biệt)<br>• Câu 7–13: **True / False / Not Given** (In-order) | Làm Diagram Labelling trước vì hình vẽ luôn tập trung ở đúng 1 hoặc 2 đoạn văn miêu tả cấu tạo cơ thể ➔ Làm T/F/NG cho phần còn lại. | **16 phút** |
+| **Passage 2** | *Dự án phục hồi rừng ngập mặn và giải pháp cô lập carbon tự nhiên* (Analytical/Process, 870 từ, CEFR B2+) | • Câu 14–18: **Matching Features** (Danh sách các nhà khoa học)<br>• Câu 19–22: **Sentence Completion** (In-order)<br>• Câu 23–26: **Summary Completion** (In-order) | Scan toàn bộ tên các nhà khoa học và đóng khung trên bài ➔ Giải quyết Câu 19-26 trước ➔ Chốt Matching Features dựa trên các vùng tên nhà khoa học đã đọc. | **20 phút** |
+| **Passage 3** | *Trí tuệ nhân tạo so với nhận thức sinh học: Động vật có ý thức hay không?* (Philosophical, 960 từ, CEFR C1/C2) | • Câu 27–32: **Matching Sentence Endings** (In-order)<br>• Câu 33–37: **Yes / No / Not Given** (In-order)<br>• Câu 38–40: **Multiple Choice** (Main Idea) | Làm Câu 27-32 và 33-37 song song vì cả hai đều theo thứ tự đoạn văn ➔ Câu 38-40 là câu hỏi tổng kết ý đồ tác giả, làm sau cùng. | **24 phút** |
+
+##### Dàn Đề Mẫu 3: Dạng "Khoa Học Xã Hội, Tâm Lý Học & Hành Vi Con Người" (Behavioral & Social Science Blueprint)
+*Đặc trưng:* Văn bản giàu tính tranh biện, nghiên cứu thực nghiệm xã hội (ví dụ: Cambridge 13 Test 2, Cambridge 18 Test 4).
+
+| Phân Vùng | Chủ đề Văn Bản Mẫu | Cụm Dạng Câu Hỏi Điển Hình | Gợi Ý Trật Tự Giải Quyết Tối Ưu | Thời Gian Đề Xuất |
+| :---: | :--- | :--- | :--- | :---: |
+| **Passage 1** | *Lịch sử hình thành văn hóa cà phê và không gian công cộng tại châu Âu* (Historical Narrative, 780 từ, CEFR B1+) | • Câu 1–8: **Note / Summary Completion** (In-order)<br>• Câu 9–13: **True / False / Not Given** (In-order) | Dạng đề "thân thiện": Cả hai cụm câu hỏi đều theo thứ tự dòng chảy văn bản. Làm tuần tự từ câu 1 đến câu 13, tiết kiệm tối đa thời gian. | **15 phút** |
+| **Passage 2** | *Thiên kiến nhận thức (Cognitive Biases) và tâm lý ra quyết định tài chính* (Experimental Psychology, 880 từ, CEFR B2+) | • Câu 14–19: **Matching Information** (Out-of-order)<br>• Câu 20–22: **Pick 2 from 5** (Khảo sát nghiên cứu)<br>• Câu 23–26: **Table Completion** (Khu biệt thực nghiệm) | Làm Câu 23–26 trước (bảng tóm tắt thí nghiệm nằm ở một đoạn nhất định) ➔ Làm Câu 20–22 ➔ Xử lý Matching Information (Câu 14-19) ở cuối. | **20 phút** |
+| **Passage 3** | *Tương lai của thị trường lao động và thời gian nhàn rỗi trong kỷ nguyên tự động hóa* (Sociological Debate, 950 từ, CEFR C1+) | • Câu 27–32: **Matching Headings** (Global)<br>• Câu 33–37: **Yes / No / Not Given** (In-order)<br>• Câu 38–40: **Multiple Choice** (4 phương án) | Đọc tiêu đề các đoạn (Matching Headings) để nắm cấu trúc luận điểm ➔ Đọc từng đoạn, giải quyết Heading kết hợp chốt câu Yes/No/NG của đoạn đó ➔ Multiple Choice. | **25 phút** |
+
+##### Dàn Đề Mẫu 4: Dạng "Khảo Cổ Học, Ngôn Ngữ Cổ & Di Sản Văn Hóa" (Archaeology & Ancient Civilizations Blueprint)
+*Đặc trưng:* Nhiều từ vựng cổ, thuật ngữ địa danh và niên đại lịch sử (ví dụ: Cambridge 12 Test 5, Cambridge 16 Test 4).
+
+| Phân Vùng | Chủ đề Văn Bản Mẫu | Cụm Dạng Câu Hỏi Điển Hình | Gợi Ý Trật Tự Giải Quyết Tối Ưu | Thời Gian Đề Xuất |
+| :---: | :--- | :--- | :--- | :---: |
+| **Passage 1** | *Khai quật lăng mộ Tần Thủy Hoàng và đội quân đất nung* (Descriptive, 760 từ, CEFR B1+) | • Câu 1–6: **Short-answer Questions** (In-order)<br>• Câu 7–13: **True / False / Not Given** (In-order) | Đọc lướt bắt từ khóa niên đại và địa danh cổ ➔ Trả lời ngắn câu 1-6 (lưu ý giới hạn từ) ➔ Làm tiếp T/F/NG câu 7-13. | **16 phút** |
+| **Passage 2** | *Kỹ thuật hàng hải thiên văn và đóng thuyền của người Polynesia cổ đại* (Analytical/Technical, 860 từ, CEFR B2+) | • Câu 14–18: **Matching Features** (Các nhà thám hiểm)<br>• Câu 19–23: **Diagram Labelling** (Cấu tạo thuyền)<br>• Câu 24–26: **Summary Completion** (In-order) | Diagram câu 19-23 làm trước (khoanh vùng đoạn tả thuyền) ➔ Summary câu 24-26 ➔ Matching Features câu 14-18 xử lý sau cùng. | **19 phút** |
+| **Passage 3** | *Bí ẩn giải mã các văn tự cổ đã thất truyền: Phiến đá Rosetta* (Linguistic/Academic Debate, 940 từ, CEFR C1+) | • Câu 27–31: **Matching Sentence Endings** (In-order)<br>• Câu 32–36: **Yes / No / Not Given** (In-order)<br>• Câu 37–40: **Summary with Box** (Analytical) | Nối vế câu 27-31 làm trước (đối chiếu cụm chủ ngữ trong bài) ➔ Yes/No/NG 32-36 ➔ Chốt Summary with Box 37-40 bằng kỹ thuật loại trừ ngữ pháp. | **25 phút** |
+
+#### 4.5.4. Động Cơ Gợi Ý Dàn Đề Tự Động Trong Hệ Thống (In-App Pre-Reading Briefing Engine)
+
+Để hỗ trợ học viên hình thành tư duy chiến lược vững chắc, trước mỗi bài thi thử hoặc bài luyện tập Reading, hệ thống tự động sinh một bảng thông tin ngắn (**Reading Blueprint Briefing Card**):
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 CHIẾN LƯỢC DÀN ĐỀ READING: CAMBRIDGE IELTS 16 TEST 2         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. TỔNG QUAN CẤU TRÚC ĐỀ (Passage Map):                                     │
+│    • Passage 1: The White Horse of Uffington (Lịch sử/Khảo cổ - 750 từ)      │
+│      [Dạng bài: Note Completion (Q1-8) + True/False/Not Given (Q9-13)]       │
+│    • Passage 2: I contain multitudes: Microbes (Sinh học vi sinh - 880 từ)   │
+│      [Dạng bài: Matching Info (Q14-19) + Summary with Box (Q20-22) + MC(23-26)│
+│    • Passage 3: How to make a genius (Tâm lý học tài năng - 960 từ)          │
+│      [Dạng bài: Matching Headings (Q27-34) + Yes/No/Not Given (Q35-40)]      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 2. TRẬT TỰ GIẢI ĐỀ KHUYẾN NGHỊ (Recommended Order of Attack):               │
+│    Passage 1: Làm Q1-8 (Note Completion) trước ➔ Q9-13 (T/F/NG) sau.        │
+│    Passage 2: Làm Q20-22 (Summary with Box) ➔ Q23-26 (Multiple Choice)       │
+│               ➔ Q14-19 (Matching Information chốt sau cùng).                │
+│    Passage 3: Đọc từng đoạn văn, chốt Heading đoạn đó kết hợp rà soát Yes/No │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 3. PHÂN BỔ THỜI GIAN CÁ NHÂN HÓA (Dựa trên tốc độ đọc hiện tại của bạn):    │
+│    • Passage 1: Mục tiêu 16 phút (Kiếm trọn điểm 12/13 câu).                │
+│    • Passage 2: Mục tiêu 20 phút (Đoạn vi sinh vật nhiều thuật ngữ y khoa).  │
+│    • Passage 3: Dành trọn 24 phút (Dạng Matching Headings cần đọc kỹ).       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 4. TỪ VỰNG THEN CHỐT NÊN KÍCH HOẠT TRƯỚC (Anchor Vocabulary Priming):       │
+│    • chalk figure, stylized depiction, microorganism, symbiotic, ubiquity    │
+│    • nature vs. nurture, deliberate practice, domain mastery                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+> [!NOTE]
+> **Ràng Buộc Nghiệp Vụ Của Gợi Ý Dàn Đề:**  
+> 1. Gợi ý dàn đề **chỉ đóng vai trò định hướng chiến thuật sư phạm**, tuyệt đối không tiết lộ nội dung đáp án hay vị trí chính xác của câu trả lời.
+> 2. Trong chế độ Luyện tập (Practice Mode), người học có thể xem chi tiết bảng gợi ý dàn đề bất kỳ lúc nào.
+> 3. Trong chế độ Thi thử mô phỏng thời gian thực (Full Mock Test CDI), bảng gợi ý chỉ hiển thị trong **60 giây trước khi tính giờ làm bài** và tự động thu gọn vào thanh công cụ để đảm bảo tính khách quan như phòng thi thật.
 
 ---
 
