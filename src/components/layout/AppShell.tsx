@@ -44,81 +44,46 @@ export const AppShell: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-[#20272E]">
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-30 bg-white border-r border-[#E3E7EB] justify-between">
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-30 bg-white border-r border-[#E3E7EB]">
         {/* Brand Header */}
-        <div>
-          <div className="h-20 px-6 border-b border-[#E3E7EB] flex items-center justify-between">
-            <BrandLogo
-              variant="horizontal"
-              size="md"
-              to="/app/dashboard"
-            />
-          </div>
-
-          {/* 6 MAIN NAVIGATION ITEMS (THOÁNG ĐỀU, 3D STICKERS, EDTECH VIBE) */}
-          <nav className="px-3.5 py-6 space-y-2 overflow-y-auto">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all',
-                      isActive
-                        ? 'bg-[#EAF4EE] text-[#28665F] shadow-2xs'
-                        : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
-                    )
-                  }
-                >
-                  <img
-                    src={item.sticker}
-                    alt=""
-                    className="w-6 h-6 object-contain shrink-0 drop-shadow-xs"
-                    onError={(e) => {
-                      ;(e.target as HTMLElement).style.display = 'none'
-                    }}
-                  />
-                  <span>{item.name}</span>
-                </NavLink>
-              )
-            })}
-          </nav>
+        <div className="h-20 px-6 border-b border-[#E3E7EB] flex items-center justify-between shrink-0">
+          <BrandLogo
+            variant="horizontal"
+            size="md"
+            to="/app/dashboard"
+          />
         </div>
 
-        {/* Learner Goal Badge at Bottom */}
-        <div className="p-3.5 mx-3 mb-5 rounded-2xl bg-[#F7F8FA] border border-[#E3E7EB] text-xs space-y-2 shadow-2xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0">
-              <img src="/brand/nori-mascot-sm.png" alt="Nori" className="w-6 h-6 object-contain" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-[#68727D] font-bold uppercase tracking-wider block">{t('nav.target_band')}</span>
-              <span className="font-extrabold text-[#28665F] text-sm">Band {user?.targetBand?.toFixed(1) || '7.0'}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-[#68727D] pt-1.5 border-t border-[#E3E7EB]">
-            <span>{t('nav.estimated_band')}</span>
-            <span className="font-bold text-[#20272E]">{user?.currentBand ? `Band ${user.currentBand.toFixed(1)}` : t('nav.evaluating')}</span>
-          </div>
-        </div>
-
-        {/* Quick Admin Console Entry */}
-        <div className="px-3 pb-4">
-          <NavLink
-            to="/admin/dashboard"
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-[#EAF3F1] border border-[#E3E7EB] hover:border-[#28665F]/30 text-xs font-bold text-[#68727D] hover:text-[#28665F] transition-all shadow-2xs"
-          >
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#28665F]" />
-              <span>{tText('Quản trị hệ thống', 'Admin Console')}</span>
-            </div>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white text-[#28665F] border border-[#E3E7EB]">
-              Console
-            </span>
-          </NavLink>
-        </div>
+        {/* 6 MAIN NAVIGATION ITEMS (THOÁNG ĐỀU, 3D STICKERS, EDTECH VIBE) */}
+        <nav className="flex-1 px-3.5 py-6 space-y-2 overflow-y-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all',
+                    isActive
+                      ? 'bg-[#EAF4EE] text-[#28665F] shadow-2xs'
+                      : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                  )
+                }
+              >
+                <img
+                  src={item.sticker}
+                  alt=""
+                  className="w-6 h-6 object-contain shrink-0 drop-shadow-xs"
+                  onError={(e) => {
+                    ;(e.target as HTMLElement).style.display = 'none'
+                  }}
+                />
+                <span>{item.name}</span>
+              </NavLink>
+            )
+          })}
+        </nav>
       </aside>
 
       {/* MOBILE DRAWER */}
@@ -166,19 +131,8 @@ export const AppShell: React.FC = () => {
                     />
                     <span>{item.name}</span>
                   </NavLink>
-                )}
-              )}
-
-              <div className="pt-2 border-t border-[#E3E7EB]">
-                <NavLink
-                  to="/admin/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-bold text-[#28665F] hover:bg-[#EAF3F1] transition-all"
-                >
-                  <ShieldCheck className="w-5 h-5 text-[#28665F]" />
-                  <span>{tText('Quản trị hệ thống', 'Admin Console')}</span>
-                </NavLink>
-              </div>
+                )
+              })}
             </nav>
           </div>
         </div>
@@ -196,6 +150,24 @@ export const AppShell: React.FC = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
+          </div>
+
+          {/* Topbar Center: Learner Goal Badge */}
+          <div className="hidden sm:flex items-center gap-4 px-4 py-2 rounded-2xl bg-[#F7F8FA] border border-[#E3E7EB] text-xs shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0">
+                <img src="/brand/nori-mascot-sm.png" alt="Nori" className="w-5 h-5 object-contain" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10px] text-[#68727D] font-bold uppercase tracking-wider">{t('nav.target_band')}:</span>
+                <span className="font-extrabold text-[#28665F] text-sm">Band {user?.targetBand?.toFixed(1) || '7.0'}</span>
+              </div>
+            </div>
+            <div className="h-4 w-px bg-[#E3E7EB]" />
+            <div className="flex items-baseline gap-1.5 text-[11px]">
+              <span className="text-[#68727D]">{t('nav.estimated_band')}:</span>
+              <span className="font-bold text-[#20272E]">{user?.currentBand ? `Band ${user.currentBand.toFixed(1)}` : t('nav.evaluating')}</span>
+            </div>
           </div>
 
           {/* Topbar Right: Language Switcher & User Account */}

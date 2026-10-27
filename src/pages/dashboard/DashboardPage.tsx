@@ -17,7 +17,6 @@ import { useAuth } from '@/context/AuthContext'
 import { useLearning } from '@/context/LearningContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { localizeLearningPath } from '@/i18n/contentLocalization'
-import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { PLATFORM_ASSETS } from '@/utils/assets'
 import { CelebrationAnimation, useAnimationTrigger } from '@/components/animation'
 
@@ -42,7 +41,6 @@ export const DashboardPage: React.FC = () => {
   const [planView, setPlanView] = useState<'today' | 'week'>('today')
   const [showStreakModal, setShowStreakModal] = useState(false)
   const { claimEvent } = useAnimationTrigger()
-  const containerRef = useScrollReveal(isLoading)
 
   const greeting = (() => {
     const hour = new Date().getHours()
@@ -123,11 +121,11 @@ export const DashboardPage: React.FC = () => {
   })
 
   return (
-    <div ref={containerRef} className="space-y-6 max-w-6xl mx-auto pb-12 select-none">
+    <div className="space-y-6 max-w-6xl mx-auto pb-12 select-none">
       {/* =========================================================================
           1. WELCOME HERO BANNER (EDTECH WARMTH - PASTEL CREAM WITH MASCOT NORI)
          ========================================================================= */}
-      <section className="reveal-init bg-[#FFF9EE] border border-amber-100/70 rounded-3xl p-6 sm:p-7 shadow-[0_2px_12px_rgba(15,94,92,0.04)] relative overflow-hidden">
+      <section className="bg-[#FFF9EE] border border-amber-100/70 rounded-3xl p-6 sm:p-7 shadow-[0_2px_12px_rgba(15,94,92,0.04)] relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4 sm:gap-5">
             {/* Mascot Nori Study Pose */}
@@ -298,7 +296,7 @@ export const DashboardPage: React.FC = () => {
           3. "UP NEXT FOR YOU" (TIẾP TỤC HỌC - RỘNG VÀ NỔI BẬT NHƯ BAND7WRITING)
          ========================================================================= */}
       {nextLesson && (
-        <section className="reveal-init rounded-3xl border border-slate-100 bg-white p-6 sm:p-7 shadow-[0_2px_12px_rgba(15,94,92,0.04)] space-y-4">
+        <section className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-7 shadow-[0_2px_12px_rgba(15,94,92,0.04)] space-y-4">
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#20272E] font-nunito tracking-tight">
             {tText('Tiếp tục học', 'Up next for you')}
           </h2>
@@ -353,7 +351,7 @@ export const DashboardPage: React.FC = () => {
           4. FRIENDLY DAILY PRACTICE RECOMMENDATION (LOẠI BỎ AI SAAS CỨNG NHẮC)
          ========================================================================= */}
       {dueVocabCount > 0 && (
-        <section className="reveal-init rounded-2xl bg-[#F0FDF4] border border-emerald-200/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+        <section className="rounded-2xl bg-[#F0FDF4] border border-emerald-200/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
               <RotateCw className="w-5 h-5" />
@@ -381,7 +379,7 @@ export const DashboardPage: React.FC = () => {
 
       {/* ERROR REVIEW ROW (CHỈ XUẤT HIỆN KHI CÓ LỖI THỰC SỰ - GIAO DIỆN NHẸ NHÀNG) */}
       {errorClusters.length > 0 && (
-        <section className="reveal-init rounded-2xl bg-[#FFFBEB] border border-amber-200/70 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs shadow-2xs">
+        <section className="rounded-2xl bg-[#FFFBEB] border border-amber-200/70 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
               <AlertCircle className="w-5 h-5" />
@@ -503,7 +501,7 @@ export const DashboardPage: React.FC = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Kế hoạch học hôm nay / Tuần này */}
-        <section className="reveal-init lg:col-span-7 bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xs">
+        <section className="lg:col-span-7 bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-base font-extrabold text-[#20272E] font-nunito">
@@ -647,7 +645,7 @@ export const DashboardPage: React.FC = () => {
         </section>
 
         {/* Hoạt động gần đây */}
-        <section className="reveal-init lg:col-span-5 bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xs">
+        <section className="lg:col-span-5 bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xs">
           <div className="pb-3 border-b border-slate-100">
             <h3 className="text-base font-extrabold text-[#20272E] font-nunito">
               {tText('Hoạt động gần đây', 'Recent Activities')}
@@ -682,7 +680,7 @@ export const DashboardPage: React.FC = () => {
       {/* =========================================================================
           7. TỔNG HỢP 4 KỸ NĂNG IELTS (CAMBRIDGE PERFORMANCE SCALE)
          ========================================================================= */}
-      <section className="reveal-init space-y-4">
+      <section className="space-y-4">
         <div className="pb-1">
           <h2 className="text-xl font-extrabold text-[#20272E] font-nunito tracking-tight">
             {tText('Năng lực 4 kỹ năng chuẩn Cambridge', '4-Skill Performance')}
