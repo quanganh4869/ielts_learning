@@ -1,9 +1,11 @@
 package com.ielts.platform.admin.users.controller;
 
 import com.ielts.platform.admin.users.dto.AuthProfileResponse;
+import com.ielts.platform.admin.users.dto.UserDtos;
 import com.ielts.platform.admin.users.model.LoginEventEntity;
 import com.ielts.platform.admin.users.repository.LoginEventRepository;
 import com.ielts.platform.admin.users.repository.UserSessionRepository;
+import com.ielts.platform.admin.users.service.UserService;
 import com.ielts.platform.common.ApiResponse;
 import com.ielts.platform.config.AuthProperties;
 import com.ielts.platform.security.UserPrincipal;
@@ -21,7 +23,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,6 +45,7 @@ public class AuthController {
     private final AuthProperties authProperties;
     private final UserSessionRepository userSessionRepository;
     private final LoginEventRepository loginEventRepository;
+    private final UserService userService;
 
     @GetMapping("/me")
     @Operation(summary = "Get current authenticated user profile and safe permissions")
@@ -74,6 +79,18 @@ public class AuthController {
                 .build();
 
         return ApiResponse.ok(profile);
+    }
+
+    @PatchMapping("/me")
+    @Operation(summary = "Update current authenticated user profile")
+    public ApiResponse<UserDtos.UserResponse> updateCurrentProfile(
+            @RequestBody UserDtos.UpdateProfileRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        if (principal == null) {
+            return ApiResponse.error("UNAUTHORIZED", "Not authenticated");
+        }
+        return ApiResponse.ok("Profile updated successfully", userService.updateProfile(principal.getId(), request));
     }
 
     @GetMapping("/status")

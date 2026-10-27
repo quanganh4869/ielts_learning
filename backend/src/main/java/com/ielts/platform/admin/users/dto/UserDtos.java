@@ -71,4 +71,14 @@ public class UserDtos {
         private String status;
         private String reason;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateProfileRequest {
+        private String name;
+        private BigDecimal targetBand;
+        private String avatarUrl;
+    }
 }

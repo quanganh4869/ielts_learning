@@ -172,6 +172,25 @@ public class UserService {
     }
 
     @Transactional
+    public UserDtos.UserResponse updateProfile(String userId, UserDtos.UpdateProfileRequest request) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "User profile not found for ID: " + userId));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+        if (request.getTargetBand() != null) {
+            user.setTargetBand(request.getTargetBand());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl().trim());
+        }
+
+        UserEntity saved = userRepository.save(user);
+        return mapToDto(saved);
+    }
+
+    @Transactional
     public UserDtos.UserResponse updateUserStatus(String id, UserDtos.UpdateUserStatusRequest request, String adminId, String adminName) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "User not found with id: " + id));

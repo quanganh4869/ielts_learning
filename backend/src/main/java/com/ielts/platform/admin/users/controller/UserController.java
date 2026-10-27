@@ -91,4 +91,25 @@ public class UserController {
         String adminName = principal != null ? principal.getName() : "System";
         return ApiResponse.ok("User status updated", userService.updateUserStatus(id, request, adminId, adminName));
     }
+
+    @GetMapping("/users/me")
+    @Operation(summary = "Get current authenticated user profile")
+    public ApiResponse<UserDtos.UserResponse> getMyProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return ApiResponse.error("UNAUTHORIZED", "Not authenticated");
+        }
+        return ApiResponse.ok(userService.getUserById(principal.getId()));
+    }
+
+    @PatchMapping("/users/me")
+    @Operation(summary = "Update current authenticated user profile")
+    public ApiResponse<UserDtos.UserResponse> updateMyProfile(
+            @RequestBody UserDtos.UpdateProfileRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        if (principal == null) {
+            return ApiResponse.error("UNAUTHORIZED", "Not authenticated");
+        }
+        return ApiResponse.ok("Profile updated successfully", userService.updateProfile(principal.getId(), request));
+    }
 }

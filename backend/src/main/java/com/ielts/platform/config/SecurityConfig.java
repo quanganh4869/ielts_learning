@@ -94,6 +94,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers(
                                 "/auth/**",
                                 "/storage/**",
+                                "/study/**",
+                                "/users/**",
                                 "/admin/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -118,6 +120,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         // Protected Storage & User endpoints
                         .requestMatchers("/storage/**").authenticated()
+                        .requestMatchers("/study/**").authenticated()
+                        .requestMatchers("/users/me").authenticated()
                         .requestMatchers("/auth/me").authenticated()
                         .anyRequest().authenticated()
                 )

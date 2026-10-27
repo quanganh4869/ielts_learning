@@ -6,7 +6,10 @@ import com.ielts.platform.admin.dashboard.service.DashboardService;
 import com.ielts.platform.admin.users.controller.AuthController;
 import com.ielts.platform.admin.users.repository.LoginEventRepository;
 import com.ielts.platform.admin.users.repository.UserSessionRepository;
+import com.ielts.platform.admin.users.service.UserService;
 import com.ielts.platform.config.AuthProperties;
+import com.ielts.platform.study.controller.StudyController;
+import com.ielts.platform.study.service.StudyService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = {DashboardController.class, AuthController.class})
+@WebMvcTest(controllers = {DashboardController.class, AuthController.class, StudyController.class})
 @Import({SecurityTestConfig.class, AuthProperties.class})
 class SecurityAuthorizationTest {
 
@@ -34,6 +38,12 @@ class SecurityAuthorizationTest {
 
     @MockBean
     private DashboardService dashboardService;
+
+    @MockBean
+    private StudyService studyService;
+
+    @MockBean
+    private UserService userService;
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
@@ -137,5 +147,40 @@ class SecurityAuthorizationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(header().exists("Set-Cookie"));
+    }
+
+    @Test
+    @DisplayName("6. Unauthenticated request to /study/practice-sessions is blocked with 401 Unauthorized")
+    void unauthenticatedRequestToStudyIsBlocked() throws Exception {
+        mockMvc.perform(get("/study/practice-sessions")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("7. Authenticated student can access /study/practice-sessions -> 200 OK")
+    void authenticatedStudentCanAccessStudyEndpoints() throws Exception {
+        UserPrincipal principal = UserPrincipal.builder()
+                .id("u_student_1")
+                .email("student@example.com")
+                .name("Student User")
+                .active(true)
+                .authorities(List.of(() -> "ROLE_STUDENT"))
+                .build();
+
+        when(studyService.getMyPracticeSessions(org.mockito.ArgumentMatchers.eq(principal), any()))
+                .thenReturn(com.ielts.platform.common.PageResponse.<com.ielts.platform.study.dto.StudyDtos.PracticeSessionDto>builder()
+                        .items(java.util.List.of())
+                        .pageNumber(0)
+                        .pageSize(20)
+                        .totalElements(0)
+                        .totalPages(0)
+                        .build());
+
+        mockMvc.perform(get("/study/practice-sessions")
+                        .with(user(principal))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
     }
 }

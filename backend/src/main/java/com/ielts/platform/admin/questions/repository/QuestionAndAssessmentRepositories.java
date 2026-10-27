@@ -40,6 +40,8 @@ public interface QuestionAndAssessmentRepositories {
         @Query("SELECT AVG(a.bandScore) FROM AssessmentAttemptEntity a WHERE a.bandScore IS NOT NULL")
         Double findAverageBandScore();
         List<AssessmentAttemptEntity> findTop10ByOrderByStartedAtDesc();
+        Page<AssessmentAttemptEntity> findByUserIdOrderByStartedAtDesc(String userId, Pageable pageable);
+        java.util.Optional<AssessmentAttemptEntity> findByIdAndUserId(String id, String userId);
     }
 
     @Repository
