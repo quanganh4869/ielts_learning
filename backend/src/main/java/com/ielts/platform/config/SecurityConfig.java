@@ -2,12 +2,16 @@ package com.ielts.platform.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ielts.platform.common.ApiResponse;
+import com.ielts.platform.security.CookieOrHeaderBearerTokenResolver;
+import com.ielts.platform.security.CsrfCookieFilter;
+import com.ielts.platform.security.SpaCsrfTokenRequestHandler;
 import com.ielts.platform.security.supabase.SupabaseAudienceValidator;
 import com.ielts.platform.security.supabase.SupabaseJwtAuthenticationConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +30,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -94,21 +99,39 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookiePath("/");
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfTokenRepository)
+                        .csrfTokenRequestHandler(requestHandler)
                         .ignoringRequestMatchers(
-                                "/auth/**",
-                                "/storage/**",
-                                "/study/**",
-                                "/users/**",
-                                "/admin/**",
-                                "/chat/**",
+                                "/swagger-ui",
+                                "/swagger-ui/",
                                 "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger",
+                                "/docs",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/auth/session",
+                                "/auth/login"
+                        )
+                )
+                .addFilterAfter(new CsrfCookieFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(content -> {})
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* https://*.supabase.co;")
                         )
                 )
                 .sessionManagement(session -> session
@@ -128,6 +151,8 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info",
                                 "/auth/status",
+                                "/auth/session",
+                                "/auth/refresh",
                                 "/auth/logout",
                                 "/auth/login",
                                 "/chat/suggestions",
@@ -145,6 +170,7 @@ public class SecurityConfig {
                 )
                 // Supabase Auth JWT Resource Server
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(new CookieOrHeaderBearerTokenResolver())
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(supabaseJwtAuthenticationConverter)
@@ -189,7 +215,15 @@ public class SecurityConfig {
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "X-XSRF-TOKEN",
+                "X-Requested-With",
+                "Origin"
+        ));
+        configuration.setExposedHeaders(Arrays.asList("X-XSRF-TOKEN", "Set-Cookie"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

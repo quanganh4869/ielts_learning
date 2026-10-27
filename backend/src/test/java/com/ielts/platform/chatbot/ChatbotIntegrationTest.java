@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,6 +68,7 @@ class ChatbotIntegrationTest {
 
         String convResponse = mockMvc.perform(post("/chat/conversations")
                         .with(user(userA))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createReq)))
                 .andExpect(status().isOk())
@@ -84,6 +86,7 @@ class ChatbotIntegrationTest {
 
         mockMvc.perform(post("/chat/conversations/" + convId + "/messages")
                         .with(user(userA))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(chatReq)))
                 .andExpect(status().isOk())
@@ -121,6 +124,7 @@ class ChatbotIntegrationTest {
         ChatRequest chatReq = ChatRequest.builder().message("Hack attempt").build();
         mockMvc.perform(post("/chat/conversations/" + convA.getId() + "/messages")
                         .with(user(userB))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(chatReq)))
                 .andExpect(status().isNotFound());
@@ -142,6 +146,7 @@ class ChatbotIntegrationTest {
 
         mockMvc.perform(post("/chat/conversations/" + conv.getId() + "/messages")
                         .with(user(userA))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(chatReq)))
                 .andExpect(status().isOk())

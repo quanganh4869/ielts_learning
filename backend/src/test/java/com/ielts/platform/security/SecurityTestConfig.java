@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityTestConfig {
 
     @Bean
+    @org.springframework.core.annotation.Order(100)
     public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -25,7 +26,7 @@ public class SecurityTestConfig {
                                 res.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden"))
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/status", "/auth/logout").permitAll()
+                        .requestMatchers("/auth/status", "/auth/session", "/auth/refresh", "/auth/logout").permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/auth/me").authenticated()
                         .anyRequest().authenticated()

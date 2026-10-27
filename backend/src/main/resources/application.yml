@@ -104,6 +104,7 @@ supabase:
   url: ${SUPABASE_URL:}
   jwks-uri: ${SUPABASE_JWKS_URI:${SUPABASE_JWKS_URL:}}
   jwt-secret: ${SUPABASE_JWT_SECRET:${SUPABASE_SECRET_KEY:}}
+  publishable-key: ${SUPABASE_PUBLISHABLE_KEY:${SUPABASE_ANON_KEY:}}
   issuer: ${SUPABASE_ISSUER:}
   audience: ${SUPABASE_AUDIENCE:authenticated}
 

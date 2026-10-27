@@ -7,6 +7,7 @@ import { TutorMessage } from '@/types/aiTutor'
 import { UserStatistics } from '@/types/statistics'
 import { chatService } from './chatService'
 import { supabase } from './supabase'
+import { withCsrfHeaders } from './csrf'
 import {
   mockLearningPath,
   mockListeningExercises,
@@ -38,10 +39,21 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 async function requestBackend<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const headers = await getAuthHeaders()
+  const method = (options.method || 'GET').toUpperCase()
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  }
+
+  // Mutating requests automatically attach double-submit X-XSRF-TOKEN header
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    headers = withCsrfHeaders(headers)
+  }
+
   const res = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
     ...options,
-    headers: { ...headers, ...(options.headers as Record<string, string> || {}) },
+    headers,
     credentials: 'include',
   })
 

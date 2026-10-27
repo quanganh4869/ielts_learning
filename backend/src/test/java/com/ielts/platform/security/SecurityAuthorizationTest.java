@@ -63,6 +63,12 @@ class SecurityAuthorizationTest {
     @MockBean
     private ClientIpResolver clientIpResolver;
 
+    @MockBean
+    private org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder;
+
+    @MockBean
+    private com.ielts.platform.config.SupabaseProperties supabaseProperties;
+
     @Test
     @DisplayName("1. Unauthenticated request to Admin endpoint is blocked with 401 Unauthorized")
     void unauthenticatedRequestIsBlocked() throws Exception {
@@ -185,5 +191,69 @@ class SecurityAuthorizationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("8. POST /auth/session with valid token establishes session and issues HttpOnly cookies")
+    void establishSessionWithValidTokenIssuesCookies() throws Exception {
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant exp = now.plusSeconds(3600);
+        org.springframework.security.oauth2.jwt.Jwt mockJwt = new org.springframework.security.oauth2.jwt.Jwt(
+                "valid.token.jwt",
+                now,
+                exp,
+                java.util.Map.of("alg", "HS256"),
+                java.util.Map.of(
+                        "sub", "user_123",
+                        "email", "user@example.com",
+                        "email_verified", true
+                )
+        );
+
+        when(jwtDecoder.decode("valid-token")).thenReturn(mockJwt);
+        when(userProvisioningService.processSupabaseUser(
+                org.mockito.ArgumentMatchers.eq("user_123"),
+                org.mockito.ArgumentMatchers.eq("user@example.com"),
+                org.mockito.ArgumentMatchers.eq(true),
+                any(),
+                any(),
+                any()
+        )).thenReturn(UserPrincipal.builder()
+                .id("user_123")
+                .email("user@example.com")
+                .name("Valid User")
+                .active(true)
+                .authorities(List.of(() -> "ROLE_STUDENT"))
+                .build());
+
+        mockMvc.perform(post("/auth/session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"accessToken\":\"valid-token\",\"refreshToken\":\"refresh-xyz\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value("user@example.com"))
+                .andExpect(header().exists("Set-Cookie"));
+    }
+
+    @Test
+    @DisplayName("9. POST /auth/session with invalid token returns 401 Unauthorized")
+    void establishSessionWithInvalidTokenReturnsUnauthorized() throws Exception {
+        when(jwtDecoder.decode("bad-token")).thenThrow(new org.springframework.security.oauth2.jwt.BadJwtException("Invalid signature"));
+
+        mockMvc.perform(post("/auth/session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"accessToken\":\"bad-token\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("10. POST /auth/refresh without token returns 401 Unauthorized and expires cookies")
+    void refreshSessionWithoutTokenReturnsUnauthorized() throws Exception {
+        mockMvc.perform(post("/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(header().exists("Set-Cookie"));
     }
 }

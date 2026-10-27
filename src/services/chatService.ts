@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase'
+import { withCsrfHeaders } from '@/services/csrf'
 import { TutorMessage, TutorSession, ChatSuggestion, ChatStatus } from '@/types/aiTutor'
 
 const BACKEND_BASE_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080') + '/api/v1'
@@ -20,10 +21,20 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 async function requestApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const headers = await getAuthHeaders()
+  const method = (options.method || 'GET').toUpperCase()
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  }
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    headers = withCsrfHeaders(headers)
+  }
+
   const res = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
     ...options,
-    headers: { ...headers, ...(options.headers as Record<string, string> || {}) },
+    headers,
     credentials: 'include',
   })
 

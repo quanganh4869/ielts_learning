@@ -1,4 +1,5 @@
 import { BACKEND_URL } from '@/context/AuthContext'
+import { withCsrfHeaders } from '@/services/csrf'
 
 export interface UploadSessionRequest {
   resourceType: 'SPEAKING_AUDIO' | 'LISTENING_AUDIO' | 'LESSON_MATERIAL' | 'USER_AVATAR'
@@ -39,13 +40,14 @@ export const storageService = {
     request: UploadSessionRequest,
     accessToken?: string | null
   ): Promise<UploadSessionResponse> {
-    const headers: Record<string, string> = {
+    let headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     }
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`
     }
+    headers = withCsrfHeaders(headers)
 
     const res = await fetch(`${BACKEND_URL}/api/v1/storage/upload-session`, {
       method: 'POST',
@@ -92,12 +94,13 @@ export const storageService = {
     fileId: string,
     accessToken?: string | null
   ): Promise<FileMetadata> {
-    const headers: Record<string, string> = {
+    let headers: Record<string, string> = {
       Accept: 'application/json',
     }
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`
     }
+    headers = withCsrfHeaders(headers)
 
     const res = await fetch(`${BACKEND_URL}/api/v1/storage/complete-upload/${fileId}`, {
       method: 'POST',
@@ -174,12 +177,13 @@ export const storageService = {
     fileId: string,
     accessToken?: string | null
   ): Promise<void> {
-    const headers: Record<string, string> = {
+    let headers: Record<string, string> = {
       Accept: 'application/json',
     }
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`
     }
+    headers = withCsrfHeaders(headers)
 
     const res = await fetch(`${BACKEND_URL}/api/v1/storage/${fileId}`, {
       method: 'DELETE',

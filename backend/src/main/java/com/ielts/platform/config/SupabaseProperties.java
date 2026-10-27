@@ -29,6 +29,11 @@ public class SupabaseProperties {
     private String jwtSecret;
 
     /**
+     * Supabase Publishable / Anon Key for client and server-side Auth API proxying.
+     */
+    private String publishableKey;
+
+    /**
      * Expected JWT Issuer claim. Defaults to ${url}/auth/v1.
      */
     private String issuer;

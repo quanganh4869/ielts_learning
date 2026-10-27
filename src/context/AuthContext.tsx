@@ -3,6 +3,7 @@ import { User } from '@/types/auth'
 import { OnboardingData } from '@/types/onboarding'
 import { apiService } from '@/services/apiService'
 import { supabase, isSupabaseConfigured } from '@/services/supabase'
+import { withCsrfHeaders } from '@/services/csrf'
 
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
@@ -22,27 +23,65 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'ielts_platform_user_v1'
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const syncBackendUser = useCallback(async (token: string | null): Promise<User | null> => {
-    if (!token) {
-      return null
-    }
-
+  /**
+   * Exchanges OAuth token pair from redirect into server-issued HttpOnly cookies
+   * and populates active user in React state. ZERO tokens are saved to localStorage.
+   */
+  const establishBackendSession = useCallback(async (token: string, refreshToken?: string | null): Promise<User | null> => {
     try {
-      const headers: Record<string, string> = {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      }
+      const res = await fetch(`${BACKEND_URL}/api/v1/auth/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ accessToken: token, refreshToken: refreshToken || null }),
+      })
 
+      if (res.ok) {
+        const body = await res.json()
+        if (body.success && body.data) {
+          const profile = body.data
+          const mappedUser: User = {
+            id: profile.id,
+            email: profile.email,
+            fullName: profile.name || profile.email.split('@')[0],
+            avatarUrl: profile.avatarUrl,
+            roles: profile.roles || [],
+            isAdmin: Boolean(profile.admin),
+            role: profile.admin ? 'admin' : 'student',
+            targetBand: 7.0,
+            testType: 'academic',
+            currentBand: 6.5,
+            isOnboarded: true,
+            hasCompletedAssessment: true,
+            createdAt: '2026-09-01',
+          }
+          setUser(mappedUser)
+          setAccessToken(token) // Kept in memory only for legacy props
+          return mappedUser
+        }
+      }
+    } catch (e) {
+      console.error('Failed to establish backend session:', e)
+    }
+    return null
+  }, [])
+
+  /**
+   * Syncs user profile by calling GET /api/v1/auth/me using HttpOnly access_token cookie.
+   */
+  const syncBackendUser = useCallback(async (): Promise<User | null> => {
+    try {
       const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
         method: 'GET',
-        headers,
+        headers: { Accept: 'application/json' },
         credentials: 'include',
       })
 
@@ -66,26 +105,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             createdAt: '2026-09-01',
           }
           setUser(mappedUser)
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedUser))
           return mappedUser
         }
       }
 
       if (response.status === 401) {
-        // If backend rejects or has not yet synced, safely fallback to Supabase session profile (as student)
-        if (isSupabaseConfigured()) {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session?.user) {
-            const supaUser = session.user
-            const email = (supaUser.email || '').toLowerCase().trim()
-            const fallbackUser: User = {
-              id: supaUser.id,
-              email,
-              fullName: (supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || email.split('@')[0]) as string,
-              avatarUrl: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
-              roles: ['ROLE_USER'],
-              isAdmin: false,
-              role: 'student',
+        // Access token is expired or missing. Attempt refresh using HttpOnly refresh_token cookie!
+        const refreshResponse = await fetch(`${BACKEND_URL}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: withCsrfHeaders({
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          }),
+          credentials: 'include',
+        })
+
+        if (refreshResponse.ok) {
+          const refreshBody = await refreshResponse.json()
+          if (refreshBody.success && refreshBody.data) {
+            const profile = refreshBody.data
+            const mappedUser: User = {
+              id: profile.id,
+              email: profile.email,
+              fullName: profile.name || profile.email.split('@')[0],
+              avatarUrl: profile.avatarUrl,
+              roles: profile.roles || [],
+              isAdmin: Boolean(profile.admin),
+              role: profile.admin ? 'admin' : 'student',
               targetBand: 7.0,
               testType: 'academic',
               currentBand: 6.5,
@@ -93,27 +139,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               hasCompletedAssessment: true,
               createdAt: '2026-09-01',
             }
-            setUser(fallbackUser)
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackUser))
-            return fallbackUser
+            setUser(mappedUser)
+            return mappedUser
           }
         }
+
         setUser(null)
-        localStorage.removeItem(STORAGE_KEY)
+        setAccessToken(null)
         return null
       }
-    } catch {
-      // Offline fallback: check localStorage
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setUser(parsed)
-          return parsed
-        } catch {
-          setUser(null)
-        }
-      }
+    } catch (e) {
+      console.warn('Backend user profile fetch error:', e)
     }
     return null
   }, [])
@@ -122,18 +158,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       if (isSupabaseConfigured()) {
-        // 1. If OAuth Implicit hash (#access_token=...) is present in URL, extract and set session
+        // 1. If OAuth Implicit hash (#access_token=...) is present in URL
         if (window.location.hash.includes('access_token=')) {
           const hashParams = new URLSearchParams(window.location.hash.substring(1))
           const tokenFromHash = hashParams.get('access_token')
           const refreshToken = hashParams.get('refresh_token')
           if (tokenFromHash) {
             try {
-              if (refreshToken) {
-                await supabase.auth.setSession({ access_token: tokenFromHash, refresh_token: refreshToken })
-              }
-              setAccessToken(tokenFromHash)
-              await syncBackendUser(tokenFromHash)
+              await establishBackendSession(tokenFromHash, refreshToken)
               window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
               return
             } catch (e) {
@@ -142,16 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // 2. If OAuth PKCE code (?code=...) is present in URL, exchange it for session
+        // 2. If OAuth PKCE code (?code=...) is present in URL
         const params = new URLSearchParams(window.location.search)
         const code = params.get('code')
         if (code) {
           try {
             const { data, error } = await supabase.auth.exchangeCodeForSession(code)
             if (!error && data?.session?.access_token) {
-              setAccessToken(data.session.access_token)
-              await syncBackendUser(data.session.access_token)
-              // Clean up code parameter from URL
+              await establishBackendSession(data.session.access_token, data.session.refresh_token)
               params.delete('code')
               const newSearch = params.toString() ? `?${params.toString()}` : ''
               window.history.replaceState({}, document.title, window.location.pathname + newSearch + window.location.hash)
@@ -161,49 +191,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Error exchanging code for session:', e)
           }
         }
-
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.access_token) {
-          setAccessToken(session.access_token)
-          await syncBackendUser(session.access_token)
-          return
-        }
       }
 
-      if (accessToken) {
-        await syncBackendUser(accessToken)
-      } else {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) {
-          try {
-            setUser(JSON.parse(stored))
-          } catch {
-            setUser(null)
-          }
-        }
-      }
+      // 3. Normal session restore via HttpOnly cookie check
+      await syncBackendUser()
     } finally {
       setIsLoading(false)
     }
-  }, [accessToken, syncBackendUser])
+  }, [establishBackendSession, syncBackendUser])
 
   useEffect(() => {
-    // 1. Initial session bootstrap
     refreshUser()
 
-    // 2. Listen to official Supabase Auth state events (token refreshed, sign-in, sign-out)
     if (isSupabaseConfigured()) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             if (session?.access_token) {
-              setAccessToken(session.access_token)
-              await syncBackendUser(session.access_token)
+              await establishBackendSession(session.access_token, session.refresh_token)
             }
           } else if (event === 'SIGNED_OUT') {
-            setAccessToken(null)
             setUser(null)
-            localStorage.removeItem(STORAGE_KEY)
+            setAccessToken(null)
           }
           setIsLoading(false)
         }
@@ -213,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscription.unsubscribe()
       }
     }
-  }, [refreshUser, syncBackendUser])
+  }, [establishBackendSession, refreshUser])
 
   const loginWithGoogle = async () => {
     if (isSupabaseConfigured()) {
@@ -231,7 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error
       }
     } else {
-      // Fallback for local development if Supabase env credentials are not yet supplied
       window.location.href = `${BACKEND_URL}/api/v1/oauth2/authorization/google`
     }
   }
@@ -241,7 +249,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const loggedUser = await apiService.login(email, pass)
       setUser(loggedUser)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser))
     } finally {
       setIsLoading(false)
     }
@@ -252,7 +259,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const newUser = await apiService.register(email, name, pass)
       setUser(newUser)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
       return newUser
     } finally {
       setIsLoading(false)
@@ -263,19 +269,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       if (isSupabaseConfigured()) {
-        await supabase.auth.signOut()
+        await supabase.auth.signOut({ scope: 'local' })
       }
       await fetch(`${BACKEND_URL}/api/v1/auth/logout`, {
         method: 'POST',
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        headers: withCsrfHeaders({ Accept: 'application/json' }),
         credentials: 'include',
       })
     } catch (e) {
       console.warn('Logout API warning:', e)
     } finally {
-      setAccessToken(null)
       setUser(null)
-      localStorage.removeItem(STORAGE_KEY)
+      setAccessToken(null)
       setIsLoading(false)
       window.location.href = '/login'
     }
@@ -287,7 +292,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = await apiService.submitOnboarding(data)
       const merged = { ...user, ...updated, isOnboarded: true } as User
       setUser(merged)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
     } finally {
       setIsLoading(false)
     }
@@ -297,7 +301,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return
     const merged = { ...user, ...updated }
     setUser(merged)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
   }
 
   return (
