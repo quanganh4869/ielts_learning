@@ -1,33 +1,39 @@
 package com.ielts.platform.config;
 
+import com.ielts.platform.security.ClientIpResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 /**
- * Visual HTTP Request & Protocol Logger Filter.
- * Prints clear visual indicators:
- *  - ✅ [✔ SUCCESS] in Green for successful protocol calls (HTTP 2xx, 3xx)
- *  - ❌ [✖ FAILED] in Red for failed or unauthorized protocol calls (HTTP 4xx, 5xx)
- * Displays HTTP Status, Method, Path, and latency duration in milliseconds.
+ * Standard HTTP Request & Protocol Access Logger Filter.
+ * Formats access logs in standard ASGI / Uvicorn / Nginx format:
+ *   ✅ 127.0.0.1 - "GET /api/v1/admin/dashboard HTTP/1.1" 200 OK (35 ms)
+ *   ❌ 127.0.0.1 - "GET /api/v1/admin/users HTTP/1.1" 401 Unauthorized (12 ms)
  */
 @Slf4j
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
+@RequiredArgsConstructor
 public class HttpRequestLoggingFilter extends OncePerRequestFilter {
+
+    private final ClientIpResolver clientIpResolver;
 
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_GREEN = "\u001B[1;32m";
     private static final String ANSI_RED = "\u001B[1;31m";
     private static final String ANSI_CYAN = "\u001B[1;36m";
+    private static final String ANSI_YELLOW = "\u001B[1;33m";
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -49,25 +55,42 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String uri = request.getRequestURI();
         String query = request.getQueryString();
+        String protocol = request.getProtocol();
+        if (protocol == null || protocol.isBlank()) {
+            protocol = "HTTP/1.1";
+        }
         String fullPath = (query != null && !query.isBlank()) ? uri + "?" + query : uri;
+        String rawIp = clientIpResolver != null ? clientIpResolver.resolveClientIp(request) : request.getRemoteAddr();
+        String clientIp = (rawIp != null && !rawIp.isBlank()) ? rawIp : "127.0.0.1";
 
         try {
             filterChain.doFilter(request, response);
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-            int status = response.getStatus();
+            int statusCode = response.getStatus();
+            HttpStatus resolvedStatus = HttpStatus.resolve(statusCode);
+            String statusPhrase = (resolvedStatus != null)
+                    ? resolvedStatus.value() + " " + resolvedStatus.getReasonPhrase()
+                    : String.valueOf(statusCode);
 
-            if (status >= 200 && status < 400) {
-                String logLine = String.format("%s✅ [✔ SUCCESS] [%d]%s %s%-6s%s %s (%d ms)",
-                        ANSI_GREEN, status, ANSI_RESET,
-                        ANSI_CYAN, method, ANSI_RESET,
-                        fullPath, duration);
+            if (statusCode >= 200 && statusCode < 400) {
+                // Standard Success Format (Green checkmark)
+                String logLine = String.format("%s✅%s %s - \"%s%s %s %s%s\" %s%s%s (%d ms)",
+                        ANSI_GREEN, ANSI_RESET,
+                        clientIp,
+                        ANSI_CYAN, method, fullPath, protocol, ANSI_RESET,
+                        ANSI_GREEN, statusPhrase, ANSI_RESET,
+                        duration);
                 log.info(logLine);
             } else {
-                String logLine = String.format("%s❌ [✖ FAILED]  [%d]%s %s%-6s%s %s (%d ms)",
-                        ANSI_RED, status, ANSI_RESET,
-                        ANSI_CYAN, method, ANSI_RESET,
-                        fullPath, duration);
+                // Standard Error / Warning Format (Red cross)
+                String color = (statusCode >= 500) ? ANSI_RED : ANSI_YELLOW;
+                String logLine = String.format("%s❌%s %s - \"%s%s %s %s%s\" %s%s%s (%d ms)",
+                        ANSI_RED, ANSI_RESET,
+                        clientIp,
+                        ANSI_CYAN, method, fullPath, protocol, ANSI_RESET,
+                        color, statusPhrase, ANSI_RESET,
+                        duration);
                 log.warn(logLine);
             }
         }
