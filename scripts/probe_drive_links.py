@@ -18,7 +18,7 @@ links = [
     ('A Book for IELTS Sam McCarter', '1jGY0_68btylSX915TDk2Y9fMF_SZWF5G'),
 ]
 
-os.makedirs('downloads/ielts_fighter_materials', exist_ok=True)
+os.makedirs('resources/research/downloads-materials', exist_ok=True)
 
 print("=== CHECKING AND DOWNLOADING SAMPLE BOOKS ===")
 for name, fid in links:

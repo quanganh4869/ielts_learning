@@ -44,18 +44,20 @@ Ielts_learning/
 ### 2.2. Cấu trúc Sau Chuẩn Hóa (Chuẩn Doanh Nghiệp)
 ```
 Ielts_learning/
-├── animation/              # [BẢO TOÀN 100%] 10 video gốc, phục vụ trực tiếp qua Vite dev & build
+├── animation/              # [BẢO TOÀN 100%] 11 video gốc (bao gồm Otter closing), phục vụ trực tiếp qua Vite dev & build
 ├── dist/                   # Production build artifact
-├── docs/
-│   ├── ARCHITECTURE.md     # [MỚI] Tài liệu kiến trúc phân tầng hệ thống chuẩn Enterprise
-│   ├── CODE_ORGANIZATION.md # [MỚI] Báo cáo chi tiết quá trình tái cấu trúc & audit tài nguyên
-│   ├── LEARNING_RULES.md   # [BẢO TOÀN] Quy chuẩn nghiệp vụ Learning Rules Engine
-│   └── ANIMATION_REGISTRY.md # [BẢO TOÀN] Bảng đối chiếu frame & mapping sự kiện animation
-├── downloads/              # [BẢO TOÀN] Dữ liệu đề thi IELTS mẫu (Cambridge, Collins, Task Sets)
-├── public/                 # [BẢO TOÀN] Brand, stickers, visuals, videos loading
-├── scripts/                # [BẢO TOÀN] Bộ script phân tích tài liệu và xử lý dữ liệu
-├── singlefile/             # [BẢO TOÀN] Bộ snapshot HTML tham chiếu Band7Writing
-├── src/
+├── docs/                   # Tài liệu kiến trúc, quy chuẩn & phương pháp học
+├── public/                 # Static assets phục vụ trực tiếp web (brand, stickers, visuals, videos)
+├── resources/              # [MỚI - SẮP XẾP GỌN GÀNG] Toàn bộ tài nguyên gốc, ảnh khảo sát & dữ liệu nghiên cứu
+│   ├── brand/              # Tệp thiết kế vector/raster logo, mascot Nori & source video loading
+│   ├── previews/           # Ảnh chụp giao diện tham khảo, frame tách lớp & preview slices
+│   └── research/           # Dữ liệu phân tích đề thi, snapshot HTML Band7Writing & kho tài liệu IELTS
+│       ├── singlefile/     # 15 trang HTML snapshot offline Band7Writing
+│       └── downloads-materials/ # Bộ đề thi mẫu số hóa Cambridge, Collins, Mat Clark...
+├── scripts/                # Bộ script Python phân tích tài liệu và xử lý dữ liệu
+├── src/                    # Kiến trúc mã nguồn React + TypeScript
+└── [File cấu hình gốc]    # package.json, vite.config.ts, tsconfig*.json, index.html, README.md, .gitignore
+```
 │   ├── admin/
 │   │   ├── components/
 │   │   │   ├── content/    # [BẢO TOÀN] 6 Drawers tạo mới nội dung
@@ -95,22 +97,25 @@ Ielts_learning/
 
 ---
 
-## 3. PHÂN LOẠI & BẢO TOÀN CÁC TÀI NGUYÊN TẠI ROOT
+## 3. PHÂN LOẠI & SẮP XẾP TÀI NGUYÊN VÀO THƯ MỤC CHUYÊN BIỆT (ZERO ROOT CLUTTER)
 
-Toàn bộ các file tại thư mục gốc được giữ nguyên 100%, phân loại mục đích rõ ràng:
+Thư mục gốc được tinh gọn tuyệt đối theo chuẩn Enterprise, toàn bộ tài nguyên nghiên cứu và đồ họa được chuyển vào các thư mục có tổ chức:
 
-1. **Nhóm Video Animation**:
-   - `animation/*.mp4`: 10 tệp animation thương hiệu được phục vụ trực tiếp qua Vite dev server và sao chép vào `dist/animation/` khi build.
-   - `loading.mp4` & `Otter_icon_closing_animation_1080p_20261025225329.mp4`: Tệp video gốc chất lượng cao 1080p.
-2. **Nhóm Thiết kế Gốc & Source Visuals**:
+1. **Nhóm Video Animation (`animation/` & `public/`)**:
+   - `animation/*.mp4`: 11 tệp animation thương hiệu chuẩn 1080p (đã quy tụ đầy đủ cả `Otter_icon_closing_animation_1080p_20261025225329.mp4`).
+   - `public/`: Chứa các video loading và icon closing được phục vụ trực tiếp cho trình duyệt và đóng gói tự động vào `dist/`.
+2. **Nhóm Thiết kế Gốc & Source Visuals (`resources/brand/`)**:
    - `logo.jpg`, `logo_isolated.jpg`, `logo_tight.png`, `logo_transparent.png`, `logo_wordmark.png`: Tệp gốc vector/raster bộ nhận diện thương hiệu.
    - `nori_character.png`, `nori_avatar.png`: File thiết kế nhân vật Nori kích thước lớn.
+   - `loading.mp4`: Tệp video gốc chất lượng cao lưu trữ dự phòng.
+3. **Nhóm Giao diện Tham chiếu & Slices (`resources/previews/`)**:
    - `cropped_preview.png`, `image1.jpg`, `image2.jpg`, `slice_*.png`, `loading_frame_*.png`: Tệp hình ảnh tham chiếu và frame mẫu.
-3. **Nhóm Dữ liệu Khảo cứu & Lưu trữ**:
-   - `singlefile.rar`, `singlefile/`: Bản lưu trữ hoàn chỉnh các trang mẫu Band7Writing phục vụ tham chiếu thiết kế.
+4. **Nhóm Dữ liệu Khảo cứu & Lưu trữ (`resources/research/`)**:
+   - `singlefile/`, `singlefile.rar`: Bản lưu trữ hoàn chỉnh các trang mẫu Band7Writing phục vụ tham chiếu thiết kế.
    - `ielts_fighter_page.html`, `book_inventory.txt`, `parsed_sections.json`, `download`: Dữ liệu phân tích và biên mục tài liệu đề thi mẫu.
-4. **Nhóm Cấu hình Hệ thống**:
-   - `package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `.oxlintrc.json`, `.gitignore`: Giữ nguyên cấu hình và phiên bản dependency của dự án.
+   - `downloads-materials/`: Kho đề mẫu số hóa Cambridge, Collins, Mat Clark...
+5. **Nhóm Cấu hình Hệ thống tại Root**:
+   - `package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `.oxlintrc.json`, `.gitignore`, `index.html`, `README.md`.
 
 ---
 

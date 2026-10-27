@@ -3,10 +3,10 @@ import json
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-with open('parsed_sections.json', 'r', encoding='utf-8') as f:
+with open('resources/research/parsed_sections.json', 'r', encoding='utf-8') as f:
     sections = json.load(f)
 
-with open('book_inventory.txt', 'w', encoding='utf-8') as out:
+with open('resources/research/book_inventory.txt', 'w', encoding='utf-8') as out:
     for s in sections:
         out.write(f"\n=======================================================\n")
         out.write(f"SECTION: {s.get('heading')}\n")

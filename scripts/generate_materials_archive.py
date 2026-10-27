@@ -1,7 +1,7 @@
 import os
 import json
 
-output_dir = 'downloads/ielts_fighter_materials'
+output_dir = 'resources/research/downloads-materials'
 os.makedirs(output_dir, exist_ok=True)
 
 # -------------------------------------------------------------------------
@@ -634,4 +634,4 @@ Toàn bộ các đề thi mẫu trên cũng đã được số hóa trực tiế
 with open(os.path.join(output_dir, 'README.md'), 'w', encoding='utf-8') as f:
     f.write(readme_content)
 
-print("Generated README.md in downloads/ielts_fighter_materials")
+print("Generated README.md in resources/research/downloads-materials")

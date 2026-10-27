@@ -16,10 +16,13 @@ function copyAnimationAssetsPlugin(): Plugin {
         if (fs.existsSync(srcAnim)) {
           fs.cpSync(srcAnim, destAnim, { recursive: true })
         }
-        const rootOtter = path.resolve(rootDir, 'Otter_icon_closing_animation_1080p_20261025225329.mp4')
+        const animOtter = path.resolve(rootDir, 'animation/Otter_icon_closing_animation_1080p_20261025225329.mp4')
+        const publicOtter = path.resolve(rootDir, 'public/Otter_icon_closing_animation_1080p_20261025225329.mp4')
         const destOtter = path.resolve(rootDir, 'dist/Otter_icon_closing_animation_1080p_20261025225329.mp4')
-        if (fs.existsSync(rootOtter)) {
-          fs.copyFileSync(rootOtter, destOtter)
+        if (fs.existsSync(animOtter) && !fs.existsSync(destOtter)) {
+          fs.copyFileSync(animOtter, destOtter)
+        } else if (fs.existsSync(publicOtter) && !fs.existsSync(destOtter)) {
+          fs.copyFileSync(publicOtter, destOtter)
         }
       } catch (e) {
         console.warn('Animation assets copy warning:', e)

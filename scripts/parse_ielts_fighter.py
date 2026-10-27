@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-with open('ielts_fighter_page.html', 'r', encoding='utf-8', errors='ignore') as f:
+with open('resources/research/ielts_fighter_page.html', 'r', encoding='utf-8', errors='ignore') as f:
     soup = BeautifulSoup(f.read(), 'html.parser')
 
 title = soup.title.string.strip() if soup.title and soup.title.string else ''
@@ -37,7 +37,7 @@ for el in main_content.find_all(['h2', 'h3', 'h4', 'p', 'ul', 'ol', 'div']):
                 current_section["links"].append({"text": link_text, "href": href})
 
 print(f"Total sections extracted: {len(sections)}")
-with open('parsed_sections.json', 'w', encoding='utf-8') as f:
+with open('resources/research/parsed_sections.json', 'w', encoding='utf-8') as f:
     json.dump(sections, f, ensure_ascii=False, indent=2)
 
 # Print summary of books and links
