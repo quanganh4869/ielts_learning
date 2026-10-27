@@ -1,25 +1,31 @@
-import React, { useState } from 'react'
-import { AlertTriangle, Upload, FileCheck } from 'lucide-react'
-import { SideDrawer } from '../SideDrawer'
+import React, { useState, useEffect } from 'react'
+import { Sparkles, Save, Upload, FileCheck, HardDrive } from 'lucide-react'
+import { AdminModal } from '../AdminModal'
 import { FormField } from '../FormField'
 import { Button } from '@/components/common/Button'
 import { AdminMediaAsset } from '../../types/admin'
 import { adminService } from '../../services/adminService'
 import { cn } from '@/utils/cn'
 
-interface CreateMediaDrawerProps {
+export interface MediaModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (newMedia: AdminMediaAsset) => void
+  onSuccess: (media: AdminMediaAsset, isEdit: boolean) => void
   onError: (errorMessage: string) => void
+  initialData?: AdminMediaAsset | null
+  mode?: 'create' | 'edit'
 }
 
-export const CreateMediaDrawer: React.FC<CreateMediaDrawerProps> = ({
+export const MediaModal: React.FC<MediaModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
   onError,
+  initialData,
+  mode = 'create',
 }) => {
+  const isEdit = mode === 'edit' || !!initialData
+
   const [fileName, setFileName] = useState('')
   const [fileType, setFileType] = useState<'audio' | 'document' | 'image'>('audio')
   const [fileSizeKb, setFileSizeKb] = useState(2450)
@@ -28,6 +34,22 @@ export const CreateMediaDrawer: React.FC<CreateMediaDrawerProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [hasShake, setHasShake] = useState(false)
+
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setFileName(initialData.fileName || '')
+      setFileType(initialData.fileType || 'audio')
+      setFileSizeKb(initialData.fileSizeKb || 2450)
+      setUrl(initialData.url || '')
+      setErrors({})
+    } else if (!initialData && isOpen) {
+      setFileName('')
+      setFileType('audio')
+      setFileSizeKb(2450)
+      setUrl('')
+      setErrors({})
+    }
+  }, [initialData, isOpen])
 
   const handleSimulateFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -63,18 +85,24 @@ export const CreateMediaDrawer: React.FC<CreateMediaDrawerProps> = ({
 
     setIsSubmitting(true)
     try {
-      const created = await adminService.createMedia({
-        fileName: fileName.trim(),
-        fileType,
-        fileSizeKb: Number(fileSizeKb),
-        url: url.trim(),
-        usedInCount: 0,
-      })
-
-      setFileName('')
-      setUrl('')
-      setErrors({})
-      onSuccess(created)
+      if (isEdit && initialData) {
+        const updated = await adminService.updateMedia(initialData.id, {
+          fileName: fileName.trim(),
+          fileType,
+          fileSizeKb: Number(fileSizeKb),
+          url: url.trim(),
+        })
+        onSuccess(updated, true)
+      } else {
+        const created = await adminService.createMedia({
+          fileName: fileName.trim(),
+          fileType,
+          fileSizeKb: Number(fileSizeKb),
+          url: url.trim(),
+          usedInCount: 0,
+        })
+        onSuccess(created, false)
+      }
       onClose()
     } catch (err) {
       setHasShake(true)
@@ -86,106 +114,125 @@ export const CreateMediaDrawer: React.FC<CreateMediaDrawerProps> = ({
   }
 
   return (
-    <SideDrawer
+    <AdminModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Tải Lên Tệp Media & Tài Liệu"
-      subtitle="Lưu trữ audio nghe, file PDF đề thi và hình ảnh biểu đồ Task 1"
-      width="max-w-md"
+      title={isEdit ? `Chỉnh sửa tệp Media: ${initialData?.fileName || fileName}` : 'Tải Lên Tệp Media Mới'}
+      subtitle={isEdit ? 'Chỉnh sửa tên tệp, định dạng và đường dẫn lưu trữ đám mây' : 'Tải lên Audio nghe, PDF đề thi hoặc hình ảnh minh họa cho ngân hàng đề'}
+      icon={<HardDrive className="w-5 h-5" />}
+      badge={{
+        text: isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
+        variant: isEdit ? 'amber' : 'teal',
+      }}
+      maxWidth="max-w-xl"
       footer={
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-[#E3E7EB] bg-[#FAFBFB]">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
-            Hủy
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="font-bold shadow-xs"
-          >
-            {isSubmitting ? 'Đang lưu...' : 'Lưu tệp'}
-          </Button>
-        </div>
+        <>
+          <div className="text-xs text-[#68727D] hidden sm:block">
+            {isEdit ? `Mã tài nguyên: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
+          </div>
+          <div className="flex items-center gap-2.5 ml-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleSubmit}
+              isLoading={isSubmitting}
+              className="font-bold shadow-xs"
+              leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+            >
+              {isEdit ? 'Lưu thay đổi' : 'Lưu tệp vào kho'}
+            </Button>
+          </div>
+        </>
       }
     >
-      <form onSubmit={handleSubmit} className={cn('p-6 space-y-4 text-xs', hasShake && 'animate-shake')}>
-        {Object.keys(errors).length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>Có trường chưa hợp lệ. Vui lòng kiểm tra lại.</span>
-          </div>
-        )}
-
-        <div className="border-2 border-dashed border-[#28665F]/30 hover:border-[#28665F] bg-[#FAFBFB] hover:bg-[#EAF4EE]/30 p-5 rounded-2xl text-center cursor-pointer transition-all space-y-2">
-          <Upload className="w-6 h-6 text-[#28665F] mx-auto" />
-          <label className="cursor-pointer text-xs font-bold text-[#20272E] block">
-            Chọn tệp từ máy tính để tự động điền
+      <form onSubmit={handleSubmit} className={cn('space-y-4', hasShake && 'animate-shake')}>
+        {!isEdit && (
+          <div className="border-2 border-dashed border-[#E3E7EB] hover:border-[#28665F] rounded-2xl p-6 text-center bg-[#FAFBFB] transition-colors relative cursor-pointer">
             <input
               type="file"
               onChange={handleSimulateFileSelect}
-              className="hidden"
+              className="absolute inset-0 opacity-0 cursor-pointer"
             />
-          </label>
-          <span className="text-2xs text-[#68727D] block">Audio (.mp3), Hình ảnh (.png, .jpg), Tài liệu (.pdf)</span>
-        </div>
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#28665F]/10 flex items-center justify-center text-[#28665F] mb-3">
+              <Upload className="w-6 h-6" />
+            </div>
+            <div className="text-sm font-bold text-[#20272E]">
+              Kéo thả tệp vào đây hoặc <span className="text-[#28665F] underline">chọn từ máy tính</span>
+            </div>
+            <div className="text-2xs text-[#68727D] mt-1">
+              Hỗ trợ MP3, WAV, AAC, PDF, PNG, JPG (Tối đa 50MB)
+            </div>
+          </div>
+        )}
 
-        <FormField label="Tên tệp tin" required error={errors.fileName}>
+        <FormField label="Tên tệp lưu trữ (*)" required error={errors.fileName}>
           <input
             type="text"
             value={fileName}
-            onChange={(e) => {
-              setFileName(e.target.value)
-              if (errors.fileName) setErrors((prev) => ({ ...prev, fileName: '' }))
-            }}
-            placeholder="e.g. cambridge_18_listening_section_1.mp3"
+            onChange={(e) => setFileName(e.target.value)}
+            placeholder="cambridge_19_test1_section1.mp3"
             className={cn(
-              'w-full p-2.5 rounded-xl border text-xs font-bold outline-none transition-all',
-              errors.fileName ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F]'
+              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm text-[#20272E] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
+              errors.fileName ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Loại định dạng">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Định dạng media (*)">
             <select
               value={fileType}
               onChange={(e) => setFileType(e.target.value as any)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="audio">Audio âm thanh</option>
-              <option value="document">Tài liệu văn bản</option>
-              <option value="image">Hình ảnh biểu đồ</option>
+              <option value="audio">Audio (MP3 / WAV âm thanh)</option>
+              <option value="document">Document (PDF đề thi / Passage)</option>
+              <option value="image">Image (Hình ảnh sơ đồ / Slices)</option>
             </select>
           </FormField>
 
-          <FormField label="Dung lượng (KB)">
+          <FormField label="Dung lượng tệp (KB)">
             <input
               type="number"
               min={1}
               value={fileSizeKb}
-              onChange={(e) => setFileSizeKb(parseInt(e.target.value, 10) || 1)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              onChange={(e) => setFileSizeKb(Number(e.target.value))}
+              className="w-full h-10 px-3.5 rounded-xl border border-[#E3E7EB] bg-white text-sm font-mono text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             />
           </FormField>
         </div>
 
-        <FormField label="Đường dẫn lưu trữ (Storage URL)" required error={errors.url}>
+        <FormField
+          label="Đường dẫn tĩnh / URL lưu trữ (*)"
+          required
+          error={errors.url}
+          helperText="Đường dẫn phục vụ trực tuyến trên hệ thống CDN hoặc Public server"
+        >
           <input
             type="text"
             value={url}
-            onChange={(e) => {
-              setUrl(e.target.value)
-              if (errors.url) setErrors((prev) => ({ ...prev, url: '' }))
-            }}
-            placeholder="https://storage... audio.mp3"
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://storage.ieltsplatform.edu.vn/uploads/..."
             className={cn(
-              'w-full p-2.5 rounded-xl border font-mono text-xs outline-none transition-all',
-              errors.url ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F]'
+              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm font-mono text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
+              errors.url ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
       </form>
-    </SideDrawer>
+    </AdminModal>
   )
 }
+
+// Backward compatible export
+export const CreateMediaDrawer = MediaModal

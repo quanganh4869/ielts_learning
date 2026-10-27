@@ -1245,6 +1245,66 @@ export const adminService = {
     return newPlan
   },
 
+  async updateLearningPlan(id: string, data: Partial<AdminLearningPlan>): Promise<AdminLearningPlan> {
+    await delay(150)
+    const plans = getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+    const idx = plans.findIndex((p) => p.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy lộ trình học để cập nhật')
+    const updatedPlan: AdminLearningPlan = {
+      ...plans[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    plans[idx] = updatedPlan
+    saveToStorage(KEY_LEARNING_PLANS, plans)
+    await this.recordAuditLog(
+      'plan_update',
+      'Cập nhật lộ trình học',
+      'learning_plans',
+      id,
+      updatedPlan.title,
+      'Chỉnh sửa nội dung lộ trình'
+    )
+    return updatedPlan
+  },
+
+  async deleteLearningPlan(id: string): Promise<boolean> {
+    await delay(150)
+    const plans = getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+    const target = plans.find((p) => p.id === id)
+    const filtered = plans.filter((p) => p.id !== id)
+    saveToStorage(KEY_LEARNING_PLANS, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'plan_update',
+        'Xóa lộ trình học',
+        'learning_plans',
+        id,
+        target.title,
+        'Xóa bỏ lộ trình khỏi hệ thống'
+      )
+    }
+    return true
+  },
+
+  async reorderLearningPlans(orderedIds: string[]): Promise<AdminLearningPlan[]> {
+    await delay(100)
+    const plans = getFromStorage<AdminLearningPlan[]>(KEY_LEARNING_PLANS, SEED_LEARNING_PLANS)
+    const map = new Map(plans.map((p) => [p.id, p]))
+    const reordered: AdminLearningPlan[] = []
+    orderedIds.forEach((id) => {
+      const p = map.get(id)
+      if (p) reordered.push(p)
+    })
+    plans.forEach((p) => {
+      if (!orderedIds.includes(p.id)) reordered.push(p)
+    })
+    saveToStorage(KEY_LEARNING_PLANS, reordered)
+    return reordered
+  },
+
   async getEnrollments(): Promise<AdminEnrollment[]> {
     await delay(120)
     return getFromStorage<AdminEnrollment[]>(KEY_ENROLLMENTS, SEED_ENROLLMENTS)
@@ -1277,6 +1337,65 @@ export const adminService = {
       'Khởi tạo module mới'
     )
     return newMod
+  },
+
+  async updateModule(id: string, data: Partial<AdminModule>): Promise<AdminModule> {
+    await delay(150)
+    const modules = getFromStorage<AdminModule[]>(KEY_MODULES, SEED_MODULES)
+    const idx = modules.findIndex((m) => m.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy module để cập nhật')
+    const updatedMod: AdminModule = {
+      ...modules[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+    }
+    modules[idx] = updatedMod
+    saveToStorage(KEY_MODULES, modules)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Cập nhật module',
+      'content',
+      id,
+      updatedMod.title,
+      'Chỉnh sửa thông tin module'
+    )
+    return updatedMod
+  },
+
+  async deleteModule(id: string): Promise<boolean> {
+    await delay(150)
+    const modules = getFromStorage<AdminModule[]>(KEY_MODULES, SEED_MODULES)
+    const target = modules.find((m) => m.id === id)
+    const filtered = modules.filter((m) => m.id !== id)
+    saveToStorage(KEY_MODULES, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'lesson_publish',
+        'Xóa module',
+        'content',
+        id,
+        target.title,
+        'Xóa bỏ module khỏi hệ thống'
+      )
+    }
+    return true
+  },
+
+  async reorderModules(orderedIds: string[]): Promise<AdminModule[]> {
+    await delay(100)
+    const modules = getFromStorage<AdminModule[]>(KEY_MODULES, SEED_MODULES)
+    const map = new Map(modules.map((m) => [m.id, m]))
+    const reordered: AdminModule[] = []
+    orderedIds.forEach((id) => {
+      const m = map.get(id)
+      if (m) reordered.push(m)
+    })
+    modules.forEach((m) => {
+      if (!orderedIds.includes(m.id)) reordered.push(m)
+    })
+    saveToStorage(KEY_MODULES, reordered)
+    return reordered
   },
 
   async getLessons(): Promise<AdminLesson[]> {
@@ -1312,6 +1431,66 @@ export const adminService = {
     return newLesson
   },
 
+  async updateLesson(id: string, data: Partial<AdminLesson>): Promise<AdminLesson> {
+    await delay(150)
+    const lessons = getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+    const idx = lessons.findIndex((l) => l.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy bài học để cập nhật')
+    const updatedLesson: AdminLesson = {
+      ...lessons[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+      updatedBy: CURRENT_ADMIN_USER.fullName,
+    }
+    lessons[idx] = updatedLesson
+    saveToStorage(KEY_LESSONS, lessons)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Cập nhật bài học',
+      'content',
+      id,
+      updatedLesson.title,
+      'Chỉnh sửa nội dung bài học'
+    )
+    return updatedLesson
+  },
+
+  async deleteLesson(id: string): Promise<boolean> {
+    await delay(150)
+    const lessons = getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+    const target = lessons.find((l) => l.id === id)
+    const filtered = lessons.filter((l) => l.id !== id)
+    saveToStorage(KEY_LESSONS, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'lesson_publish',
+        'Xóa bài học',
+        'content',
+        id,
+        target.title,
+        'Xóa bỏ bài học khỏi hệ thống'
+      )
+    }
+    return true
+  },
+
+  async reorderLessons(orderedIds: string[]): Promise<AdminLesson[]> {
+    await delay(100)
+    const lessons = getFromStorage<AdminLesson[]>(KEY_LESSONS, SEED_LESSONS)
+    const map = new Map(lessons.map((l) => [l.id, l]))
+    const reordered: AdminLesson[] = []
+    orderedIds.forEach((id) => {
+      const l = map.get(id)
+      if (l) reordered.push(l)
+    })
+    lessons.forEach((l) => {
+      if (!orderedIds.includes(l.id)) reordered.push(l)
+    })
+    saveToStorage(KEY_LESSONS, reordered)
+    return reordered
+  },
+
   async getVocabulary(): Promise<AdminVocabularyWord[]> {
     await delay(100)
     return getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
@@ -1336,6 +1515,65 @@ export const adminService = {
       'Bổ sung từ vựng mới'
     )
     return newWord
+  },
+
+  async updateVocabulary(id: string, data: Partial<AdminVocabularyWord>): Promise<AdminVocabularyWord> {
+    await delay(150)
+    const words = getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
+    const idx = words.findIndex((w) => w.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy từ vựng để cập nhật')
+    const updatedWord: AdminVocabularyWord = {
+      ...words[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+    }
+    words[idx] = updatedWord
+    saveToStorage(KEY_VOCAB, words)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Cập nhật từ vựng',
+      'content',
+      id,
+      updatedWord.word,
+      'Chỉnh sửa nội dung từ vựng'
+    )
+    return updatedWord
+  },
+
+  async deleteVocabulary(id: string): Promise<boolean> {
+    await delay(150)
+    const words = getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
+    const target = words.find((w) => w.id === id)
+    const filtered = words.filter((w) => w.id !== id)
+    saveToStorage(KEY_VOCAB, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'lesson_publish',
+        'Xóa từ vựng',
+        'content',
+        id,
+        target.word,
+        'Xóa bỏ từ vựng khỏi kho'
+      )
+    }
+    return true
+  },
+
+  async reorderVocabulary(orderedIds: string[]): Promise<AdminVocabularyWord[]> {
+    await delay(100)
+    const words = getFromStorage<AdminVocabularyWord[]>(KEY_VOCAB, SEED_VOCABULARY)
+    const map = new Map(words.map((w) => [w.id, w]))
+    const reordered: AdminVocabularyWord[] = []
+    orderedIds.forEach((id) => {
+      const w = map.get(id)
+      if (w) reordered.push(w)
+    })
+    words.forEach((w) => {
+      if (!orderedIds.includes(w.id)) reordered.push(w)
+    })
+    saveToStorage(KEY_VOCAB, reordered)
+    return reordered
   },
 
   async getGrammar(): Promise<AdminGrammarRule[]> {
@@ -1364,6 +1602,65 @@ export const adminService = {
     return newRule
   },
 
+  async updateGrammar(id: string, data: Partial<AdminGrammarRule>): Promise<AdminGrammarRule> {
+    await delay(150)
+    const rules = getFromStorage<AdminGrammarRule[]>(KEY_GRAMMAR, SEED_GRAMMAR)
+    const idx = rules.findIndex((r) => r.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy ngữ pháp để cập nhật')
+    const updatedRule: AdminGrammarRule = {
+      ...rules[idx],
+      ...data,
+      id,
+      updatedAt: new Date().toISOString(),
+    }
+    rules[idx] = updatedRule
+    saveToStorage(KEY_GRAMMAR, rules)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Cập nhật chủ điểm ngữ pháp',
+      'content',
+      id,
+      updatedRule.title,
+      'Chỉnh sửa nội dung ngữ pháp'
+    )
+    return updatedRule
+  },
+
+  async deleteGrammar(id: string): Promise<boolean> {
+    await delay(150)
+    const rules = getFromStorage<AdminGrammarRule[]>(KEY_GRAMMAR, SEED_GRAMMAR)
+    const target = rules.find((r) => r.id === id)
+    const filtered = rules.filter((r) => r.id !== id)
+    saveToStorage(KEY_GRAMMAR, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'lesson_publish',
+        'Xóa chủ điểm ngữ pháp',
+        'content',
+        id,
+        target.title,
+        'Xóa bỏ ngữ pháp khỏi kho'
+      )
+    }
+    return true
+  },
+
+  async reorderGrammar(orderedIds: string[]): Promise<AdminGrammarRule[]> {
+    await delay(100)
+    const rules = getFromStorage<AdminGrammarRule[]>(KEY_GRAMMAR, SEED_GRAMMAR)
+    const map = new Map(rules.map((r) => [r.id, r]))
+    const reordered: AdminGrammarRule[] = []
+    orderedIds.forEach((id) => {
+      const r = map.get(id)
+      if (r) reordered.push(r)
+    })
+    rules.forEach((r) => {
+      if (!orderedIds.includes(r.id)) reordered.push(r)
+    })
+    saveToStorage(KEY_GRAMMAR, reordered)
+    return reordered
+  },
+
   async getMedia(): Promise<AdminMediaAsset[]> {
     await delay(100)
     return getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
@@ -1389,6 +1686,64 @@ export const adminService = {
       'Tải tệp media mới'
     )
     return newMedia
+  },
+
+  async updateMedia(id: string, data: Partial<AdminMediaAsset>): Promise<AdminMediaAsset> {
+    await delay(150)
+    const media = getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
+    const idx = media.findIndex((m) => m.id === id)
+    if (idx === -1) throw new Error('Không tìm thấy tệp media để cập nhật')
+    const updatedMedia: AdminMediaAsset = {
+      ...media[idx],
+      ...data,
+      id,
+    }
+    media[idx] = updatedMedia
+    saveToStorage(KEY_MEDIA, media)
+    await this.recordAuditLog(
+      'lesson_publish',
+      'Cập nhật tệp media',
+      'content',
+      id,
+      updatedMedia.fileName,
+      'Chỉnh sửa thông tin media'
+    )
+    return updatedMedia
+  },
+
+  async deleteMedia(id: string): Promise<boolean> {
+    await delay(150)
+    const media = getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
+    const target = media.find((m) => m.id === id)
+    const filtered = media.filter((m) => m.id !== id)
+    saveToStorage(KEY_MEDIA, filtered)
+    if (target) {
+      await this.recordAuditLog(
+        'lesson_publish',
+        'Xóa tệp media',
+        'content',
+        id,
+        target.fileName,
+        'Xóa bỏ tệp media khỏi kho'
+      )
+    }
+    return true
+  },
+
+  async reorderMedia(orderedIds: string[]): Promise<AdminMediaAsset[]> {
+    await delay(100)
+    const media = getFromStorage<AdminMediaAsset[]>(KEY_MEDIA, SEED_MEDIA)
+    const map = new Map(media.map((m) => [m.id, m]))
+    const reordered: AdminMediaAsset[] = []
+    orderedIds.forEach((id) => {
+      const m = map.get(id)
+      if (m) reordered.push(m)
+    })
+    media.forEach((m) => {
+      if (!orderedIds.includes(m.id)) reordered.push(m)
+    })
+    saveToStorage(KEY_MEDIA, reordered)
+    return reordered
   },
 
   // --------------------------------------------------------------------------

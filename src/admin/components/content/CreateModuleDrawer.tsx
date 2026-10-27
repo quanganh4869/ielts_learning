@@ -1,35 +1,61 @@
-import React, { useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
-import { SideDrawer } from '../SideDrawer'
+import React, { useState, useEffect } from 'react'
+import { Sparkles, Save, Layers } from 'lucide-react'
+import { AdminModal } from '../AdminModal'
 import { FormField } from '../FormField'
 import { Button } from '@/components/common/Button'
-import { AdminModule, ContentSkill } from '../../types/admin'
+import { AdminModule, ContentSkill, ContentStatus } from '../../types/admin'
 import { adminService } from '../../services/adminService'
 import { cn } from '@/utils/cn'
 
-interface CreateModuleDrawerProps {
+export interface ModuleModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (newModule: AdminModule) => void
+  onSuccess: (module: AdminModule, isEdit: boolean) => void
   onError: (errorMessage: string) => void
+  initialData?: AdminModule | null
+  mode?: 'create' | 'edit'
 }
 
-export const CreateModuleDrawer: React.FC<CreateModuleDrawerProps> = ({
+export const ModuleModal: React.FC<ModuleModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
   onError,
+  initialData,
+  mode = 'create',
 }) => {
+  const isEdit = mode === 'edit' || !!initialData
+
   const [title, setTitle] = useState('')
   const [skill, setSkill] = useState<ContentSkill>('reading')
   const [level, setLevel] = useState('Band 6.0 - 7.0')
   const [lessonCount, setLessonCount] = useState(6)
   const [order, setOrder] = useState(1)
-  const [status, setStatus] = useState<'published' | 'draft' | 'review'>('published')
+  const [status, setStatus] = useState<ContentStatus>('published')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [hasShake, setHasShake] = useState(false)
+
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setTitle(initialData.title || '')
+      setSkill(initialData.skill || 'reading')
+      setLevel(initialData.level || 'Band 6.0 - 7.0')
+      setLessonCount(initialData.lessonCount || 6)
+      setOrder(initialData.order || 1)
+      setStatus(initialData.status || 'published')
+      setErrors({})
+    } else if (!initialData && isOpen) {
+      setTitle('')
+      setSkill('reading')
+      setLevel('Band 6.0 - 7.0')
+      setLessonCount(6)
+      setOrder(1)
+      setStatus('published')
+      setErrors({})
+    }
+  }, [initialData, isOpen])
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {}
@@ -54,89 +80,111 @@ export const CreateModuleDrawer: React.FC<CreateModuleDrawerProps> = ({
 
     setIsSubmitting(true)
     try {
-      const created = await adminService.createModule({
-        title: title.trim(),
-        skill,
-        level: level.trim(),
-        lessonCount: Number(lessonCount),
-        order: Number(order),
-        status,
-      })
-
-      setTitle('')
-      setErrors({})
-      onSuccess(created)
+      if (isEdit && initialData) {
+        const updated = await adminService.updateModule(initialData.id, {
+          title: title.trim(),
+          skill,
+          level: level.trim(),
+          lessonCount: Number(lessonCount),
+          order: Number(order),
+          status,
+        })
+        onSuccess(updated, true)
+      } else {
+        const created = await adminService.createModule({
+          title: title.trim(),
+          skill,
+          level: level.trim(),
+          lessonCount: Number(lessonCount),
+          order: Number(order),
+          status,
+        })
+        onSuccess(created, false)
+      }
       onClose()
     } catch (err) {
       setHasShake(true)
       setTimeout(() => setHasShake(false), 500)
-      onError(err instanceof Error ? err.message : 'Lỗi khi tạo module')
+      onError(err instanceof Error ? err.message : 'Lỗi khi lưu module')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <SideDrawer
+    <AdminModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Tạo Chủ Đề / Module Học Tập Mới"
-      subtitle="Thiết lập cụm bài học chuyên sâu theo từng kỹ năng trong lộ trình"
-      width="max-w-md"
+      title={isEdit ? `Chỉnh sửa Module: ${initialData?.title || title}` : 'Tạo Chủ Đề / Module Học Tập Mới'}
+      subtitle={isEdit ? 'Chỉnh sửa kỹ năng mục tiêu, số lượng bài học và thứ tự hiển thị' : 'Thiết lập cụm bài học chuyên sâu theo từng kỹ năng trong lộ trình'}
+      icon={<Layers className="w-5 h-5" />}
+      badge={{
+        text: isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
+        variant: isEdit ? 'amber' : 'teal',
+      }}
+      maxWidth="max-w-xl"
       footer={
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-[#E3E7EB] bg-[#FAFBFB]">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
-            Hủy
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="font-bold shadow-xs"
-          >
-            {isSubmitting ? 'Đang lưu...' : 'Tạo module'}
-          </Button>
-        </div>
+        <>
+          <div className="text-xs text-[#68727D] hidden sm:block">
+            {isEdit ? `Mã Module: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
+          </div>
+          <div className="flex items-center gap-2.5 ml-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleSubmit}
+              isLoading={isSubmitting}
+              className="font-bold shadow-xs"
+              leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+            >
+              {isEdit ? 'Lưu thay đổi' : 'Tạo Module'}
+            </Button>
+          </div>
+        </>
       }
     >
-      <form onSubmit={handleSubmit} className={cn('p-6 space-y-4 text-xs', hasShake && 'animate-shake')}>
-        {Object.keys(errors).length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>Có lỗi cần sửa trước khi tạo module.</span>
-          </div>
-        )}
-
-        <FormField label="Tên Chủ đề / Module" required error={errors.title}>
+      <form onSubmit={handleSubmit} className={cn('space-y-4', hasShake && 'animate-shake')}>
+        <FormField
+          label="Tên chủ đề / Module (*)"
+          required
+          error={errors.title}
+          helperText="Ví dụ: Matching Headings Mastery, Academic Task 1 Overview..."
+        >
           <input
             type="text"
             value={title}
-            onChange={(e) => {
-              setTitle(e.target.value)
-              if (errors.title) setErrors((prev) => ({ ...prev, title: '' }))
-            }}
-            placeholder="e.g. Reading: Xử lý dạng bài True / False / Not Given"
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Nhập tên module học tập..."
             className={cn(
-              'w-full p-2.5 rounded-xl border text-xs font-bold outline-none transition-all',
-              errors.title ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F]'
+              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm text-[#20272E] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
+              errors.title ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Kỹ năng chính">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Kỹ năng chính (*)">
             <select
               value={skill}
               onChange={(e) => setSkill(e.target.value as ContentSkill)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="reading">Reading (Đọc hiểu)</option>
-              <option value="listening">Listening (Nghe)</option>
-              <option value="writing">Writing (Viết luận)</option>
-              <option value="speaking">Speaking (Nói)</option>
-              <option value="vocabulary">Vocabulary (Từ vựng)</option>
-              <option value="grammar">Grammar (Ngữ pháp)</option>
+              <option value="listening">Listening (Kỹ năng Nghe)</option>
+              <option value="reading">Reading (Kỹ năng Đọc)</option>
+              <option value="writing">Writing (Kỹ năng Viết)</option>
+              <option value="speaking">Speaking (Kỹ năng Nói)</option>
+              <option value="vocabulary">Vocabulary (Kho Từ vựng)</option>
+              <option value="grammar">Grammar (Hệ Ngữ pháp)</option>
             </select>
           </FormField>
 
@@ -144,24 +192,29 @@ export const CreateModuleDrawer: React.FC<CreateModuleDrawerProps> = ({
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="Band 5.0 - 6.0">Band 5.0 - 6.0 (Foundation)</option>
-              <option value="Band 6.0 - 7.0">Band 6.0 - 7.0 (Intensive)</option>
-              <option value="Band 7.0 - 8.0">Band 7.0 - 8.0 (Advanced)</option>
-              <option value="Band 8.0+">Band 8.0+ (Mastery)</option>
+              <option value="Foundation (Band 4.0 - 5.0)">Foundation (Band 4.0 - 5.0)</option>
+              <option value="Band 5.0 - 6.0">Intermediate (Band 5.0 - 6.0)</option>
+              <option value="Band 6.0 - 7.0">Advanced (Band 6.0 - 7.0)</option>
+              <option value="Band 7.5 - 9.0">Mastery (Band 7.5 - 9.0)</option>
             </select>
           </FormField>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <FormField label="Số bài học" error={errors.lessonCount}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <FormField
+            label="Số bài học (*)"
+            required
+            error={errors.lessonCount}
+          >
             <input
               type="number"
               min={1}
+              max={50}
               value={lessonCount}
-              onChange={(e) => setLessonCount(parseInt(e.target.value, 10) || 1)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              onChange={(e) => setLessonCount(Number(e.target.value))}
+              className="w-full h-10 px-3.5 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             />
           </FormField>
 
@@ -170,8 +223,8 @@ export const CreateModuleDrawer: React.FC<CreateModuleDrawerProps> = ({
               type="number"
               min={1}
               value={order}
-              onChange={(e) => setOrder(parseInt(e.target.value, 10) || 1)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              onChange={(e) => setOrder(Number(e.target.value))}
+              className="w-full h-10 px-3.5 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             />
           </FormField>
 
@@ -179,15 +232,18 @@ export const CreateModuleDrawer: React.FC<CreateModuleDrawerProps> = ({
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-semibold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="published">Xuất bản</option>
+              <option value="published">Xuất bản ngay</option>
               <option value="draft">Bản nháp</option>
-              <option value="review">Cần duyệt</option>
+              <option value="review">Chờ duyệt</option>
             </select>
           </FormField>
         </div>
       </form>
-    </SideDrawer>
+    </AdminModal>
   )
 }
+
+// Backward compatible export
+export const CreateModuleDrawer = ModuleModal

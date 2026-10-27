@@ -1,35 +1,61 @@
-import React, { useState } from 'react'
-import { AlertTriangle, Sparkles } from 'lucide-react'
-import { SideDrawer } from '../SideDrawer'
+import React, { useState, useEffect } from 'react'
+import { Sparkles, Save, BookOpenCheck } from 'lucide-react'
+import { AdminModal } from '../AdminModal'
 import { FormField } from '../FormField'
 import { Button } from '@/components/common/Button'
-import { AdminGrammarRule } from '../../types/admin'
+import { AdminGrammarRule, ContentStatus } from '../../types/admin'
 import { adminService } from '../../services/adminService'
 import { cn } from '@/utils/cn'
 
-interface CreateGrammarDrawerProps {
+export interface GrammarModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (newRule: AdminGrammarRule) => void
+  onSuccess: (rule: AdminGrammarRule, isEdit: boolean) => void
   onError: (errorMessage: string) => void
+  initialData?: AdminGrammarRule | null
+  mode?: 'create' | 'edit'
 }
 
-export const CreateGrammarDrawer: React.FC<CreateGrammarDrawerProps> = ({
+export const GrammarModal: React.FC<GrammarModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
   onError,
+  initialData,
+  mode = 'create',
 }) => {
+  const isEdit = mode === 'edit' || !!initialData
+
   const [title, setTitle] = useState('')
   const [bandTarget, setBandTarget] = useState('Band 7.0 - 8.0')
   const [category, setCategory] = useState('Inversion (Đảo ngữ)')
   const [formula, setFormula] = useState('')
   const [explanation, setExplanation] = useState('')
-  const [status, setStatus] = useState<'published' | 'draft' | 'review'>('published')
+  const [status, setStatus] = useState<ContentStatus>('published')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [hasShake, setHasShake] = useState(false)
+
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setTitle(initialData.title || '')
+      setBandTarget(initialData.bandTarget || 'Band 7.0 - 8.0')
+      setCategory(initialData.category || 'Inversion (Đảo ngữ)')
+      setFormula(initialData.formula || '')
+      setExplanation(initialData.explanation || '')
+      setStatus(initialData.status || 'published')
+      setErrors({})
+    } else if (!initialData && isOpen) {
+      setTitle('')
+      setBandTarget('Band 7.0 - 8.0')
+      setCategory('Inversion (Đảo ngữ)')
+      setFormula('')
+      setExplanation('')
+      setStatus('published')
+      setErrors({})
+    }
+  }, [initialData, isOpen])
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {}
@@ -55,20 +81,27 @@ export const CreateGrammarDrawer: React.FC<CreateGrammarDrawerProps> = ({
 
     setIsSubmitting(true)
     try {
-      const created = await adminService.createGrammar({
-        title: title.trim(),
-        bandTarget: bandTarget.trim(),
-        category: category.trim(),
-        formula: formula.trim(),
-        explanation: explanation.trim(),
-        status,
-      })
-
-      setTitle('')
-      setFormula('')
-      setExplanation('')
-      setErrors({})
-      onSuccess(created)
+      if (isEdit && initialData) {
+        const updated = await adminService.updateGrammar(initialData.id, {
+          title: title.trim(),
+          bandTarget: bandTarget.trim(),
+          category: category.trim(),
+          formula: formula.trim(),
+          explanation: explanation.trim(),
+          status,
+        })
+        onSuccess(updated, true)
+      } else {
+        const created = await adminService.createGrammar({
+          title: title.trim(),
+          bandTarget: bandTarget.trim(),
+          category: category.trim(),
+          formula: formula.trim(),
+          explanation: explanation.trim(),
+          status,
+        })
+        onSuccess(created, false)
+      }
       onClose()
     } catch (err) {
       setHasShake(true)
@@ -80,124 +113,146 @@ export const CreateGrammarDrawer: React.FC<CreateGrammarDrawerProps> = ({
   }
 
   return (
-    <SideDrawer
+    <AdminModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Thêm Chủ Điểm Ngữ Pháp Mới"
-      subtitle="Biên soạn công thức ngữ pháp học thuật phục vụ bài tập và gợi ý Writing Coach"
-      width="max-w-lg"
+      title={isEdit ? `Chỉnh sửa chủ điểm: ${initialData?.title || title}` : 'Thêm Chủ Điểm Ngữ Pháp Mới'}
+      subtitle={isEdit ? 'Chỉnh sửa công thức, diễn giải và tiêu chí Band điểm' : 'Biên soạn công thức ngữ pháp học thuật phục vụ bài tập và gợi ý Writing Coach'}
+      icon={<BookOpenCheck className="w-5 h-5" />}
+      badge={{
+        text: isEdit ? 'Chế độ Chỉnh sửa' : 'Thêm mới',
+        variant: isEdit ? 'amber' : 'teal',
+      }}
+      maxWidth="max-w-2xl"
       footer={
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-[#E3E7EB] bg-[#FAFBFB]">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
-            Hủy
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="font-bold shadow-xs"
-          >
-            {isSubmitting ? 'Đang lưu...' : 'Thêm ngữ pháp'}
-          </Button>
-        </div>
+        <>
+          <div className="text-xs text-[#68727D] hidden sm:block">
+            {isEdit ? `Đang chỉnh sửa mã: #${initialData?.id}` : '(*) Các trường có dấu sao là bắt buộc'}
+          </div>
+          <div className="flex items-center gap-2.5 ml-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleSubmit}
+              isLoading={isSubmitting}
+              className="font-bold shadow-xs"
+              leftIcon={isEdit ? <Save className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+            >
+              {isEdit ? 'Lưu thay đổi' : 'Lưu chủ điểm'}
+            </Button>
+          </div>
+        </>
       }
     >
-      <form onSubmit={handleSubmit} className={cn('p-6 space-y-4 text-xs', hasShake && 'animate-shake')}>
-        {Object.keys(errors).length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>Có {Object.keys(errors).length} trường chưa hợp lệ. Vui lòng kiểm tra lại.</span>
-          </div>
-        )}
-
-        <FormField label="Tên điểm ngữ pháp" required error={errors.title}>
+      <form onSubmit={handleSubmit} className={cn('space-y-4', hasShake && 'animate-shake')}>
+        <FormField
+          label="Tên chủ điểm ngữ pháp (*)"
+          required
+          error={errors.title}
+          helperText="Ví dụ: Cleft Sentences (Câu chẻ nhấn mạnh), Negative Inversion..."
+        >
           <input
             type="text"
             value={title}
-            onChange={(e) => {
-              setTitle(e.target.value)
-              if (errors.title) setErrors((prev) => ({ ...prev, title: '' }))
-            }}
-            placeholder="e.g. Đảo ngữ với trạng từ phủ định (Negative Inversion)"
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Nhập tên cấu trúc ngữ pháp..."
             className={cn(
-              'w-full p-2.5 rounded-xl border text-xs font-bold outline-none transition-all',
-              errors.title ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F]'
+              'w-full h-10 px-3.5 rounded-xl border bg-white text-sm text-[#20272E] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
+              errors.title ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
 
-        <div className="grid grid-cols-3 gap-3">
-          <FormField label="Band mục tiêu">
-            <input
-              type="text"
-              value={bandTarget}
-              onChange={(e) => setBandTarget(e.target.value)}
-              placeholder="e.g. Band 7.0 - 8.0"
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
-            />
-          </FormField>
-
-          <FormField label="Phân loại">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <FormField label="Phân loại nhóm">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="Inversion (Đảo ngữ)">Đảo ngữ (Inversion)</option>
-              <option value="Conditionals (Câu điều kiện)">Câu điều kiện</option>
-              <option value="Passive Voice (Bị động)">Câu bị động</option>
-              <option value="Relative Clauses (Mệnh đề quan hệ)">Mệnh đề quan hệ</option>
-              <option value="Complex Sentences (Câu phức)">Câu phức</option>
-              <option value="Nominalization (Danh từ hóa)">Danh từ hóa</option>
+              <option value="Inversion (Đảo ngữ)">Inversion (Đảo ngữ)</option>
+              <option value="Conditionals (Câu điều kiện)">Conditionals (Câu điều kiện)</option>
+              <option value="Relative Clauses (Mệnh đề quan hệ)">Relative Clauses (MĐQH)</option>
+              <option value="Passive Voice (Thể bị động)">Passive Voice (Thể bị động)</option>
+              <option value="Complex Structures (Cấu trúc nâng cao)">Complex Structures (Nâng cao)</option>
+              <option value="Participle Clauses (Mệnh đề phân từ)">Participle Clauses (MĐ phân từ)</option>
             </select>
           </FormField>
 
-          <FormField label="Trạng thái">
+          <FormField label="Mục tiêu Band">
+            <select
+              value={bandTarget}
+              onChange={(e) => setBandTarget(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-bold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
+            >
+              <option value="Band 6.0 - 6.5">Band 6.0 - 6.5 (B2)</option>
+              <option value="Band 7.0 - 8.0">Band 7.0 - 8.0 (C1)</option>
+              <option value="Band 8.0 - 9.0">Band 8.0 - 9.0 (C2)</option>
+            </select>
+          </FormField>
+
+          <FormField label="Trạng thái xuất bản">
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full p-2.5 rounded-xl border border-[#E3E7EB] bg-[#FAFBFB] text-xs font-bold outline-none"
+              className="w-full h-10 px-3 rounded-xl border border-[#E3E7EB] bg-white text-sm font-semibold text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
             >
-              <option value="published">Xuất bản</option>
-              <option value="draft">Bản nháp</option>
-              <option value="review">Cần duyệt</option>
+              <option value="published">Xuất bản (Published)</option>
+              <option value="draft">Bản nháp (Draft)</option>
+              <option value="review">Cần duyệt (In Review)</option>
             </select>
           </FormField>
         </div>
 
-        <FormField label="Công thức cấu trúc (Formula)" required error={errors.formula}>
+        <FormField
+          label="Công thức cấu trúc (*)"
+          required
+          error={errors.formula}
+          helperText="Định dạng công thức cú pháp mẫu"
+        >
           <input
             type="text"
             value={formula}
-            onChange={(e) => {
-              setFormula(e.target.value)
-              if (errors.formula) setErrors((prev) => ({ ...prev, formula: '' }))
-            }}
-            placeholder="e.g. Negative Adverb + Auxiliary + Subject + Verb..."
+            onChange={(e) => setFormula(e.target.value)}
+            placeholder="Ví dụ: Not only + Trợ động từ + S + V..., but S + also + V..."
             className={cn(
-              'w-full p-2.5 rounded-xl border font-mono text-xs font-bold outline-none transition-all',
-              errors.formula ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F] text-[#28665F]'
+              'w-full h-10 px-3.5 rounded-xl border bg-[#FAFBFB] text-sm font-mono text-[#28665F] font-bold focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all',
+              errors.formula ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
 
-        <FormField label="Giải thích chi tiết & Ví dụ câu" required error={errors.explanation}>
+        <FormField
+          label="Giải thích & Ví dụ minh họa IELTS (*)"
+          required
+          error={errors.explanation}
+          helperText="Cách sử dụng trong Task 1, Task 2 hoặc Speaking Part 3 kèm ví dụ thực tế"
+        >
           <textarea
-            rows={5}
+            rows={4}
             value={explanation}
-            onChange={(e) => {
-              setExplanation(e.target.value)
-              if (errors.explanation) setErrors((prev) => ({ ...prev, explanation: '' }))
-            }}
-            placeholder="e.g. Áp dụng khi muốn nhấn mạnh mức độ hiếm hoi hoặc khẳng định tính cấp thiết trong câu chủ đề Writing Task 2.&#10;Ví dụ: Rarely do municipal authorities allocate sufficient funds for urban rewilding."
+            onChange={(e) => setExplanation(e.target.value)}
+            placeholder="Giải thích chi tiết cách dùng, vị trí trong câu và đưa ra ít nhất một câu ví dụ học thuật chuẩn..."
             className={cn(
-              'w-full p-2.5 rounded-xl border text-xs leading-relaxed outline-none transition-all',
-              errors.explanation ? 'border-rose-400 bg-rose-50/20' : 'border-[#E3E7EB] bg-[#FAFBFB] focus:bg-white focus:border-[#28665F]'
+              'w-full p-3 rounded-xl border bg-white text-sm text-[#20272E] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 transition-all resize-none',
+              errors.explanation ? 'border-rose-300 focus:border-rose-500' : 'border-[#E3E7EB] focus:border-[#28665F]'
             )}
           />
         </FormField>
       </form>
-    </SideDrawer>
+    </AdminModal>
   )
 }
+
+// Backward compatible export
+export const CreateGrammarDrawer = GrammarModal

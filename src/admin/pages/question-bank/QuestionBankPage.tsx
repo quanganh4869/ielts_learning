@@ -22,6 +22,19 @@ export const QuestionBankPage: React.FC = () => {
   const [diffFilter, setDiffFilter] = useState('all')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
+  // Sorting
+  const [sortColumn, setSortColumn] = useState<string>('code')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (key: string) => {
+    if (sortColumn === key) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumn(key)
+      setSortDirection('asc')
+    }
+  }
+
   const loadQuestions = async () => {
     try {
       setIsLoading(true)
@@ -40,7 +53,7 @@ export const QuestionBankPage: React.FC = () => {
   }, [])
 
   const filtered = useMemo(() => {
-    return questions.filter((q) => {
+    const list = questions.filter((q) => {
       const matchSearch =
         q.prompt.toLowerCase().includes(search.toLowerCase()) ||
         q.code.toLowerCase().includes(search.toLowerCase())
@@ -50,13 +63,23 @@ export const QuestionBankPage: React.FC = () => {
 
       return matchSearch && matchSkill && matchDiff
     })
-  }, [questions, search, skillFilter, diffFilter])
+
+    return [...list].sort((a, b) => {
+      let cmp = 0
+      if (sortColumn === 'code') cmp = a.code.localeCompare(b.code)
+      else if (sortColumn === 'skill') cmp = a.skill.localeCompare(b.skill)
+      else if (sortColumn === 'difficulty') cmp = a.difficulty.localeCompare(b.difficulty)
+      else if (sortColumn === 'status') cmp = a.status.localeCompare(b.status)
+      return sortDirection === 'asc' ? cmp : -cmp
+    })
+  }, [questions, search, skillFilter, diffFilter, sortColumn, sortDirection])
 
   const columns: Column<AdminQuestion>[] = [
     {
       key: 'code',
       header: 'Mã câu hỏi',
       width: '130px',
+      sortable: true,
       render: (q) => <span className="font-mono font-bold text-xs text-[#28665F]">{q.code}</span>,
     },
     {
@@ -198,6 +221,9 @@ export const QuestionBankPage: React.FC = () => {
         onRetry={loadQuestions}
         keyExtractor={(q) => q.id}
         onRowClick={(q) => navigate(`/admin/question-bank/${q.id}`)}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
     </div>
   )
