@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -22,8 +23,8 @@ public class R2StorageConfig {
 
     @Bean
     public S3Client s3Client() {
-        String accessKey = properties.getAccessKeyId() != null ? properties.getAccessKeyId() : "mock-access-key";
-        String secretKey = properties.getSecretAccessKey() != null ? properties.getSecretAccessKey() : "mock-secret-key";
+        String accessKey = StringUtils.hasText(properties.getAccessKeyId()) ? properties.getAccessKeyId().trim() : "mock-access-key";
+        String secretKey = StringUtils.hasText(properties.getSecretAccessKey()) ? properties.getSecretAccessKey().trim() : "mock-secret-key";
         String endpoint = properties.getEffectiveEndpoint();
 
         log.info("Configuring Cloudflare R2 S3Client with endpoint: {}", endpoint);
@@ -38,8 +39,8 @@ public class R2StorageConfig {
 
     @Bean
     public S3Presigner s3Presigner() {
-        String accessKey = properties.getAccessKeyId() != null ? properties.getAccessKeyId() : "mock-access-key";
-        String secretKey = properties.getSecretAccessKey() != null ? properties.getSecretAccessKey() : "mock-secret-key";
+        String accessKey = StringUtils.hasText(properties.getAccessKeyId()) ? properties.getAccessKeyId().trim() : "mock-access-key";
+        String secretKey = StringUtils.hasText(properties.getSecretAccessKey()) ? properties.getSecretAccessKey().trim() : "mock-secret-key";
         String endpoint = properties.getEffectiveEndpoint();
 
         return S3Presigner.builder()
