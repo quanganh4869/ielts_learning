@@ -105,6 +105,7 @@ public class SecurityConfig {
                                 "/study/**",
                                 "/users/**",
                                 "/admin/**",
+                                "/chat/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**"
@@ -128,15 +129,18 @@ public class SecurityConfig {
                                 "/actuator/info",
                                 "/auth/status",
                                 "/auth/logout",
-                                "/auth/login"
+                                "/auth/login",
+                                "/chat/suggestions",
+                                "/chat/status"
                         ).permitAll()
                         // Strict Admin-only endpoints
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                        // Protected Storage & User endpoints
+                        // Protected Storage, Study, User & AI Chat endpoints
                         .requestMatchers("/storage/**").authenticated()
                         .requestMatchers("/study/**").authenticated()
                         .requestMatchers("/users/me").authenticated()
                         .requestMatchers("/auth/me").authenticated()
+                        .requestMatchers("/chat/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // Supabase Auth JWT Resource Server

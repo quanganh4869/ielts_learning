@@ -5,6 +5,7 @@ import { PracticeExercise, WritingEvaluation, SpeakingEvaluation, VocabularyItem
 import { MockTest, MockTestResult } from '@/types/mockTest'
 import { TutorMessage } from '@/types/aiTutor'
 import { UserStatistics } from '@/types/statistics'
+import { chatService } from './chatService'
 import {
   mockLearningPath,
   mockListeningExercises,
@@ -242,33 +243,23 @@ export const apiService = {
     }
   },
 
-  // AI TUTOR
+  // AI TUTOR - Integrated with Spring Boot Chatbot API
   async sendTutorMessage(userText: string, contextSnippet?: string): Promise<TutorMessage> {
-    await delay(600)
-    let content = `Chào bạn! Tôi đã nhận được câu hỏi về: "${userText}".\n\n`
-
-    if (contextSnippet) {
-      content += `Dựa trên ngữ cảnh bạn đang học: "${contextSnippet}", đây là phân tích chi tiết:\n\n`
-    }
-
-    if (userText.toLowerCase().includes('inversion') || userText.toLowerCase().includes('đảo ngữ')) {
-      content += `**Cấu trúc đảo ngữ trọng tâm:**\n\n1. Khi trạng từ mang nghĩa phủ định (*Rarely, Seldom, Not only, Under no circumstances*) đứng đầu câu:\n\`Negative Word + Trợ động từ + Chủ ngữ + Động từ chính\`\n\n*Ví dụ chuẩn IELTS Band 7.5+:*\n> "Rarely do municipal authorities implement comprehensive carbon-tax policies without public scrutiny."\n\n*Lưu ý lỗi thường gặp:* Không được quên đảo trợ động từ (không viết "Rarely authorities implement...").`
-    } else if (userText.toLowerCase().includes('writing') || userText.toLowerCase().includes('task 2')) {
-      content += `**Chiến lược phát triển luận điểm Task 2 (Công thức P-E-E):**\n\n- **Point (Luận điểm):** Nêu câu chủ đề ngắn gọn, trực diện.\n- **Explanation (Giải thích):** Làm rõ nguyên nhân - kết quả tại sao luận điểm đó đúng.\n- **Example (Minh chứng):** Đưa ra một ví dụ học thuật hoặc xu hướng xã hội cụ thể để củng cố sức thuyết phục.`
-    } else {
-      content += `Để đạt mục tiêu Band 7.0+, bạn nên chú trọng vào việc giải thích logic chặt chẽ (Coherence) và sử dụng đa dạng các cấu trúc câu ghép, câu phức thay vì chỉ tập trung nhồi nhét từ vựng đơn lẻ.\n\nBạn có muốn thực hành viết ngay một câu áp dụng phương pháp này không?`
-    }
-
-    return {
-      id: 'msg-' + Math.random().toString(36).slice(2, 8),
-      role: 'assistant',
-      content,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestedFollowUps: [
-        'Cho tôi một bài tập thực hành về phần này',
-        'Giải thích thêm lỗi sai phổ biến của thí sinh Việt Nam',
-        'Làm thế nào để áp dụng vào bài thi thực tế?',
-      ],
+    try {
+      const conv = await chatService.createConversation(userText.slice(0, 35))
+      const fullPrompt = contextSnippet ? `[Ngữ cảnh học: ${contextSnippet}]\n${userText}` : userText
+      return await chatService.sendMessage(conv.id, fullPrompt)
+    } catch {
+      return {
+        id: 'msg-' + Math.random().toString(36).slice(2, 8),
+        role: 'assistant',
+        content: `Tôi đã nhận được câu hỏi về: "${userText}". Để đạt mục tiêu IELTS Band 7.0+, hãy rèn luyện phân tích câu hỏi và cấu trúc lập luận chuẩn trước khi viết hoặc nói.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        suggestedFollowUps: [
+          'Giải thích công thức P-E-E trong Writing Task 2',
+          'Mẹo làm dạng bài True / False / Not Given',
+        ],
+      }
     }
   },
 

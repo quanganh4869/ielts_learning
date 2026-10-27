@@ -49,6 +49,14 @@ spring:
 app:
   admin-email: ${APP_ADMIN_EMAIL:} # Injected strictly via environment or secret manager (NEVER hardcoded)
   frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}
+  chatbot:
+    provider: fallback
+    api-key: mock-dev-api-key
+    model: gpt-4o-mini
+    temperature: 0.3
+    max-tokens: 1200
+    timeout-seconds: 25
+    rate-limit-per-minute: 50
   jwt:
     secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     expiration-ms: 86400000
