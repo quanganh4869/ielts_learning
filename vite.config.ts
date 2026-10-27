@@ -33,6 +33,11 @@ function copyAnimationAssetsPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    host: true, // Listen on all network addresses (0.0.0.0 and ::) so IPv4 and IPv6 both work
+    port: 5173,
+    strictPort: true,
+  },
   plugins: [
     react(),
     tailwindcss(),
