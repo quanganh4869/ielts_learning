@@ -82,8 +82,8 @@ management:
 # Supabase Auth Configuration (Resource Server JWT verification)
 supabase:
   url: ${SUPABASE_URL:}
-  jwks-uri: ${SUPABASE_JWKS_URI:}
-  jwt-secret: ${SUPABASE_JWT_SECRET:}
+  jwks-uri: ${SUPABASE_JWKS_URI:${SUPABASE_JWKS_URL:}}
+  jwt-secret: ${SUPABASE_JWT_SECRET:${SUPABASE_SECRET_KEY:}}
   issuer: ${SUPABASE_ISSUER:}
   audience: ${SUPABASE_AUDIENCE:authenticated}
 

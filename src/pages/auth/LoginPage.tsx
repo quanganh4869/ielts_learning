@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ShieldCheck, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Card } from '@/components/common/Card'
 import { BrandLogo } from '@/components/brand'
 import { useAuth } from '@/context/AuthContext'
@@ -50,12 +50,6 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-[#20272E]">
             {tText('Đăng nhập hệ thống', 'Log In to Platform')}
           </h1>
-          <p className="text-sm text-[#68727D] mt-1 max-w-sm">
-            {tText(
-              'Truy cập không gian học tập và hệ thống quản trị IELTS Learning Platform',
-              'Access your learning workspace and IELTS Learning Platform administration'
-            )}
-          </p>
         </div>
 
         <Card className="p-6 sm:p-8 bg-white border border-[#E3E7EB] rounded-2xl shadow-sm">
@@ -94,27 +88,8 @@ export const LoginPage: React.FC = () => {
               </svg>
               <span>{tText('Tiếp tục với tài khoản Google', 'Continue with Google')}</span>
             </button>
-
-            <div className="pt-4 border-t border-[#E3E7EB]">
-              <div className="flex items-center gap-2 text-2xs text-[#68727D] justify-center text-center">
-                <ShieldCheck className="w-4 h-4 text-[#28665F] shrink-0" />
-                <span>
-                  {tText(
-                    'Xác thực an toàn qua Google OpenID Connect & OAuth 2.0',
-                    'Secured by Google OpenID Connect & OAuth 2.0'
-                  )}
-                </span>
-              </div>
-            </div>
           </div>
         </Card>
-
-        <p className="mt-6 text-center text-xs text-[#68727D]">
-          {tText(
-            'Hệ thống quản lý phiên đăng nhập an toàn qua cookie bảo mật và kiểm soát phân quyền tập trung.',
-            'Centralized access control and session encryption ensure enterprise-level security.'
-          )}
-        </p>
       </div>
     </div>
   )
