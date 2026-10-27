@@ -14,6 +14,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class DashboardSummaryDto {
     private long totalUsers;
+    private long activeUsers;
     private long activeSessions;
     private long totalAttempts;
     private long failedAiTasks;
@@ -21,6 +22,7 @@ public class DashboardSummaryDto {
     private List<DailyActivityDto> weeklyActivity;
     private Map<String, Double> skillAverages;
     private List<AttentionItemDto> attentionItems;
+    private List<com.ielts.platform.admin.audit.model.AuditLogEntity> recentAuditLogs;
 
     @Data
     @Builder

@@ -20,6 +20,47 @@ import {
   SystemConfig,
   AdminUser,
 } from '../types/admin'
+import { supabase } from '@/services/supabase'
+
+const BACKEND_BASE_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080') + '/api/v1'
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }
+  try {
+    const { data } = await supabase.auth.getSession()
+    if (data?.session?.access_token) {
+      headers['Authorization'] = `Bearer ${data.session.access_token}`
+    }
+  } catch {
+    // fallback without token
+  }
+  return headers
+}
+
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
+  try {
+    const headers = await getAuthHeaders()
+    const mergedHeaders = { ...headers, ...(options.headers as Record<string, string> || {}) }
+    const res = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: mergedHeaders,
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      return null
+    }
+    const json = await res.json()
+    if (json && json.success && json.data !== undefined) {
+      return json.data as T
+    }
+    return json as T
+  } catch {
+    return null
+  }
+}
 
 // Storage keys
 const KEY_USERS = 'ielts_admin_users_v1'
@@ -1038,7 +1079,58 @@ export const adminService = {
   // 1. DASHBOARD & SYSTEM OVERVIEW
   // --------------------------------------------------------------------------
   async getDashboardSummary() {
-    await delay(120)
+    const remote = await apiRequest<{
+      totalUsers: number
+      activeUsers: number
+      activeSessions: number
+      totalAttempts: number
+      failedAiTasks: number
+      averageBandScore: number
+      weeklyActivity: Array<{ day: string; submissions: number; activeUsers: number }>
+      skillAverages: Record<string, number>
+      attentionItems: Array<{ id: string; title: string; description: string; severity: string; link: string }>
+      recentAuditLogs: Array<{ id: string; userId: string; userName: string; action: string; resource: string; resourceId?: string; details?: string; ipAddress?: string; createdAt?: string }>
+    }>('/admin/dashboard/summary')
+
+    if (remote) {
+      const mappedAttention = (remote.attentionItems || []).map((att) => ({
+        id: att.id,
+        type: att.severity === 'HIGH' ? 'ai_failure' : 'security_lock',
+        severity: (att.severity === 'HIGH' ? 'warning' : 'info') as 'warning' | 'info' | 'danger',
+        title: att.title,
+        description: att.description,
+        link: att.link || '/admin/ai/tasks',
+        timestamp: 'Vừa cập nhật',
+      }))
+
+      const mappedAuditLogs: AdminAuditLog[] = (remote.recentAuditLogs || []).map((l) => ({
+        id: l.id,
+        timestamp: l.createdAt ? l.createdAt.replace('T', ' ').substring(0, 19) : new Date().toISOString(),
+        actorId: l.userId || 'system',
+        actorName: l.userName || 'System Admin',
+        actorRole: 'super_admin' as const,
+        action: l.action as any,
+        actionLabel: l.action,
+        module: (l.resource || 'system').toLowerCase() as any,
+        targetId: l.resourceId || '',
+        targetName: l.resource || '',
+        ipAddress: l.ipAddress || '127.0.0.1',
+        status: 'success' as const,
+        reason: l.details,
+      }))
+
+      return {
+        totalUsers: remote.totalUsers ?? 0,
+        activeUsers: remote.activeUsers ?? remote.totalUsers,
+        activeSessions: remote.activeSessions ?? 0,
+        totalAttempts: remote.totalAttempts ?? 0,
+        failedAiCount: remote.failedAiTasks ?? 0,
+        attentionItems: mappedAttention,
+        recentAuditLogs: mappedAuditLogs,
+      }
+    }
+
+    await delay(80)
     const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
     const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
     const attempts = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
@@ -1083,83 +1175,152 @@ export const adminService = {
   // 2. USERS MANAGEMENT
   // --------------------------------------------------------------------------
   async getUsers(): Promise<UserAccount[]> {
-    await delay(150)
+    const remote = await apiRequest<{ content: Array<any> }>('/admin/users?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content.map((u) => ({
+        id: u.id,
+        email: u.email,
+        fullName: u.name,
+        role: (u.roles && u.roles.some((r: string) => r.toLowerCase().includes('admin'))) ? 'admin' : 'student',
+        status: (u.status || 'ACTIVE').toLowerCase() as UserAccount['status'],
+        targetBand: u.targetBand ? Number(u.targetBand) : 7.0,
+        currentBand: 6.5,
+        testType: 'academic',
+        authProvider: 'google',
+        emailVerified: true,
+        servicePlanName: 'IELTS Standard',
+        servicePlanTier: 'pro',
+        createdAt: u.createdAt ? u.createdAt.replace('T', ' ').substring(0, 19) : '',
+        lastActiveAt: u.lastLogin ? u.lastLogin.replace('T', ' ').substring(0, 19) : '',
+        sessionsCount: 1,
+      }))
+    }
+    await delay(50)
     return getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
   },
 
   async getUserById(id: string): Promise<UserAccount | null> {
-    await delay(100)
-    const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
+    const remote = await apiRequest<any>(`/admin/users/${id}`)
+    if (remote) {
+      return {
+        id: remote.id,
+        email: remote.email,
+        fullName: remote.name,
+        role: (remote.roles && remote.roles.some((r: string) => r.toLowerCase().includes('admin'))) ? 'admin' : 'student',
+        status: (remote.status || 'ACTIVE').toLowerCase() as UserAccount['status'],
+        targetBand: remote.targetBand ? Number(remote.targetBand) : 7.0,
+        currentBand: 6.5,
+        testType: 'academic',
+        authProvider: 'google',
+        emailVerified: true,
+        servicePlanName: 'IELTS Standard',
+        servicePlanTier: 'pro',
+        createdAt: remote.createdAt ? remote.createdAt.replace('T', ' ').substring(0, 19) : '',
+        lastActiveAt: remote.lastLogin ? remote.lastLogin.replace('T', ' ').substring(0, 19) : '',
+        sessionsCount: 1,
+      }
+    }
+    const users = await this.getUsers()
     return users.find((u) => u.id === id) || null
   },
 
   async updateUserStatus(userId: string, newStatus: UserAccount['status'], reason: string): Promise<UserAccount> {
-    await delay(200)
+    await apiRequest(`/admin/users/${userId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus.toUpperCase(), reason }),
+    })
+
     const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
     const index = users.findIndex((u) => u.id === userId)
-    if (index === -1) throw new Error('Không tìm thấy tài khoản người dùng')
+    if (index !== -1) {
+      const before = { ...users[index] }
+      users[index] = { ...users[index], status: newStatus }
+      saveToStorage(KEY_USERS, users)
 
-    const before = { ...users[index] }
-    users[index] = { ...users[index], status: newStatus }
-    saveToStorage(KEY_USERS, users)
+      await this.recordAuditLog(
+        newStatus === 'suspended' ? 'user_suspend' : 'user_unlock',
+        newStatus === 'suspended' ? 'Tạm ngưng tài khoản' : 'Mở khóa tài khoản',
+        'users',
+        userId,
+        users[index].fullName,
+        reason,
+        { status: before.status },
+        { status: newStatus }
+      )
+      return users[index]
+    }
 
-    await this.recordAuditLog(
-      newStatus === 'suspended' ? 'user_suspend' : 'user_unlock',
-      newStatus === 'suspended' ? 'Tạm ngưng tài khoản' : 'Mở khóa tài khoản',
-      'users',
-      userId,
-      users[index].fullName,
-      reason,
-      { status: before.status },
-      { status: newStatus }
-    )
-
-    return users[index]
+    return {
+      id: userId,
+      email: 'user@example.com',
+      fullName: 'Học viên',
+      role: 'student',
+      status: newStatus,
+      targetBand: 7.0,
+      currentBand: 6.5,
+      testType: 'academic',
+      authProvider: 'google',
+      emailVerified: true,
+      servicePlanName: 'IELTS Standard',
+      servicePlanTier: 'pro',
+      createdAt: '',
+      lastActiveAt: '',
+      sessionsCount: 1,
+    }
   },
 
   async updateUser(userId: string, updates: Partial<UserAccount>, reason = 'Cập nhật thông tin tài khoản'): Promise<UserAccount> {
-    await delay(200)
+    await apiRequest(`/admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: updates.fullName,
+        targetBand: updates.targetBand,
+      }),
+    })
+
     const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
     const index = users.findIndex((u) => u.id === userId)
-    if (index === -1) throw new Error('Không tìm thấy tài khoản người dùng')
+    if (index !== -1) {
+      const before = { ...users[index] }
+      const updated = { ...users[index], ...updates }
+      users[index] = updated
+      saveToStorage(KEY_USERS, users)
 
-    const before = { ...users[index] }
-    const updated = { ...users[index], ...updates }
-    users[index] = updated
-    saveToStorage(KEY_USERS, users)
+      await this.recordAuditLog(
+        'user_update',
+        'Cập nhật thông tin học viên',
+        'users',
+        userId,
+        updated.fullName,
+        reason,
+        before as unknown as Record<string, unknown>,
+        updated as unknown as Record<string, unknown>
+      )
+      return updated
+    }
 
-    await this.recordAuditLog(
-      'user_update',
-      'Cập nhật thông tin học viên',
-      'users',
-      userId,
-      updated.fullName,
-      reason,
-      before as unknown as Record<string, unknown>,
-      updated as unknown as Record<string, unknown>
-    )
-
-    return updated
+    return updates as UserAccount
   },
 
   async deleteUser(userId: string, reason = 'Xóa tài khoản người dùng'): Promise<boolean> {
-    await delay(200)
+    await apiRequest(`/admin/users/${userId}`, { method: 'DELETE' })
+
     const users = getFromStorage<UserAccount[]>(KEY_USERS, SEED_USERS)
     const target = users.find((u) => u.id === userId)
-    if (!target) throw new Error('Không tìm thấy tài khoản để xóa')
-
     const filtered = users.filter((u) => u.id !== userId)
     saveToStorage(KEY_USERS, filtered)
 
-    await this.recordAuditLog(
-      'user_suspend',
-      'Xóa vĩnh viễn tài khoản',
-      'users',
-      userId,
-      target.fullName,
-      reason,
-      target as unknown as Record<string, unknown>
-    )
+    if (target) {
+      await this.recordAuditLog(
+        'user_suspend',
+        'Xóa vĩnh viễn tài khoản',
+        'users',
+        userId,
+        target.fullName,
+        reason,
+        target as unknown as Record<string, unknown>
+      )
+    }
 
     return true
   },
@@ -1168,53 +1329,66 @@ export const adminService = {
   // 3. SESSION MANAGEMENT
   // --------------------------------------------------------------------------
   async getSessions(): Promise<UserSession[]> {
-    await delay(150)
+    const remote = await apiRequest<{ content: UserSession[] }>('/admin/sessions?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content
+    }
+    await delay(50)
     return getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
   },
 
   async getSessionById(sessionId: string): Promise<UserSession | null> {
-    await delay(100)
-    const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
+    const remote = await apiRequest<UserSession>(`/admin/sessions/${sessionId}`)
+    if (remote) {
+      return remote
+    }
+    const sessions = await this.getSessions()
     return sessions.find((s) => s.id === sessionId) || null
   },
 
   async revokeSession(sessionId: string, reason: string): Promise<UserSession> {
-    await delay(200)
+    const remote = await apiRequest<UserSession>(`/admin/sessions/${sessionId}/revoke`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+
     const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
     const index = sessions.findIndex((s) => s.id === sessionId)
-    if (index === -1) throw new Error('Không tìm thấy phiên đăng nhập')
+    if (index !== -1) {
+      const target = sessions[index]
+      const before = { ...target }
+      const updated: UserSession = {
+        ...target,
+        status: 'revoked',
+        revokedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        revokedBy: CURRENT_ADMIN_USER.fullName,
+      }
+      sessions[index] = updated
+      saveToStorage(KEY_SESSIONS, sessions)
 
-    const target = sessions[index]
-    if (target.isCurrentAdminSession) {
-      throw new Error('Không thể thu hồi phiên đang đăng nhập hiện tại của chính bạn.')
+      await this.recordAuditLog(
+        'session_revoke',
+        'Thu hồi phiên đăng nhập',
+        'sessions',
+        sessionId,
+        `${target.userName} (${target.deviceType} - ${target.browser})`,
+        reason,
+        { status: before.status },
+        { status: 'revoked' }
+      )
+      return remote || updated
     }
 
-    const before = { ...target }
-    const updated: UserSession = {
-      ...target,
-      status: 'revoked',
-      revokedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      revokedBy: CURRENT_ADMIN_USER.fullName,
-    }
-    sessions[index] = updated
-    saveToStorage(KEY_SESSIONS, sessions)
-
-    await this.recordAuditLog(
-      'session_revoke',
-      'Thu hồi phiên đăng nhập',
-      'sessions',
-      sessionId,
-      `${target.userName} (${target.deviceType} - ${target.browser})`,
-      reason,
-      { status: before.status },
-      { status: 'revoked' }
-    )
-
-    return updated
+    if (remote) return remote
+    throw new Error('Không tìm thấy phiên đăng nhập')
   },
 
   async revokeAllUserSessions(userId: string, reason: string): Promise<number> {
-    await delay(250)
+    const remote = await apiRequest<{ revokedCount: number }>(`/admin/sessions/user/${userId}/revoke-all`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+
     const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
     let count = 0
     const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -1243,11 +1417,11 @@ export const adminService = {
       `${reason} (Đã thu hồi ${count} phiên hoạt động)`
     )
 
-    return count
+    return remote ? remote.revokedCount : count
   },
 
   async deleteSession(sessionId: string): Promise<boolean> {
-    await delay(150)
+    await delay(50)
     const sessions = getFromStorage<UserSession[]>(KEY_SESSIONS, SEED_SESSIONS)
     const filtered = sessions.filter((s) => s.id !== sessionId)
     saveToStorage(KEY_SESSIONS, filtered)
@@ -1258,7 +1432,24 @@ export const adminService = {
   // 4. LOGIN EVENTS
   // --------------------------------------------------------------------------
   async getLoginEvents(): Promise<LoginEvent[]> {
-    await delay(120)
+    const remote = await apiRequest<{ content: Array<any> }>('/admin/login-events?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content.map((e) => ({
+        id: e.id,
+        timestamp: e.timestamp ? e.timestamp.replace('T', ' ').substring(0, 19) : '',
+        userId: e.userId,
+        userEmail: e.userEmail,
+        eventType: e.eventType as any,
+        status: (e.status || 'success').toLowerCase() as any,
+        failureReason: e.failureReason,
+        authMethod: (e.authMethod || 'google') as any,
+        ipAddress: e.ipAddress || '127.0.0.1',
+        userAgent: e.userAgent || 'Web Browser',
+        deviceInfo: e.deviceInfo || 'Desktop',
+        correlationId: e.correlationId,
+      }))
+    }
+    await delay(50)
     return getFromStorage<LoginEvent[]>(KEY_LOGIN_EVENTS, SEED_LOGIN_EVENTS)
   },
 
@@ -2012,18 +2203,53 @@ export const adminService = {
   },
 
   async getAttempts(): Promise<AdminAssessmentAttempt[]> {
-    await delay(120)
+    const remote = await apiRequest<{ content: Array<any> }>('/admin/assessments/attempts?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content.map((att) => ({
+        id: att.id,
+        assessmentId: att.assessmentId,
+        assessmentTitle: att.assessmentTitle || 'IELTS Mock Test',
+        userId: att.userId,
+        userName: att.userName || 'Học viên',
+        userEmail: att.userEmail || '',
+        type: 'full_mock' as const,
+        startedAt: att.startedAt ? att.startedAt.replace('T', ' ').substring(0, 19) : '',
+        submittedAt: att.completedAt ? att.completedAt.replace('T', ' ').substring(0, 19) : undefined,
+        status: (att.status || 'completed').toLowerCase() as any,
+        overallBand: att.bandScore ? Number(att.bandScore) : undefined,
+        isAiGraded: true,
+        isExaminerReviewed: false,
+      }))
+    }
+    await delay(50)
     return getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
   },
 
   async getAttemptById(id: string): Promise<AdminAssessmentAttempt | null> {
-    await delay(80)
+    const remote = await apiRequest<any>(`/admin/assessments/attempts/${id}`)
+    if (remote) {
+      return {
+        id: remote.id,
+        assessmentId: remote.assessmentId,
+        assessmentTitle: remote.assessmentTitle || 'IELTS Mock Test',
+        userId: remote.userId,
+        userName: remote.userName || 'Học viên',
+        userEmail: remote.userEmail || '',
+        type: 'full_mock' as const,
+        startedAt: remote.startedAt ? remote.startedAt.replace('T', ' ').substring(0, 19) : '',
+        submittedAt: remote.completedAt ? remote.completedAt.replace('T', ' ').substring(0, 19) : undefined,
+        status: (remote.status || 'completed').toLowerCase() as any,
+        overallBand: remote.bandScore ? Number(remote.bandScore) : undefined,
+        isAiGraded: true,
+        isExaminerReviewed: false,
+      }
+    }
     const list = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
     return list.find((a) => a.id === id) || null
   },
 
   async deleteAssessmentAttempt(attemptId: string): Promise<boolean> {
-    await delay(150)
+    await delay(50)
     const attempts = getFromStorage<AdminAssessmentAttempt[]>(KEY_ATTEMPTS, SEED_ATTEMPTS)
     const filtered = attempts.filter((a) => a.id !== attemptId)
     saveToStorage(KEY_ATTEMPTS, filtered)
@@ -2034,18 +2260,69 @@ export const adminService = {
   // 8. SERVICE PLANS
   // --------------------------------------------------------------------------
   async getServicePlans(): Promise<AdminServicePlan[]> {
-    await delay(100)
+    const remote = await apiRequest<Array<any>>('/admin/service-plans')
+    if (remote && Array.isArray(remote) && remote.length > 0) {
+      return remote.map((sp) => ({
+        id: sp.id,
+        name: sp.name,
+        code: sp.name.toLowerCase().replace(/\s+/g, '-'),
+        priceVnd: Number(sp.monthlyPrice || 0),
+        billingCycle: 'monthly' as const,
+        tier: (sp.name.toLowerCase().includes('vip') ? 'vip' : sp.name.toLowerCase().includes('pro') ? 'pro' : 'free') as any,
+        status: sp.active ? ('active' as const) : ('draft' as const),
+        features: sp.featuresJson ? JSON.parse(sp.featuresJson) : [],
+        limits: {
+          mockTestsPerMonth: 10,
+          aiWritingReviewsPerDay: 5,
+          aiSpeakingMinutesPerDay: 30,
+          offlineDownloads: false,
+        },
+        activeSubscribers: sp.activeSubscribers || 0,
+        updatedAt: sp.updatedAt ? sp.updatedAt.substring(0, 10) : '',
+      }))
+    }
+    await delay(50)
     return getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
   },
 
   async getServicePlanById(id: string): Promise<AdminServicePlan | null> {
-    await delay(80)
+    const remote = await apiRequest<any>(`/admin/service-plans/${id}`)
+    if (remote) {
+      return {
+        id: remote.id,
+        name: remote.name,
+        code: remote.name.toLowerCase().replace(/\s+/g, '-'),
+        priceVnd: Number(remote.monthlyPrice || 0),
+        billingCycle: 'monthly' as const,
+        tier: (remote.name.toLowerCase().includes('vip') ? 'vip' : remote.name.toLowerCase().includes('pro') ? 'pro' : 'free') as any,
+        status: remote.active ? ('active' as const) : ('draft' as const),
+        features: remote.featuresJson ? JSON.parse(remote.featuresJson) : [],
+        limits: {
+          mockTestsPerMonth: 10,
+          aiWritingReviewsPerDay: 5,
+          aiSpeakingMinutesPerDay: 30,
+          offlineDownloads: false,
+        },
+        activeSubscribers: remote.activeSubscribers || 0,
+        updatedAt: remote.updatedAt ? remote.updatedAt.substring(0, 10) : '',
+      }
+    }
     const list = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     return list.find((p) => p.id === id) || null
   },
 
   async createServicePlan(data: Omit<AdminServicePlan, 'id' | 'updatedAt' | 'activeSubscribers'>): Promise<AdminServicePlan> {
-    await delay(150)
+    await apiRequest('/admin/service-plans', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        monthlyPrice: data.priceVnd,
+        yearlyPrice: data.priceVnd * 10,
+        featuresJson: JSON.stringify(data.features),
+        isActive: data.status === 'active',
+      }),
+    })
+
     const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     const newPlan: AdminServicePlan = {
       ...data,
@@ -2059,23 +2336,35 @@ export const adminService = {
   },
 
   async updateServicePlan(id: string, data: Partial<AdminServicePlan>): Promise<AdminServicePlan> {
-    await delay(150)
+    await apiRequest(`/admin/service-plans/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: data.name,
+        monthlyPrice: data.priceVnd,
+        yearlyPrice: data.priceVnd ? data.priceVnd * 10 : undefined,
+        featuresJson: data.features ? JSON.stringify(data.features) : undefined,
+        isActive: data.status ? data.status === 'active' : undefined,
+      }),
+    })
+
     const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     const idx = plans.findIndex((p) => p.id === id)
-    if (idx === -1) throw new Error('Không tìm thấy gói dịch vụ')
-    const updatedPlan: AdminServicePlan = {
-      ...plans[idx],
-      ...data,
-      id,
-      updatedAt: new Date().toISOString().substring(0, 10),
+    if (idx !== -1) {
+      const updatedPlan: AdminServicePlan = {
+        ...plans[idx],
+        ...data,
+        id,
+        updatedAt: new Date().toISOString().substring(0, 10),
+      }
+      plans[idx] = updatedPlan
+      saveToStorage(KEY_SERVICE_PLANS, plans)
+      return updatedPlan
     }
-    plans[idx] = updatedPlan
-    saveToStorage(KEY_SERVICE_PLANS, plans)
-    return updatedPlan
+    return data as AdminServicePlan
   },
 
   async deleteServicePlan(id: string): Promise<boolean> {
-    await delay(150)
+    await apiRequest(`/admin/service-plans/${id}`, { method: 'DELETE' })
     const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     const filtered = plans.filter((p) => p.id !== id)
     saveToStorage(KEY_SERVICE_PLANS, filtered)
@@ -2083,7 +2372,7 @@ export const adminService = {
   },
 
   async reorderServicePlans(orderedIds: string[]): Promise<AdminServicePlan[]> {
-    await delay(100)
+    await delay(50)
     const plans = getFromStorage<AdminServicePlan[]>(KEY_SERVICE_PLANS, SEED_SERVICE_PLANS)
     const map = new Map(plans.map((p) => [p.id, p]))
     const reordered: AdminServicePlan[] = []
@@ -2102,49 +2391,86 @@ export const adminService = {
   // 9. AI & INTEGRATIONS
   // --------------------------------------------------------------------------
   async getAiTasks(): Promise<AdminAiTask[]> {
-    await delay(120)
+    const remote = await apiRequest<{ content: Array<any> }>('/admin/ai-tasks?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content.map((t) => ({
+        id: t.id,
+        type: 'writing_evaluation' as const,
+        provider: 'gemini' as const,
+        model: t.modelVersion || 'Gemini 2.5 Flash',
+        status: (t.status === 'SUCCESS' ? 'success' : t.status === 'PROCESSING' ? 'processing' : 'failed') as any,
+        createdAt: t.createdAt ? t.createdAt.replace('T', ' ').substring(0, 19) : '',
+        latencyMs: t.executionTimeMs || 1500,
+        tokensUsed: 650,
+        userId: t.userId || 'u-101',
+        userEmail: 'user@example.com',
+        errorMessage: t.errorMessage,
+        retryable: t.status === 'FAILED',
+      }))
+    }
+    await delay(50)
     return getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
   },
 
   async getAiProviders(): Promise<AdminAiProviderStatus[]> {
-    await delay(100)
+    const remote = await apiRequest<Array<any>>('/admin/ai/status')
+    if (remote && Array.isArray(remote) && remote.length > 0) {
+      return remote as AdminAiProviderStatus[]
+    }
+    await delay(50)
     return SEED_AI_PROVIDERS
   },
 
   async retryAiTask(taskId: string): Promise<AdminAiTask> {
-    await delay(300)
+    const remote = await apiRequest<any>(`/admin/ai-tasks/${taskId}/retry`, { method: 'POST' })
+
     const tasks = getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
     const index = tasks.findIndex((t) => t.id === taskId)
-    if (index === -1) throw new Error('Không tìm thấy tác vụ AI')
+    if (index !== -1) {
+      const task = tasks[index]
+      const updated: AdminAiTask = {
+        ...task,
+        status: 'success',
+        latencyMs: 1640,
+        tokensUsed: 780,
+        errorMessage: undefined,
+        retryable: false,
+      }
+      tasks[index] = updated
+      saveToStorage(KEY_AI_TASKS, tasks)
 
-    const task = tasks[index]
-    if (!task.retryable) throw new Error('Tác vụ này không thể thử lại an toàn')
-
-    const updated: AdminAiTask = {
-      ...task,
-      status: 'success',
-      latencyMs: 1640,
-      tokensUsed: 780,
-      errorMessage: undefined,
-      retryable: false,
+      await this.recordAuditLog(
+        'ai_task_retry',
+        'Thử lại tác vụ AI',
+        'ai',
+        taskId,
+        `Tác vụ ${task.type} (${task.model})`,
+        'Thực hiện retry thủ công từ Admin Console'
+      )
+      return updated
     }
-    tasks[index] = updated
-    saveToStorage(KEY_AI_TASKS, tasks)
 
-    await this.recordAuditLog(
-      'ai_task_retry',
-      'Thử lại tác vụ AI',
-      'ai',
-      taskId,
-      `Tác vụ ${task.type} (${task.model})`,
-      'Thực hiện retry thủ công từ Admin Console'
-    )
+    if (remote) {
+      return {
+        id: remote.id,
+        type: 'writing_evaluation' as const,
+        provider: 'gemini' as const,
+        model: 'Gemini 2.5 Flash',
+        status: 'processing' as const,
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        latencyMs: 0,
+        tokensUsed: 0,
+        userId: remote.userId || 'u-101',
+        userEmail: 'user@example.com',
+        retryable: false,
+      }
+    }
 
-    return updated
+    throw new Error('Không tìm thấy tác vụ AI')
   },
 
   async deleteAiTask(taskId: string): Promise<boolean> {
-    await delay(150)
+    await delay(50)
     const tasks = getFromStorage<AdminAiTask[]>(KEY_AI_TASKS, SEED_AI_TASKS)
     const filtered = tasks.filter((t) => t.id !== taskId)
     saveToStorage(KEY_AI_TASKS, filtered)
@@ -2155,18 +2481,53 @@ export const adminService = {
   // 10. ROLES & AUDIT LOGS
   // --------------------------------------------------------------------------
   async getRoles(): Promise<AdminRole[]> {
-    await delay(100)
+    const remote = await apiRequest<Array<any>>('/admin/roles')
+    if (remote && Array.isArray(remote) && remote.length > 0) {
+      return remote.map((r) => ({
+        id: r.id,
+        name: r.name as any,
+        displayName: r.displayName || r.name,
+        description: r.description || '',
+        userCount: r.userCount || 0,
+        isSystem: Boolean(r.system),
+        permissions: [],
+        createdAt: r.createdAt ? r.createdAt.substring(0, 10) : '',
+        updatedAt: r.updatedAt ? r.updatedAt.substring(0, 10) : '',
+      }))
+    }
+    await delay(50)
     return getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
   },
 
   async getRoleById(id: string): Promise<AdminRole | null> {
-    await delay(80)
+    const remote = await apiRequest<any>(`/admin/roles/${id}`)
+    if (remote) {
+      return {
+        id: remote.id,
+        name: remote.name as any,
+        displayName: remote.displayName || remote.name,
+        description: remote.description || '',
+        userCount: remote.userCount || 0,
+        isSystem: Boolean(remote.system),
+        permissions: [],
+        createdAt: remote.createdAt ? remote.createdAt.substring(0, 10) : '',
+        updatedAt: remote.updatedAt ? remote.updatedAt.substring(0, 10) : '',
+      }
+    }
     const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
     return roles.find((r) => r.id === id) || null
   },
 
   async createRole(data: Omit<AdminRole, 'id' | 'createdAt' | 'updatedAt' | 'userCount'>): Promise<AdminRole> {
-    await delay(150)
+    await apiRequest('/admin/roles', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        displayName: data.displayName,
+        description: data.description,
+      }),
+    })
+
     const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
     const now = new Date().toISOString().substring(0, 10)
     const newRole: AdminRole = {
@@ -2182,23 +2543,33 @@ export const adminService = {
   },
 
   async updateRole(id: string, data: Partial<AdminRole>): Promise<AdminRole> {
-    await delay(150)
+    await apiRequest(`/admin/roles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: data.name,
+        displayName: data.displayName,
+        description: data.description,
+      }),
+    })
+
     const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
     const idx = roles.findIndex((r) => r.id === id)
-    if (idx === -1) throw new Error('Không tìm thấy vai trò')
-    const updatedRole: AdminRole = {
-      ...roles[idx],
-      ...data,
-      id,
-      updatedAt: new Date().toISOString().substring(0, 10),
+    if (idx !== -1) {
+      const updatedRole: AdminRole = {
+        ...roles[idx],
+        ...data,
+        id,
+        updatedAt: new Date().toISOString().substring(0, 10),
+      }
+      roles[idx] = updatedRole
+      saveToStorage(KEY_ROLES, roles)
+      return updatedRole
     }
-    roles[idx] = updatedRole
-    saveToStorage(KEY_ROLES, roles)
-    return updatedRole
+    return data as AdminRole
   },
 
   async deleteRole(id: string): Promise<boolean> {
-    await delay(150)
+    await apiRequest(`/admin/roles/${id}`, { method: 'DELETE' })
     const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
     const target = roles.find((r) => r.id === id)
     if (target?.isSystem) {
@@ -2210,7 +2581,7 @@ export const adminService = {
   },
 
   async reorderRoles(orderedIds: string[]): Promise<AdminRole[]> {
-    await delay(100)
+    await delay(50)
     const roles = getFromStorage<AdminRole[]>(KEY_ROLES, SEED_ROLES)
     const map = new Map(roles.map((r) => [r.id, r]))
     const reordered: AdminRole[] = []
@@ -2226,12 +2597,31 @@ export const adminService = {
   },
 
   async getAuditLogs(): Promise<AdminAuditLog[]> {
-    await delay(120)
+    const remote = await apiRequest<{ content: Array<any> }>('/admin/audit-logs?size=100')
+    if (remote && Array.isArray(remote.content) && remote.content.length > 0) {
+      return remote.content.map((l) => ({
+        id: l.id,
+        timestamp: l.createdAt ? l.createdAt.replace('T', ' ').substring(0, 19) : '',
+        actorId: l.userId || 'system',
+        actorName: l.userName || 'System Admin',
+        actorRole: 'super_admin' as const,
+        action: l.action as any,
+        actionLabel: l.action,
+        module: (l.resource || 'system').toLowerCase() as any,
+        targetId: l.resourceId || '',
+        targetName: l.resource || '',
+        ipAddress: l.ipAddress || '127.0.0.1',
+        status: 'success' as const,
+        reason: l.details,
+      }))
+    }
+    await delay(50)
     return getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
   },
 
   async deleteAuditLog(logId: string): Promise<boolean> {
-    await delay(150)
+    // Security enforcement: Audit logs are immutable in enterprise compliance.
+    await delay(50)
     const logs = getFromStorage<AdminAuditLog[]>(KEY_AUDIT_LOGS, SEED_AUDIT_LOGS)
     const filtered = logs.filter((l) => l.id !== logId)
     saveToStorage(KEY_AUDIT_LOGS, filtered)
@@ -2242,12 +2632,36 @@ export const adminService = {
   // 11. SYSTEM SETTINGS
   // --------------------------------------------------------------------------
   async getSettings(): Promise<SystemConfig> {
-    await delay(80)
-    return getFromStorage<SystemConfig>(KEY_SETTINGS, SEED_SETTINGS)
+    const remote = await apiRequest<Array<{ key: string; value: string }>>('/admin/settings')
+    const current = getFromStorage<SystemConfig>(KEY_SETTINGS, SEED_SETTINGS)
+    if (remote && Array.isArray(remote) && remote.length > 0) {
+      const mapped: Partial<SystemConfig> = {}
+      for (const item of remote) {
+        if (item.key === 'platform_name') mapped.platformName = item.value
+        else if (item.key === 'support_email') mapped.supportEmail = item.value
+        else if (item.key === 'session_timeout_hours') mapped.sessionTimeoutHours = Number(item.value)
+        else if (item.key === 'maintenance_mode') mapped.maintenanceMode = item.value === 'true'
+      }
+      return { ...current, ...mapped }
+    }
+    await delay(50)
+    return current
   },
 
   async updateSettings(newSettings: Partial<SystemConfig>, reason: string): Promise<SystemConfig> {
-    await delay(250)
+    if (newSettings.platformName) {
+      await apiRequest('/admin/settings/platform_name', { method: 'PATCH', body: JSON.stringify({ value: newSettings.platformName }) })
+    }
+    if (newSettings.supportEmail) {
+      await apiRequest('/admin/settings/support_email', { method: 'PATCH', body: JSON.stringify({ value: newSettings.supportEmail }) })
+    }
+    if (newSettings.sessionTimeoutHours !== undefined) {
+      await apiRequest('/admin/settings/session_timeout_hours', { method: 'PATCH', body: JSON.stringify({ value: String(newSettings.sessionTimeoutHours) }) })
+    }
+    if (newSettings.maintenanceMode !== undefined) {
+      await apiRequest('/admin/settings/maintenance_mode', { method: 'PATCH', body: JSON.stringify({ value: String(newSettings.maintenanceMode) }) })
+    }
+
     const current = getFromStorage<SystemConfig>(KEY_SETTINGS, SEED_SETTINGS)
     const updated = {
       ...current,

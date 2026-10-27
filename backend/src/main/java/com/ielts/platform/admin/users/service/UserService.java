@@ -160,6 +160,21 @@ public class UserService {
 
         if (request.getRoleIds() != null) {
             Set<RoleEntity> roles = new HashSet<>(roleRepository.findAllById(request.getRoleIds()));
+            boolean targetIsAdmin = user.getRoles().stream()
+                    .anyMatch(r -> r.getName().equalsIgnoreCase("Super Admin") || r.getName().equalsIgnoreCase("Admin"));
+            boolean willBeAdmin = roles.stream()
+                    .anyMatch(r -> r.getName().equalsIgnoreCase("Super Admin") || r.getName().equalsIgnoreCase("Admin"));
+
+            // Self-demotion protection: current admin cannot remove admin role from themselves
+            if (id.equals(adminId) && targetIsAdmin && !willBeAdmin) {
+                throw new BusinessException(ErrorCode.FORBIDDEN, "Administrators cannot remove the administrator role from their own account");
+            }
+
+            // Last active admin protection: cannot demote the only remaining active admin
+            if (targetIsAdmin && !willBeAdmin && isLastActiveAdmin(id)) {
+                throw new BusinessException(ErrorCode.BUSINESS_RULE_VIOLATION, "Cannot demote the last remaining active administrator");
+            }
+
             user.setRoles(roles);
         }
 
@@ -169,6 +184,39 @@ public class UserService {
                 "Updated details for user " + updated.getEmail(), null);
 
         return mapToDto(updated);
+    }
+
+    @Transactional
+    public void deleteUser(String id, String adminId, String adminName) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "User not found with id: " + id));
+
+        // Self-delete protection
+        if (id.equals(adminId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "Administrators cannot delete their own account");
+        }
+
+        // Last admin protection
+        boolean targetIsAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("Super Admin") || r.getName().equalsIgnoreCase("Admin"));
+        if (targetIsAdmin && isLastActiveAdmin(id)) {
+            throw new BusinessException(ErrorCode.BUSINESS_RULE_VIOLATION, "Cannot delete the last remaining active administrator");
+        }
+
+        userRepository.delete(user);
+
+        auditLogService.record(adminId, adminName, "DELETE_USER", "USER", id,
+                "Deleted user account " + user.getEmail(), null);
+    }
+
+    private boolean isLastActiveAdmin(String targetUserId) {
+        long count = userRepository.findAll().stream()
+                .filter(u -> !u.getId().equals(targetUserId))
+                .filter(u -> u.getStatus() == UserEntity.UserStatus.ACTIVE)
+                .filter(u -> u.getRoles().stream().anyMatch(r ->
+                        r.getName().equalsIgnoreCase("Super Admin") || r.getName().equalsIgnoreCase("Admin")))
+                .count();
+        return count == 0;
     }
 
     @Transactional
@@ -196,6 +244,19 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "User not found with id: " + id));
 
         UserEntity.UserStatus newStatus = UserEntity.UserStatus.valueOf(request.getStatus().toUpperCase());
+
+        // Self-lock protection: current admin cannot lock, suspend or deactivate themselves
+        if (id.equals(adminId) && (newStatus == UserEntity.UserStatus.SUSPENDED || newStatus == UserEntity.UserStatus.PENDING)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "Administrators cannot suspend or deactivate their own account");
+        }
+
+        // Last active admin protection: cannot suspend or lock the only remaining active admin
+        boolean targetIsAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("Super Admin") || r.getName().equalsIgnoreCase("Admin"));
+        if (targetIsAdmin && (newStatus == UserEntity.UserStatus.SUSPENDED || newStatus == UserEntity.UserStatus.PENDING) && isLastActiveAdmin(id)) {
+            throw new BusinessException(ErrorCode.BUSINESS_RULE_VIOLATION, "Cannot deactivate the last remaining active administrator");
+        }
+
         user.setStatus(newStatus);
         UserEntity updated = userRepository.save(user);
 

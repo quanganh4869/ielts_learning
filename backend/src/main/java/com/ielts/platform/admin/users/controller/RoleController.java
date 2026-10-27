@@ -1,0 +1,75 @@
+package com.ielts.platform.admin.users.controller;
+
+import com.ielts.platform.admin.users.dto.RoleDtos;
+import com.ielts.platform.admin.users.service.RoleService;
+import com.ielts.platform.common.ApiResponse;
+import com.ielts.platform.security.UserPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/admin/roles")
+@RequiredArgsConstructor
+@Tag(name = "Roles & Permissions", description = "RBAC role management and permission assignments")
+public class RoleController {
+
+    private final RoleService roleService;
+
+    @GetMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @Operation(summary = "List all platform roles and permission sets")
+    public ApiResponse<List<RoleDtos.Response>> getAllRoles() {
+        return ApiResponse.ok(roleService.getAllRoles());
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @Operation(summary = "Get role details and permissions")
+    public ApiResponse<RoleDtos.Response> getRoleById(@PathVariable String id) {
+        return ApiResponse.ok(roleService.getRoleById(id));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Create custom RBAC role")
+    public ApiResponse<RoleDtos.Response> createRole(
+            @RequestBody RoleDtos.UpsertRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        String adminId = principal != null ? principal.getId() : "system";
+        String adminName = principal != null ? principal.getName() : "System";
+        return ApiResponse.ok("Role created", roleService.createRole(request, adminId, adminName));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Update role permissions")
+    public ApiResponse<RoleDtos.Response> updateRole(
+            @PathVariable String id,
+            @RequestBody RoleDtos.UpsertRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        String adminId = principal != null ? principal.getId() : "system";
+        String adminName = principal != null ? principal.getName() : "System";
+        return ApiResponse.ok("Role updated", roleService.updateRole(id, request, adminId, adminName));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Delete custom role")
+    public ApiResponse<Void> deleteRole(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        String adminId = principal != null ? principal.getId() : "system";
+        String adminName = principal != null ? principal.getName() : "System";
+        roleService.deleteRole(id, adminId, adminName);
+        return ApiResponse.ok("Role deleted", null);
+    }
+}

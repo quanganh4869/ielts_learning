@@ -46,6 +46,7 @@ public class AuthController {
     private final UserSessionRepository userSessionRepository;
     private final LoginEventRepository loginEventRepository;
     private final UserService userService;
+    private final com.ielts.platform.security.ClientIpResolver clientIpResolver;
 
     @GetMapping("/me")
     @Operation(summary = "Get current authenticated user profile and safe permissions")
@@ -147,10 +148,7 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // Audit logout event
-        String ipAddress = request.getHeader("X-Forwarded-For");
-        if (ipAddress == null || ipAddress.isBlank()) {
-            ipAddress = request.getRemoteAddr() != null ? request.getRemoteAddr() : "127.0.0.1";
-        }
+        String ipAddress = clientIpResolver.resolveClientIp(request);
         String ua = request.getHeader("User-Agent");
         if (ua != null && ua.length() > 100) {
             ua = ua.substring(0, 100);

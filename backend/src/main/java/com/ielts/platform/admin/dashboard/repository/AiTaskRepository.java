@@ -10,4 +10,6 @@ import java.util.List;
 public interface AiTaskRepository extends JpaRepository<AiTaskEntity, String> {
     long countByStatus(String status);
     List<AiTaskEntity> findTop10ByOrderByCreatedAtDesc();
+    org.springframework.data.domain.Page<AiTaskEntity> findAllByOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<AiTaskEntity> findByStatusOrderByCreatedAtDesc(String status, org.springframework.data.domain.Pageable pageable);
 }

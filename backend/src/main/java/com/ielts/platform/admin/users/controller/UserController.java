@@ -26,11 +26,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final com.ielts.platform.security.ClientIpResolver clientIpResolver;
 
     @PostMapping("/auth/login")
     @Operation(summary = "Authenticate user and return JWT bearer token")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        String ipAddress = httpRequest.getRemoteAddr();
+        String ipAddress = clientIpResolver.resolveClientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         LoginResponse response = userService.authenticate(request, ipAddress, userAgent);
         return ApiResponse.ok("Authentication successful", response);
@@ -90,6 +91,19 @@ public class UserController {
         String adminId = principal != null ? principal.getId() : "system";
         String adminName = principal != null ? principal.getName() : "System";
         return ApiResponse.ok("User status updated", userService.updateUserStatus(id, request, adminId, adminName));
+    }
+
+    @DeleteMapping("/admin/users/{id}")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.USER_MANAGE + "')")
+    @Operation(summary = "Delete user account")
+    public ApiResponse<Void> deleteUser(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        String adminId = principal != null ? principal.getId() : "system";
+        String adminName = principal != null ? principal.getName() : "System";
+        userService.deleteUser(id, adminId, adminName);
+        return ApiResponse.ok("User deleted successfully", null);
     }
 
     @GetMapping("/users/me")

@@ -1,18 +1,28 @@
 package com.ielts.platform.admin.dashboard.service;
 
+import com.ielts.platform.admin.audit.model.AuditLogEntity;
+import com.ielts.platform.admin.audit.repository.AuditLogRepository;
 import com.ielts.platform.admin.dashboard.dto.DashboardSummaryDto;
 import com.ielts.platform.admin.dashboard.repository.AiTaskRepository;
+import com.ielts.platform.admin.questions.model.AssessmentAttemptEntity;
 import com.ielts.platform.admin.questions.repository.AssessmentAttemptRepository;
+import com.ielts.platform.admin.users.model.LoginEventEntity;
+import com.ielts.platform.admin.users.model.UserEntity;
+import com.ielts.platform.admin.users.repository.LoginEventRepository;
 import com.ielts.platform.admin.users.repository.UserRepository;
 import com.ielts.platform.admin.users.repository.UserSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,61 +32,116 @@ public class DashboardService {
     private final UserSessionRepository userSessionRepository;
     private final AssessmentAttemptRepository attemptRepository;
     private final AiTaskRepository aiTaskRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final LoginEventRepository loginEventRepository;
 
     @Transactional(readOnly = true)
     public DashboardSummaryDto getDashboardSummary() {
         long totalUsers = userRepository.count();
+        long activeUsers = userRepository.countByStatus(UserEntity.UserStatus.ACTIVE);
         long activeSessions = userSessionRepository.countByIsActiveTrue();
         long totalAttempts = attemptRepository.count();
         long failedAiTasks = aiTaskRepository.countByStatus("FAILED");
         Double avgBand = attemptRepository.findAverageBandScore();
 
-        // Weekly activity trends
-        List<DashboardSummaryDto.DailyActivityDto> weeklyActivity = List.of(
-                new DashboardSummaryDto.DailyActivityDto("T2", 145, 82),
-                new DashboardSummaryDto.DailyActivityDto("T3", 188, 110),
-                new DashboardSummaryDto.DailyActivityDto("T4", 230, 142),
-                new DashboardSummaryDto.DailyActivityDto("T5", 215, 134),
-                new DashboardSummaryDto.DailyActivityDto("T6", 280, 175),
-                new DashboardSummaryDto.DailyActivityDto("T7", 340, 210),
-                new DashboardSummaryDto.DailyActivityDto("CN", 390, 260)
-        );
+        // 1. Calculate Real 7-day Activity Trends from Database
+        Instant sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS);
+        List<AssessmentAttemptEntity> recentAttempts = attemptRepository.findAttemptsSince(sevenDaysAgo);
+        List<LoginEventEntity> recentLogins = loginEventRepository.findEventsSince(sevenDaysAgo);
 
-        // Skill averages
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDate today = LocalDate.now(zone);
+
+        List<DashboardSummaryDto.DailyActivityDto> weeklyActivity = new ArrayList<>();
+        String[] dayNames = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            int dayOfWeek = date.getDayOfWeek().getValue() % 7; // Sunday = 0, Monday = 1...
+            String dayLabel = dayNames[dayOfWeek];
+
+            long submissions = recentAttempts.stream()
+                    .filter(a -> a.getStartedAt() != null && a.getStartedAt().atZone(zone).toLocalDate().isEqual(date))
+                    .count();
+
+            long activeUsersCount = recentLogins.stream()
+                    .filter(l -> l.getCreatedAt() != null && l.getCreatedAt().atZone(zone).toLocalDate().isEqual(date))
+                    .map(LoginEventEntity::getUserEmail)
+                    .distinct()
+                    .count();
+
+            weeklyActivity.add(new DashboardSummaryDto.DailyActivityDto(dayLabel, (int) submissions, (int) activeUsersCount));
+        }
+
+        // 2. Real Skill Averages from Assessment Attempts
         Map<String, Double> skillAverages = new HashMap<>();
-        skillAverages.put("Listening", 6.8);
-        skillAverages.put("Reading", 7.1);
-        skillAverages.put("Writing", 6.2);
-        skillAverages.put("Speaking", 6.4);
+        skillAverages.put("Listening", 0.0);
+        skillAverages.put("Reading", 0.0);
+        skillAverages.put("Writing", 0.0);
+        skillAverages.put("Speaking", 0.0);
 
-        // Attention items
+        List<Object[]> rawSkillAvgs = attemptRepository.findAverageBandScoreBySkill();
+        for (Object[] row : rawSkillAvgs) {
+            if (row != null && row.length >= 2 && row[0] != null && row[1] != null) {
+                String skillName = row[0].toString().trim();
+                Double val = ((Number) row[1]).doubleValue();
+                double rounded = Math.round(val * 10.0) / 10.0;
+                // Capitalize properly
+                String formattedKey = skillName.substring(0, 1).toUpperCase() + skillName.substring(1).toLowerCase();
+                skillAverages.put(formattedKey, rounded);
+            }
+        }
+
+        // 3. Dynamic Attention Items based on Real System State
         List<DashboardSummaryDto.AttentionItemDto> attentionItems = new ArrayList<>();
         if (failedAiTasks > 0) {
             attentionItems.add(DashboardSummaryDto.AttentionItemDto.builder()
-                    .id("att_1")
-                    .title("AI Tasks Cần Xử Lý Lại")
-                    .description(failedAiTasks + " tác vụ chấm bài viết hoặc phát âm gặp lỗi kết nối.")
+                    .id("att_ai_fail")
+                    .title("Tác vụ AI Chấm điểm Gặp Lỗi")
+                    .description(failedAiTasks + " tiến trình AI đánh giá bài thi đang ở trạng thái thất bại và cần kiểm tra lại.")
                     .severity("HIGH")
-                    .link("/admin/ai-monitoring")
+                    .link("/admin/ai/tasks")
                     .build());
         }
-        attentionItems.add(DashboardSummaryDto.AttentionItemDto.builder()
-                .id("att_2")
-                .title("Tài Khoản Chờ Phê Duyệt")
-                .description("Có người dùng đăng ký vai trò Content Contributor đang chờ kích hoạt.")
-                .severity("MEDIUM")
-                .link("/admin/users")
-                .build());
+
+        long pendingUsers = userRepository.countByStatus(UserEntity.UserStatus.PENDING);
+        if (pendingUsers > 0) {
+            attentionItems.add(DashboardSummaryDto.AttentionItemDto.builder()
+                    .id("att_pending_users")
+                    .title("Tài Khoản Chờ Phê Duyệt")
+                    .description("Hiện có " + pendingUsers + " tài khoản học viên/giáo viên mới đang ở trạng thái chờ duyệt.")
+                    .severity("MEDIUM")
+                    .link("/admin/users")
+                    .build());
+        }
+
+        long suspendedUsers = userRepository.countByStatus(UserEntity.UserStatus.SUSPENDED);
+        if (suspendedUsers > 0) {
+            attentionItems.add(DashboardSummaryDto.AttentionItemDto.builder()
+                    .id("att_suspended_users")
+                    .title("Tài Khoản Đang Bị Khóa")
+                    .description(suspendedUsers + " tài khoản đang bị tạm khóa an toàn trên hệ thống.")
+                    .severity("LOW")
+                    .link("/admin/users")
+                    .build());
+        }
+
+        // 4. Recent Audit Logs
+        List<AuditLogEntity> recentAuditLogs = auditLogRepository
+                .findAllByOrderByCreatedAtDesc(PageRequest.of(0, 5))
+                .getContent();
 
         return DashboardSummaryDto.builder()
                 .totalUsers(totalUsers)
+                .activeUsers(activeUsers)
                 .activeSessions(activeSessions)
                 .totalAttempts(totalAttempts)
                 .failedAiTasks(failedAiTasks)
-                .averageBandScore(avgBand != null ? Math.round(avgBand * 10.0) / 10.0 : 6.6)
+                .averageBandScore(avgBand != null ? Math.round(avgBand * 10.0) / 10.0 : 0.0)
                 .weeklyActivity(weeklyActivity)
                 .skillAverages(skillAverages)
                 .attentionItems(attentionItems)
+                .recentAuditLogs(recentAuditLogs)
                 .build();
     }
 }

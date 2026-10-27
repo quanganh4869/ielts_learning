@@ -29,6 +29,14 @@ public class AuthProperties {
 
     private AuthConfig auth = new AuthConfig();
     private CorsConfig cors = new CorsConfig();
+    private SecurityProperties security = new SecurityProperties();
+
+    @Getter
+    @Setter
+    public static class SecurityProperties {
+        private boolean trustedProxiesEnabled = false;
+        private List<String> trustedProxyIps = new ArrayList<>();
+    }
 
     @Getter
     @Setter

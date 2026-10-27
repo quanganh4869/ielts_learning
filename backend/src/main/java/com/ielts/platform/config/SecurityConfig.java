@@ -127,7 +127,8 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info",
                                 "/auth/status",
-                                "/auth/logout"
+                                "/auth/logout",
+                                "/auth/login"
                         ).permitAll()
                         // Strict Admin-only endpoints
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")

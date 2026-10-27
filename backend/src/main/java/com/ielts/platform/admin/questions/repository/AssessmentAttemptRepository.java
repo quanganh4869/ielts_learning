@@ -15,6 +15,16 @@ public interface AssessmentAttemptRepository extends JpaRepository<AssessmentAtt
     long count();
     @Query("SELECT AVG(a.bandScore) FROM AssessmentAttemptEntity a WHERE a.bandScore IS NOT NULL")
     Double findAverageBandScore();
+
+    @Query("SELECT asm.skill, AVG(att.bandScore) " +
+           "FROM AssessmentAttemptEntity att, AssessmentEntity asm " +
+           "WHERE att.assessmentId = asm.id AND att.bandScore IS NOT NULL " +
+           "GROUP BY asm.skill")
+    List<Object[]> findAverageBandScoreBySkill();
+
+    @Query("SELECT att FROM AssessmentAttemptEntity att WHERE att.startedAt >= :since")
+    List<AssessmentAttemptEntity> findAttemptsSince(@org.springframework.data.repository.query.Param("since") java.time.Instant since);
+
     List<AssessmentAttemptEntity> findTop10ByOrderByStartedAtDesc();
     Page<AssessmentAttemptEntity> findByUserIdOrderByStartedAtDesc(String userId, Pageable pageable);
     Optional<AssessmentAttemptEntity> findByIdAndUserId(String id, String userId);

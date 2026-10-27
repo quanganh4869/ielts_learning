@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface UserSessionRepository extends JpaRepository<UserSessionEntity, String> {
     List<UserSessionEntity> findByUserId(String userId);
+    List<UserSessionEntity> findByUserIdAndIsActiveTrue(String userId);
     long countByIsActiveTrue();
     Page<UserSessionEntity> findAllByOrderByLastActiveDesc(Pageable pageable);
+    Page<UserSessionEntity> findByIsActiveOrderByLastActiveDesc(boolean isActive, Pageable pageable);
 }

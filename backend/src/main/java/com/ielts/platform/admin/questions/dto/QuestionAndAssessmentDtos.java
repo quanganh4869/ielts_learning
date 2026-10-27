@@ -71,4 +71,23 @@ public class QuestionAndAssessmentDtos {
         private String description;
         private Instant createdAt;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssessmentAttemptDto {
+        private String id;
+        private String assessmentId;
+        private String assessmentTitle;
+        private String userId;
+        private String userName;
+        private String userEmail;
+        private BigDecimal score;
+        private BigDecimal bandScore;
+        private int timeSpentSeconds;
+        private String status;
+        private Instant startedAt;
+        private Instant completedAt;
+    }
 }

@@ -117,7 +117,13 @@ class UserServiceTest {
     @Test
     @DisplayName("Should update user status to SUSPENDED")
     void testUpdateUserStatus() {
+        UserEntity secondAdmin = UserEntity.builder()
+                .id("usr_other")
+                .status(UserEntity.UserStatus.ACTIVE)
+                .roles(sampleUser.getRoles())
+                .build();
         when(userRepository.findById("usr_123")).thenReturn(Optional.of(sampleUser));
+        when(userRepository.findAll()).thenReturn(java.util.List.of(sampleUser, secondAdmin));
         when(userRepository.save(any(UserEntity.class))).thenAnswer(i -> i.getArgument(0));
 
         UserDtos.UpdateUserStatusRequest request = UserDtos.UpdateUserStatusRequest.builder()
@@ -129,5 +135,57 @@ class UserServiceTest {
 
         assertThat(response.getStatus()).isEqualTo(UserEntity.UserStatus.SUSPENDED);
         verify(auditLogService, times(1)).record(eq("admin_id"), eq("Admin User"), eq("UPDATE_USER_STATUS"), eq("USER"), eq("usr_123"), contains("SUSPENDED"), isNull());
+    }
+
+    @Test
+    @DisplayName("Should prevent self-lock: admin cannot suspend their own account")
+    void testSelfLockThrowsForbidden() {
+        when(userRepository.findById("usr_admin")).thenReturn(Optional.of(sampleUser));
+
+        UserDtos.UpdateUserStatusRequest request = UserDtos.UpdateUserStatusRequest.builder()
+                .status("SUSPENDED")
+                .reason("Accident")
+                .build();
+
+        // adminId matching target user id
+        assertThatThrownBy(() -> userService.updateUserStatus("usr_admin", request, "usr_admin", "Admin"))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("Should prevent self-demotion: admin cannot remove admin role from themselves")
+    void testSelfDemotionThrowsForbidden() {
+        when(userRepository.findById("usr_admin")).thenReturn(Optional.of(sampleUser));
+        when(roleRepository.findAllById(any())).thenReturn(java.util.List.of());
+
+        UserDtos.UpdateUserRequest request = UserDtos.UpdateUserRequest.builder()
+                .roleIds(java.util.List.of("r_student"))
+                .build();
+
+        assertThatThrownBy(() -> userService.updateUser("usr_admin", request, "usr_admin", "Admin"))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("Should prevent self-delete: admin cannot delete their own account")
+    void testSelfDeleteThrowsForbidden() {
+        when(userRepository.findById("usr_admin")).thenReturn(Optional.of(sampleUser));
+
+        assertThatThrownBy(() -> userService.deleteUser("usr_admin", "usr_admin", "Admin"))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("Should prevent deleting the last remaining active administrator")
+    void testLastAdminDeleteThrowsBusinessRuleViolation() {
+        when(userRepository.findById("usr_123")).thenReturn(Optional.of(sampleUser));
+        when(userRepository.findAll()).thenReturn(java.util.List.of(sampleUser));
+
+        assertThatThrownBy(() -> userService.deleteUser("usr_123", "super_admin_id", "Super Admin"))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BUSINESS_RULE_VIOLATION);
     }
 }

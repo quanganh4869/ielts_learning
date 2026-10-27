@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
 
     boolean existsByEmail(String email);
 
+    long countByStatus(UserEntity.UserStatus status);
+
     @Query("SELECT u FROM UserEntity u WHERE " +
            "(:query IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))) " +
            "AND (:status IS NULL OR u.status = :status)")

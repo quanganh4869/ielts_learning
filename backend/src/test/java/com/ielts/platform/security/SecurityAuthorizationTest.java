@@ -60,6 +60,9 @@ class SecurityAuthorizationTest {
     @MockBean
     private UserProvisioningService userProvisioningService;
 
+    @MockBean
+    private ClientIpResolver clientIpResolver;
+
     @Test
     @DisplayName("1. Unauthenticated request to Admin endpoint is blocked with 401 Unauthorized")
     void unauthenticatedRequestIsBlocked() throws Exception {

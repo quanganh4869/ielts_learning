@@ -73,6 +73,20 @@ public class ContentController {
     }
 
     // --- Lessons ---
+    @GetMapping("/lessons")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.CONTENT_MANAGE + "') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
+    @Operation(summary = "Get all lessons across all modules")
+    public ApiResponse<List<ContentDtos.LessonDto>> getAllLessons() {
+        return ApiResponse.ok(contentService.getAllLessons());
+    }
+
+    @GetMapping("/lessons/{id}")
+    @PreAuthorize("hasAuthority('" + PermissionConstants.CONTENT_MANAGE + "') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
+    @Operation(summary = "Get lesson details by ID")
+    public ApiResponse<ContentDtos.LessonDto> getLessonById(@PathVariable String id) {
+        return ApiResponse.ok(contentService.getLessonById(id));
+    }
+
     @GetMapping("/modules/{moduleId}/lessons")
     @PreAuthorize("hasAuthority('" + PermissionConstants.CONTENT_MANAGE + "') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
     @Operation(summary = "Get lessons within a module")

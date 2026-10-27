@@ -80,6 +80,20 @@ public class ContentService {
 
     // --- Lessons ---
     @Transactional(readOnly = true)
+    public List<ContentDtos.LessonDto> getAllLessons() {
+        return lessonRepository.findAllByOrderBySortOrderAsc().stream()
+                .map(this::mapLessonToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ContentDtos.LessonDto getLessonById(String id) {
+        LessonEntity lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Lesson not found: " + id));
+        return mapLessonToDto(lesson);
+    }
+
+    @Transactional(readOnly = true)
     public List<ContentDtos.LessonDto> getLessonsByModule(String moduleId) {
         return lessonRepository.findByModuleIdOrderBySortOrderAsc(moduleId).stream()
                 .map(this::mapLessonToDto)
