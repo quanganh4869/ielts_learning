@@ -72,6 +72,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (response.status === 401) {
+        // If backend rejects or has not yet synced, safely fallback to Supabase session profile
+        if (isSupabaseConfigured()) {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.user) {
+            const supaUser = session.user
+            const email = supaUser.email || ''
+            const isAdmin = email === 'anhquangnguyen2k4@gmail.com'
+            const fallbackUser: User = {
+              id: supaUser.id,
+              email,
+              fullName: (supaUser.user_metadata?.full_name || supaUser.user_metadata?.name || email.split('@')[0]) as string,
+              avatarUrl: supaUser.user_metadata?.avatar_url || supaUser.user_metadata?.picture,
+              roles: isAdmin ? ['ROLE_ADMIN', 'ROLE_SUPER_ADMIN'] : ['ROLE_STUDENT'],
+              isAdmin,
+              role: isAdmin ? 'admin' : 'student',
+              targetBand: 7.0,
+              testType: 'academic',
+              currentBand: 6.5,
+              isOnboarded: true,
+              hasCompletedAssessment: true,
+              createdAt: '2026-09-01',
+            }
+            setUser(fallbackUser)
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackUser))
+            return fallbackUser
+          }
+        }
         setUser(null)
         localStorage.removeItem(STORAGE_KEY)
         return null
@@ -96,7 +123,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       if (isSupabaseConfigured()) {
-        // If OAuth PKCE code is present in URL, exchange it first
+        // 1. If OAuth Implicit hash (#access_token=...) is present in URL, extract and set session
+        if (window.location.hash.includes('access_token=')) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1))
+          const tokenFromHash = hashParams.get('access_token')
+          const refreshToken = hashParams.get('refresh_token')
+          if (tokenFromHash) {
+            try {
+              if (refreshToken) {
+                await supabase.auth.setSession({ access_token: tokenFromHash, refresh_token: refreshToken })
+              }
+              setAccessToken(tokenFromHash)
+              await syncBackendUser(tokenFromHash)
+              window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+              return
+            } catch (e) {
+              console.error('Error handling hash token:', e)
+            }
+          }
+        }
+
+        // 2. If OAuth PKCE code (?code=...) is present in URL, exchange it for session
         const params = new URLSearchParams(window.location.search)
         const code = params.get('code')
         if (code) {

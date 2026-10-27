@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -63,7 +64,14 @@ public class SecurityConfig {
         String jwksUri = supabaseProperties.getEffectiveJwksUri();
         if (StringUtils.hasText(jwksUri)) {
             log.info("Configuring Supabase JWT Resource Server with JWKS URI: {}", jwksUri);
-            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwksUri)
+                    .jwsAlgorithms(algs -> {
+                        algs.add(SignatureAlgorithm.RS256);
+                        algs.add(SignatureAlgorithm.ES256);
+                        algs.add(SignatureAlgorithm.ES384);
+                        algs.add(SignatureAlgorithm.ES512);
+                    })
+                    .build();
             OAuth2TokenValidator<Jwt> defaultValidator = JwtValidators.createDefault();
             OAuth2TokenValidator<Jwt> audienceValidator = new SupabaseAudienceValidator(supabaseProperties.getAudience());
             decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(defaultValidator, audienceValidator));
