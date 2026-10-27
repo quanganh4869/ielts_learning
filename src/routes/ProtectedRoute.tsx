@@ -2,6 +2,7 @@ import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useExamSession } from '@/context/ExamSessionContext'
+import { FullscreenLoading } from '@/components/loading'
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAdmin?: boolean }> = ({
   children,
@@ -12,11 +13,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAdmin?
   const location = useLocation()
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
-        <div className="w-8 h-8 border-3 border-[#28665F] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <FullscreenLoading message="Đang kiểm tra quyền truy cập hệ thống..." />
   }
 
   // Not logged in

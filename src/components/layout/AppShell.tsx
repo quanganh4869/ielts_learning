@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   Compass,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { BrandLogo } from '@/components/brand'
 import { FloatingChatbot } from '@/components/common/FloatingChatbot'
+import { FullscreenLoading } from '@/components/loading'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { cn } from '@/utils/cn'
@@ -24,8 +25,31 @@ export const AppShell: React.FC = () => {
   const { user, logout } = useAuth()
   const { language, setLanguage, t, tText } = useLanguage()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isPageLoading, setIsPageLoading] = useState(false)
+  const lastPathRef = useRef(location.pathname)
+
+  useEffect(() => {
+    if (lastPathRef.current !== location.pathname) {
+      lastPathRef.current = location.pathname
+      setIsPageLoading(true)
+      const timer = setTimeout(() => setIsPageLoading(false), 260)
+      return () => clearTimeout(timer)
+    }
+  }, [location.pathname])
+
+  const getPageLoadingMessage = (pathname: string) => {
+    if (pathname.includes('/dashboard')) return tText('Đang tải dữ liệu tổng quan...', 'Loading dashboard...')
+    if (pathname.includes('/learning-path')) return tText('Đang tải lộ trình học cá nhân hóa...', 'Loading learning path...')
+    if (pathname.includes('/practice')) return tText('Đang chuẩn bị kho luyện tập IELTS...', 'Preparing practice sessions...')
+    if (pathname.includes('/mock-tests')) return tText('Đang khởi tạo danh sách đề thi thử...', 'Loading mock tests...')
+    if (pathname.includes('/ai-tutor')) return tText('Đang kết nối trợ lý AI Nori...', 'Connecting to AI Tutor...')
+    if (pathname.includes('/statistics')) return tText('Đang tổng hợp phân tích học tập...', 'Loading learning analytics...')
+    if (pathname.includes('/profile') || pathname.includes('/settings')) return tText('Đang tải hồ sơ tài khoản...', 'Loading account settings...')
+    return tText('Đang tải dữ liệu học tập...', 'Loading learning content...')
+  }
 
   const navItems = [
     { name: t('nav.dashboard'), path: '/app/dashboard', icon: LayoutDashboard, sticker: '/stickers/nav-dashboard.webp' },
@@ -303,6 +327,9 @@ export const AppShell: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* GLOBAL ROUTE TRANSITION CUSTOM LOADING */}
+      {isPageLoading && <FullscreenLoading message={getPageLoadingMessage(location.pathname)} />}
 
       {/* FLOATING AI CHATBOT WIDGET */}
       <FloatingChatbot />

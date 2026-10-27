@@ -18,6 +18,7 @@ import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PageHeader } from '../../components/PageHeader'
 import { PageSkeleton } from '../../components/PageSkeleton'
+import { FullscreenLoading } from '@/components/loading'
 import { StatusBadge } from '../../components/StatusBadge'
 import { adminService } from '../../services/adminService'
 import { AdminAuditLog } from '../../types/admin'
@@ -63,7 +64,7 @@ export const AdminDashboardPage: React.FC = () => {
   }, [])
 
   if (isLoading || !summary) {
-    return <PageSkeleton type="dashboard" />
+    return <FullscreenLoading message="Đang tải dữ liệu tổng quan quản trị..." />
   }
 
   return (
