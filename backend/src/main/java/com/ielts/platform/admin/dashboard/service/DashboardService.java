@@ -2,7 +2,7 @@ package com.ielts.platform.admin.dashboard.service;
 
 import com.ielts.platform.admin.dashboard.dto.DashboardSummaryDto;
 import com.ielts.platform.admin.dashboard.repository.AiTaskRepository;
-import com.ielts.platform.admin.questions.repository.QuestionAndAssessmentRepositories;
+import com.ielts.platform.admin.questions.repository.AssessmentAttemptRepository;
 import com.ielts.platform.admin.users.repository.UserRepository;
 import com.ielts.platform.admin.users.repository.UserSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class DashboardService {
 
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
-    private final QuestionAndAssessmentRepositories.AssessmentAttemptRepository attemptRepository;
+    private final AssessmentAttemptRepository attemptRepository;
     private final AiTaskRepository aiTaskRepository;
 
     @Transactional(readOnly = true)

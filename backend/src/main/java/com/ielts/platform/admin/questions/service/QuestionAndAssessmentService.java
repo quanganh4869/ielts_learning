@@ -5,7 +5,9 @@ import com.ielts.platform.admin.questions.dto.QuestionAndAssessmentDtos;
 import com.ielts.platform.admin.questions.model.AssessmentEntity;
 import com.ielts.platform.admin.questions.model.LearningPlanEntity;
 import com.ielts.platform.admin.questions.model.QuestionEntity;
-import com.ielts.platform.admin.questions.repository.QuestionAndAssessmentRepositories;
+import com.ielts.platform.admin.questions.repository.AssessmentRepository;
+import com.ielts.platform.admin.questions.repository.LearningPlanRepository;
+import com.ielts.platform.admin.questions.repository.QuestionRepository;
 import com.ielts.platform.common.BusinessException;
 import com.ielts.platform.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionAndAssessmentService {
 
-    private final QuestionAndAssessmentRepositories.QuestionRepository questionRepository;
-    private final QuestionAndAssessmentRepositories.AssessmentRepository assessmentRepository;
-    private final QuestionAndAssessmentRepositories.LearningPlanRepository learningPlanRepository;
+    private final QuestionRepository questionRepository;
+    private final AssessmentRepository assessmentRepository;
+    private final LearningPlanRepository learningPlanRepository;
     private final AuditLogService auditLogService;
 
     // --- Questions ---

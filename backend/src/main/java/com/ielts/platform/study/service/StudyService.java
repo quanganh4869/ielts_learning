@@ -2,8 +2,8 @@ package com.ielts.platform.study.service;
 
 import com.ielts.platform.admin.questions.model.AssessmentAttemptEntity;
 import com.ielts.platform.admin.questions.model.AssessmentEntity;
-import com.ielts.platform.admin.questions.repository.QuestionAndAssessmentRepositories.AssessmentAttemptRepository;
-import com.ielts.platform.admin.questions.repository.QuestionAndAssessmentRepositories.AssessmentRepository;
+import com.ielts.platform.admin.questions.repository.AssessmentAttemptRepository;
+import com.ielts.platform.admin.questions.repository.AssessmentRepository;
 import com.ielts.platform.admin.users.model.UserEntity;
 import com.ielts.platform.admin.users.repository.UserRepository;
 import com.ielts.platform.common.BusinessException;

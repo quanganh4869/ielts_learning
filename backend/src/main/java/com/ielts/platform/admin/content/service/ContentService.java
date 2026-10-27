@@ -6,7 +6,10 @@ import com.ielts.platform.admin.content.model.GrammarRuleEntity;
 import com.ielts.platform.admin.content.model.LessonEntity;
 import com.ielts.platform.admin.content.model.MediaAssetEntity;
 import com.ielts.platform.admin.content.model.ModuleEntity;
-import com.ielts.platform.admin.content.repository.ContentRepositories;
+import com.ielts.platform.admin.content.repository.GrammarRuleRepository;
+import com.ielts.platform.admin.content.repository.LessonRepository;
+import com.ielts.platform.admin.content.repository.MediaAssetRepository;
+import com.ielts.platform.admin.content.repository.ModuleRepository;
 import com.ielts.platform.common.BusinessException;
 import com.ielts.platform.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +26,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContentService {
 
-    private final ContentRepositories.ModuleRepository moduleRepository;
-    private final ContentRepositories.LessonRepository lessonRepository;
-    private final ContentRepositories.GrammarRuleRepository grammarRuleRepository;
-    private final ContentRepositories.MediaAssetRepository mediaAssetRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
+    private final GrammarRuleRepository grammarRuleRepository;
+    private final MediaAssetRepository mediaAssetRepository;
     private final AuditLogService auditLogService;
 
     // --- Modules ---
