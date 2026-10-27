@@ -170,8 +170,19 @@ export const AppShell: React.FC = () => {
             </div>
           </div>
 
-          {/* Topbar Right: Language Switcher & User Account */}
-          <div className="flex items-center gap-4 sm:gap-5">
+          {/* Topbar Right: Language Switcher, Admin Button & User Account */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Quick Admin Portal Button for Admins */}
+            {(user?.isAdmin || user?.role === 'admin' || user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_SUPER_ADMIN')) && (
+              <NavLink
+                to="/admin/dashboard"
+                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#EAF4EE] hover:bg-[#D5EAE6] border border-[#28665F]/30 text-xs font-extrabold text-[#28665F] transition-all shadow-2xs"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#28665F]" />
+                <span>Admin Console</span>
+              </NavLink>
+            )}
+
             {/* Language Switcher (VN / ENG) */}
             <div
               className="inline-flex items-center p-1 bg-[#F7F8FA] border border-[#E3E7EB] rounded-xl text-xs sm:text-sm font-bold shadow-2xs"

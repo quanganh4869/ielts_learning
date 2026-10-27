@@ -55,13 +55,14 @@ public class AuthProperties {
             return false;
         }
         String normalizedInput = verifiedEmail.trim().toLowerCase(Locale.ROOT);
-        String normalizedAdmin = adminEmail.trim().toLowerCase(Locale.ROOT);
-
-        if (normalizedAdmin.isEmpty()) {
-            return false;
+        String[] admins = adminEmail.split(",");
+        for (String admin : admins) {
+            String trimmed = admin.trim().toLowerCase(Locale.ROOT);
+            if (!trimmed.isEmpty() && normalizedInput.equals(trimmed)) {
+                return true;
+            }
         }
-
-        return normalizedInput.equals(normalizedAdmin);
+        return false;
     }
 
     /**

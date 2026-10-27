@@ -77,8 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: { session } } = await supabase.auth.getSession()
           if (session?.user) {
             const supaUser = session.user
-            const email = supaUser.email || ''
-            const isAdmin = email === 'anhquangnguyen2k4@gmail.com'
+            const email = (supaUser.email || '').toLowerCase().trim()
+            const ADMIN_EMAILS = ['anhquangnguyen2k4@gmail.com', 'quanganhqb04@gmail.com']
+            const isAdmin = ADMIN_EMAILS.includes(email)
             const fallbackUser: User = {
               id: supaUser.id,
               email,

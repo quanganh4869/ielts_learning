@@ -16,7 +16,13 @@ export const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
-      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/app/dashboard'
+      const isAdmin =
+        Boolean(user.isAdmin) ||
+        user.role === 'admin' ||
+        Boolean(user.roles?.includes('ROLE_ADMIN')) ||
+        Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
+      const defaultPath = isAdmin ? '/admin/dashboard' : '/app/dashboard'
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || defaultPath
       navigate(from, { replace: true })
     }
   }, [isLoading, isAuthenticated, user, navigate, location])
