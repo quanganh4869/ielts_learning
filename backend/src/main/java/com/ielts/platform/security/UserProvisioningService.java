@@ -259,13 +259,20 @@ public class UserProvisioningService {
             user.setRoles(new HashSet<>());
         }
 
-        if (shouldBeAdmin) {
+        boolean hasExistingAdminRole = user.getRoles().stream().anyMatch(r ->
+                ROLE_ADMIN_NAME.equalsIgnoreCase(r.getName()) ||
+                "Super Admin".equalsIgnoreCase(r.getName()) ||
+                (r.getId() != null && (r.getId().equalsIgnoreCase("role_admin") || r.getId().equalsIgnoreCase("role_superadmin")))
+        );
+
+        if (shouldBeAdmin || hasExistingAdminRole) {
             user.getRoles().add(adminRole);
-            log.info("Admin privileges granted based on trusted configuration: user={}", user.getId());
+            log.info("Admin privileges granted/retained based on policy and database role: user={}", user.getId());
         } else {
-            // Remove admin role if previously present but email is no longer configured as admin
-            user.getRoles().removeIf(r -> ROLE_ADMIN_NAME.equalsIgnoreCase(r.getName()) || "Super Admin".equalsIgnoreCase(r.getName()));
-            user.getRoles().add(studentRole);
+            // Assign default student role if user does not have any assigned roles
+            if (user.getRoles().isEmpty()) {
+                user.getRoles().add(studentRole);
+            }
         }
     }
 
@@ -285,14 +292,20 @@ public class UserProvisioningService {
 
     private UserPrincipal buildPrincipal(
             UserEntity user,
-            boolean isAdmin,
+            boolean configuredAdmin,
             OidcIdToken idToken,
             OidcUserInfo userInfo,
             Map<String, Object> attributes
     ) {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        if (isAdmin) {
+        boolean hasAdminRole = configuredAdmin || (user.getRoles() != null && user.getRoles().stream().anyMatch(r ->
+                ROLE_ADMIN_NAME.equalsIgnoreCase(r.getName()) ||
+                "Super Admin".equalsIgnoreCase(r.getName()) ||
+                (r.getId() != null && (r.getId().equalsIgnoreCase("role_admin") || r.getId().equalsIgnoreCase("role_superadmin")))
+        ));
+
+        if (hasAdminRole) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
         } else {

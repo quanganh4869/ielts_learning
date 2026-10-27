@@ -48,14 +48,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const body = await res.json()
         if (body.success && body.data) {
           const profile = body.data
+          const isUserAdmin = Boolean(
+            profile.isAdmin ??
+            profile.admin ??
+            profile.roles?.some((r: string) => r.toUpperCase().includes('ADMIN'))
+          )
           const mappedUser: User = {
             id: profile.id,
             email: profile.email,
             fullName: profile.name || profile.email.split('@')[0],
             avatarUrl: profile.avatarUrl,
             roles: profile.roles || [],
-            isAdmin: Boolean(profile.admin),
-            role: profile.admin ? 'admin' : 'student',
+            isAdmin: isUserAdmin,
+            role: isUserAdmin ? 'admin' : 'student',
             targetBand: 7.0,
             testType: 'academic',
             currentBand: 6.5,
@@ -89,14 +94,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const body = await response.json()
         if (body.success && body.data) {
           const profile = body.data
+          const isUserAdmin = Boolean(
+            profile.isAdmin ??
+            profile.admin ??
+            profile.roles?.some((r: string) => r.toUpperCase().includes('ADMIN'))
+          )
           const mappedUser: User = {
             id: profile.id,
             email: profile.email,
             fullName: profile.name || profile.email.split('@')[0],
             avatarUrl: profile.avatarUrl,
             roles: profile.roles || [],
-            isAdmin: Boolean(profile.admin),
-            role: profile.admin ? 'admin' : 'student',
+            isAdmin: isUserAdmin,
+            role: isUserAdmin ? 'admin' : 'student',
             targetBand: 7.0,
             testType: 'academic',
             currentBand: 6.5,
@@ -124,14 +134,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const refreshBody = await refreshResponse.json()
           if (refreshBody.success && refreshBody.data) {
             const profile = refreshBody.data
+            const isUserAdmin = Boolean(
+              profile.isAdmin ??
+              profile.admin ??
+              profile.roles?.some((r: string) => r.toUpperCase().includes('ADMIN'))
+            )
             const mappedUser: User = {
               id: profile.id,
               email: profile.email,
               fullName: profile.name || profile.email.split('@')[0],
               avatarUrl: profile.avatarUrl,
               roles: profile.roles || [],
-              isAdmin: Boolean(profile.admin),
-              role: profile.admin ? 'admin' : 'student',
+              isAdmin: isUserAdmin,
+              role: isUserAdmin ? 'admin' : 'student',
               targetBand: 7.0,
               testType: 'academic',
               currentBand: 6.5,
@@ -229,7 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app/dashboard`,
+          redirectTo: `${window.location.origin}/login`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

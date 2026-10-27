@@ -133,6 +133,22 @@ class InputValidationTest {
     }
 
     @Test
+    @DisplayName("AuthProfileResponse: Jackson serialization includes admin and isAdmin")
+    void testAuthProfileResponseSerialization() throws Exception {
+        com.ielts.platform.admin.users.dto.AuthProfileResponse profile =
+                com.ielts.platform.admin.users.dto.AuthProfileResponse.builder()
+                        .id("u_1")
+                        .email("admin@ieltsplatform.com")
+                        .isAdmin(true)
+                        .roles(java.util.List.of("ROLE_ADMIN"))
+                        .build();
+
+        String json = new ObjectMapper().writeValueAsString(profile);
+        assertThat(json).contains("\"admin\":true");
+        assertThat(json).contains("\"isAdmin\":true");
+    }
+
+    @Test
     @DisplayName("Mass Assignment Defense: UpdateProfileRequest has no role or isAdmin properties")
     void testMassAssignmentDefense() {
         // Verify via reflection that UpdateProfileRequest does NOT expose role, roles, or isAdmin

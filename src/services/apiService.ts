@@ -84,9 +84,16 @@ export const apiService = {
         email: string
         name: string
         avatarUrl?: string
-        isAdmin: boolean
+        isAdmin?: boolean
+        admin?: boolean
         roles: string[]
       }>('/auth/me')
+
+      const isUserAdmin = Boolean(
+        profile.isAdmin ||
+        profile.admin ||
+        profile.roles?.some((r: string) => r.toUpperCase().includes('ADMIN'))
+      )
 
       return {
         id: profile.id,
@@ -94,8 +101,8 @@ export const apiService = {
         fullName: profile.name || email.split('@')[0],
         avatarUrl: profile.avatarUrl,
         roles: profile.roles || [],
-        isAdmin: profile.isAdmin,
-        role: profile.isAdmin ? 'admin' : 'student',
+        isAdmin: isUserAdmin,
+        role: isUserAdmin ? 'admin' : 'student',
         targetBand: 7.0,
         testType: 'academic',
         currentBand: 6.5,

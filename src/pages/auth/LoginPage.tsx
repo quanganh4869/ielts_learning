@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react'
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
-import { AlertCircle } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom'
+import { AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { Input } from '@/components/common/Input'
+import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
 import { BrandLogo } from '@/components/brand'
 import { useAuth } from '@/context/AuthContext'
@@ -8,11 +10,17 @@ import { useLanguage } from '@/context/LanguageContext'
 
 export const LoginPage: React.FC = () => {
   const { tText } = useLanguage()
-  const { user, isAuthenticated, loginWithGoogle, isLoading } = useAuth()
+  const { user, isAuthenticated, loginWithGoogle, login, isLoading } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
   const errorCode = searchParams.get('error')
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
@@ -53,7 +61,27 @@ export const LoginPage: React.FC = () => {
     }
   }
 
-  const errorMessage = getErrorMessage(errorCode)
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError(null)
+
+    if (!email.trim() || !password) {
+      setFormError(tText('Vui lòng điền đầy đủ email và mật khẩu.', 'Please provide both email and password.'))
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await login(email.trim(), password)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setFormError(msg || tText('Email hoặc mật khẩu không chính xác. Vui lòng thử lại.', 'Invalid email or password. Please try again.'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const errorMessage = formError || getErrorMessage(errorCode)
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#F7F8FA]">
@@ -79,10 +107,9 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={loginWithGoogle}
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
               className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm shadow-xs hover:shadow-sm transition-all focus:outline-hidden focus:ring-2 focus:ring-[#28665F]/30 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {/* Google G logo SVG */}
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -103,6 +130,65 @@ export const LoginPage: React.FC = () => {
               </svg>
               <span>{tText('Tiếp tục với tài khoản Google', 'Continue with Google')}</span>
             </button>
+
+            <div className="relative flex items-center justify-center my-4">
+              <div className="border-t border-[#E3E7EB] w-full" />
+              <span className="bg-white px-3 text-xs text-[#68727D] uppercase font-medium tracking-wider whitespace-nowrap">
+                {tText('Hoặc đăng nhập mật khẩu', 'Or with password')}
+              </span>
+              <div className="border-t border-[#E3E7EB] w-full" />
+            </div>
+
+            <form onSubmit={handleEmailLogin} className="space-y-3.5">
+              <Input
+                label={tText('Email', 'Email Address')}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@ieltsplatform.com"
+                required
+              />
+
+              <div>
+                <Input
+                  label={tText('Mật khẩu', 'Password')}
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-[#68727D] hover:text-[#20272E] p-1 cursor-pointer"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  }
+                />
+                <div className="flex justify-end mt-1.5">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-semibold text-[#28665F] hover:underline"
+                  >
+                    {tText('Quên mật khẩu?', 'Forgot password?')}
+                  </Link>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full mt-2"
+                isLoading={isSubmitting}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                {tText('Đăng nhập', 'Log In')}
+              </Button>
+            </form>
           </div>
         </Card>
       </div>
