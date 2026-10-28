@@ -171,14 +171,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-white border-r border-[#E3E7EB] flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-[#1F4E48] border-r border-[#183E39] text-white flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-[#E3E7EB] bg-white">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 bg-[#1F4E48]">
           <Link to="/admin/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-[#28665F]/20 bg-[#EAF3F1] flex items-center justify-center shrink-0 shadow-2xs group-hover:border-[#28665F]/40 transition-colors">
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center shrink-0 shadow-2xs group-hover:border-white/40 transition-colors">
               <img
                 src={ADMIN_BRAND_ASSETS.nori.mascotSm}
                 alt="IELTS Admin"
@@ -186,11 +186,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
               />
             </div>
             <div>
-              <div className="font-extrabold text-sm text-[#20272E] tracking-tight leading-tight flex items-center gap-1">
+              <div className="font-extrabold text-sm text-white tracking-tight leading-tight flex items-center gap-1">
                 <span>IELTS</span>
-                <span className="text-[#28665F]">Console</span>
+                <span className="text-[#80DFD5]">Console</span>
               </div>
-              <div className="text-[10px] text-[#68727D] font-bold tracking-wider uppercase leading-none mt-0.5">
+              <div className="text-[10px] text-teal-200/70 font-bold tracking-wider uppercase leading-none mt-0.5">
                 Quản trị Giáo dục
               </div>
             </div>
@@ -200,7 +200,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
             type="button"
             onClick={onClose}
             aria-label="Đóng menu"
-            className="lg:hidden p-1.5 text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA] rounded-md transition-colors"
+            className="lg:hidden p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -222,23 +222,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                     onClick={() => toggleGroup(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-semibold transition-all ${
                       isGroupActive
-                        ? 'text-[#28665F] bg-[#EAF3F1]/70 font-bold'
-                        : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                        ? 'text-white bg-white/15 font-bold'
+                        : 'text-teal-100/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
-                      <Icon className={`w-4 h-4 shrink-0 ${isGroupActive ? 'text-[#28665F]' : 'text-slate-400'}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isGroupActive ? 'text-white' : 'text-teal-200/70'}`} />
                       <span className="truncate">{item.name}</span>
                     </div>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 text-slate-400 shrink-0 ${
-                        isExpanded ? 'rotate-180' : ''
-                      }`}
+                      className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${
+                        isGroupActive ? 'text-white' : 'text-teal-200/60'
+                      } ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </button>
 
                   {isExpanded && (
-                    <div className="pl-7 pr-1 py-1 space-y-1 border-l-2 border-[#E3E7EB] ml-4 mt-0.5">
+                    <div className="pl-7 pr-1 py-1 space-y-1 border-l border-white/15 ml-4 mt-0.5">
                       {item.subItems!.map((sub) => {
                         const isActive =
                           location.pathname === sub.href || location.pathname.startsWith(sub.href + '/')
@@ -252,8 +252,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                             }}
                             className={`block px-2.5 py-1.5 rounded-md text-xs transition-colors ${
                               isActive
-                                ? 'bg-[#28665F] text-white font-bold shadow-2xs'
-                                : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                                ? 'bg-white text-[#28665F] font-bold shadow-xs'
+                                : 'text-teal-100/75 hover:text-white hover:bg-white/10'
                             }`}
                           >
                             <span className="truncate">{sub.name}</span>
@@ -275,11 +275,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                 }}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold text-xs transition-all ${
                   isGroupActive
-                    ? 'bg-[#28665F] text-white font-bold shadow-2xs'
-                    : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                    ? 'bg-white text-[#28665F] font-bold shadow-xs'
+                    : 'text-teal-100/80 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${isGroupActive ? 'text-white' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 shrink-0 ${isGroupActive ? 'text-[#28665F]' : 'text-teal-200/70'}`} />
                 <span className="truncate">{item.name}</span>
               </NavLink>
             )

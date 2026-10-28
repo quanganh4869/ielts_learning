@@ -78,26 +78,26 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
   }
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white border-b border-[#E3E7EB] flex items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-30 h-16 bg-[#28665F] border-b border-[#20534D] flex items-center justify-between px-4 sm:px-6 text-white shadow-xs">
       {/* Left: Mobile Toggle & Breadcrumbs */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onToggleSidebar}
           aria-label="Mở menu quản trị"
-          className="lg:hidden p-2 text-[#68727D] hover:text-[#20272E] rounded-lg hover:bg-[#F7F8FA] transition-colors"
+          className="lg:hidden p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-[#68727D]">
+        <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-teal-100/80">
           {breadcrumbItems.map((item, idx) => (
             <React.Fragment key={item.url}>
-              {idx > 0 && <span className="text-slate-300">/</span>}
+              {idx > 0 && <span className="text-white/30">/</span>}
               {item.isLast ? (
-                <span className="font-bold text-[#20272E]">{item.label}</span>
+                <span className="font-bold text-white">{item.label}</span>
               ) : (
-                <Link to={item.url} className="hover:text-[#28665F] transition-colors">
+                <Link to={item.url} className="hover:text-white transition-colors">
                   {item.label}
                 </Link>
               )}
@@ -112,11 +112,11 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
         <div className="relative">
           <button
             type="button"
-            className="p-2 text-[#68727D] hover:text-[#20272E] rounded-lg hover:bg-[#F7F8FA] transition-colors"
+            className="p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
             title="Không có cảnh báo nguy cấp"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400" />
           </button>
         </div>
 
@@ -125,10 +125,10 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-1.5 pl-2 sm:pl-3 border-l border-[#E3E7EB] text-xs font-bold text-[#20272E] hover:text-[#28665F] transition-colors focus:outline-hidden"
+            className="flex items-center gap-1.5 pl-2 sm:pl-3 border-l border-white/20 text-xs font-bold text-white hover:text-teal-200 transition-colors focus:outline-hidden"
           >
             <span>Admin</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-[#68727D] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-teal-200 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {dropdownOpen && (

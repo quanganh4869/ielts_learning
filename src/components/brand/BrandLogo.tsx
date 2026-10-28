@@ -11,6 +11,7 @@ export interface BrandLogoProps {
   className?: string
   showTagline?: boolean
   tagline?: string
+  inverted?: boolean
 }
 
 const sizeConfig: Record<BrandLogoVariant, Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', { height: string; imgH: string }>> = {
@@ -58,6 +59,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className,
   showTagline = false,
   tagline = 'Học IELTS chuẩn Cambridge',
+  inverted = false,
 }) => {
   const currentSize = sizeConfig[variant][size]
 
@@ -85,7 +87,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             loading="eager"
           />
           {showTagline && (
-            <span className="text-[11px] font-semibold tracking-wide text-[#68727D] uppercase">
+            <span className={cn('text-[11px] font-semibold tracking-wide uppercase', inverted ? 'text-teal-100/70' : 'text-[#68727D]')}>
               {tagline}
             </span>
           )}
@@ -121,7 +123,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <div className="flex items-center gap-1.5">
             <span
               className={cn(
-                'font-black tracking-tight text-[#20272E]',
+                'font-black tracking-tight',
+                inverted ? 'text-white' : 'text-[#20272E]',
                 size === 'lg' || size === 'xl'
                   ? 'text-lg sm:text-xl'
                   : size === 'md'
@@ -129,13 +132,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
                   : 'text-sm sm:text-base'
               )}
             >
-              IELTS<span className="text-[#28665F] ml-1">Platform</span>
+              IELTS<span className={cn('ml-1', inverted ? 'text-[#80DFD5]' : 'text-[#28665F]')}>Platform</span>
             </span>
           </div>
           {showTagline && tagline && (
             <span
               className={cn(
-                'font-bold text-[#68727D] tracking-wider uppercase mt-0.5',
+                'font-bold tracking-wider uppercase mt-0.5',
+                inverted ? 'text-teal-100/70' : 'text-[#68727D]',
                 size === 'lg' || size === 'xl' || size === 'md' ? 'text-[11px]' : 'text-[10px]'
               )}
             >

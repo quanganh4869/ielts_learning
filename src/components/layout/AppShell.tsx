@@ -68,13 +68,14 @@ export const AppShell: React.FC = () => {
   return (
     <div className="min-h-screen flex bg-[#F7F8FA] text-[#20272E]">
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-30 bg-white border-r border-[#E3E7EB]">
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-30 bg-[#1F4E48] border-r border-[#183E39] text-white">
         {/* Brand Header */}
-        <div className="h-20 px-6 border-b border-[#E3E7EB] flex items-center justify-between shrink-0">
+        <div className="h-20 px-6 border-b border-white/10 flex items-center justify-between shrink-0">
           <BrandLogo
             variant="horizontal"
             size="md"
             to="/app/dashboard"
+            inverted
           />
         </div>
 
@@ -90,8 +91,8 @@ export const AppShell: React.FC = () => {
                   cn(
                     'flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold tracking-wide transition-all',
                     isActive
-                      ? 'bg-[#EAF4EE] text-[#28665F] shadow-2xs'
-                      : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                      ? 'bg-white text-[#28665F] shadow-sm'
+                      : 'text-teal-100/80 hover:text-white hover:bg-white/10'
                   )
                 }
               >
@@ -114,15 +115,15 @@ export const AppShell: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="relative w-64 bg-white h-full flex flex-col z-10 border-r border-[#E3E7EB]">
-            <div className="h-20 px-6 border-b border-[#E3E7EB] flex items-center justify-between">
-              <BrandLogo variant="horizontal" size="md" to="/app/dashboard" />
+          <div className="relative w-64 bg-[#1F4E48] text-white h-full flex flex-col z-10 border-r border-[#183E39]">
+            <div className="h-20 px-6 border-b border-white/10 flex items-center justify-between">
+              <BrandLogo variant="horizontal" size="md" to="/app/dashboard" inverted />
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 text-[#68727D] hover:text-[#20272E] rounded-xl"
+                className="p-2 text-white/80 hover:text-white rounded-xl hover:bg-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -140,8 +141,8 @@ export const AppShell: React.FC = () => {
                       cn(
                         'flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-bold transition-all',
                         isActive
-                          ? 'bg-[#EAF4EE] text-[#28665F]'
-                          : 'text-[#68727D] hover:text-[#20272E] hover:bg-[#F7F8FA]'
+                          ? 'bg-white text-[#28665F] shadow-sm'
+                          : 'text-teal-100/80 hover:text-white hover:bg-white/10'
                       )
                     }
                   >
@@ -165,11 +166,11 @@ export const AppShell: React.FC = () => {
       {/* MAIN CONTAINER */}
       <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
         {/* TOPBAR */}
-        <header className="sticky top-0 z-20 h-20 bg-white border-b border-[#E3E7EB] px-6 sm:px-10 flex items-center justify-between">
+        <header className="sticky top-0 z-20 h-20 bg-[#28665F] border-b border-[#20534D] px-6 sm:px-10 flex items-center justify-between text-white shadow-xs">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2.5 text-[#68727D] hover:text-[#20272E] rounded-xl hover:bg-[#F7F8FA]"
+              className="lg:hidden p-2.5 text-white/80 hover:text-white rounded-xl hover:bg-white/10"
               aria-label="Mở menu"
             >
               <Menu className="w-6 h-6" />
@@ -177,20 +178,20 @@ export const AppShell: React.FC = () => {
           </div>
 
           {/* Topbar Center: Learner Goal Badge */}
-          <div className="hidden sm:flex items-center gap-4 px-4 py-2 rounded-2xl bg-[#F7F8FA] border border-[#E3E7EB] text-xs shadow-2xs">
+          <div className="hidden sm:flex items-center gap-4 px-4 py-2 rounded-2xl bg-white/10 border border-white/20 text-xs shadow-2xs text-white">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center shrink-0">
                 <img src="/brand/nori-mascot-sm.png" alt="Nori" className="w-5 h-5 object-contain" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-[#68727D] font-bold uppercase tracking-wider">{t('nav.target_band')}:</span>
-                <span className="font-extrabold text-[#28665F] text-sm">Band {user?.targetBand?.toFixed(1) || '7.0'}</span>
+                <span className="text-[10px] text-teal-200/90 font-bold uppercase tracking-wider">{t('nav.target_band')}:</span>
+                <span className="font-extrabold text-white text-sm">Band {user?.targetBand?.toFixed(1) || '7.0'}</span>
               </div>
             </div>
-            <div className="h-4 w-px bg-[#E3E7EB]" />
+            <div className="h-4 w-px bg-white/20" />
             <div className="flex items-baseline gap-1.5 text-[11px]">
-              <span className="text-[#68727D]">{t('nav.estimated_band')}:</span>
-              <span className="font-bold text-[#20272E]">{user?.currentBand ? `Band ${user.currentBand.toFixed(1)}` : t('nav.evaluating')}</span>
+              <span className="text-teal-200/80">{t('nav.estimated_band')}:</span>
+              <span className="font-bold text-white">{user?.currentBand ? `Band ${user.currentBand.toFixed(1)}` : t('nav.evaluating')}</span>
             </div>
           </div>
 
@@ -200,16 +201,16 @@ export const AppShell: React.FC = () => {
             {(user?.isAdmin || user?.role === 'admin' || user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_SUPER_ADMIN')) && (
               <NavLink
                 to="/admin/dashboard"
-                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#EAF4EE] hover:bg-[#D5EAE6] border border-[#28665F]/30 text-xs font-extrabold text-[#28665F] transition-all shadow-2xs"
+                className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-xs font-extrabold text-white transition-all shadow-2xs"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#28665F]" />
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-200" />
                 <span>Admin Console</span>
               </NavLink>
             )}
 
             {/* Language Switcher (VN / ENG) */}
             <div
-              className="inline-flex items-center p-1 bg-[#F7F8FA] border border-[#E3E7EB] rounded-xl text-xs sm:text-sm font-bold shadow-2xs"
+              className="inline-flex items-center p-1 bg-white/10 border border-white/20 rounded-xl text-xs sm:text-sm font-bold shadow-2xs"
               role="group"
               aria-label="Chuyển đổi ngôn ngữ"
             >
@@ -220,7 +221,7 @@ export const AppShell: React.FC = () => {
                   'px-3.5 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold',
                   language === 'vi'
                     ? 'bg-white text-[#28665F] shadow-2xs font-black'
-                    : 'text-[#68727D] hover:text-[#20272E]'
+                    : 'text-teal-100 hover:text-white'
                 )}
                 title="Tiếng Việt"
               >
@@ -233,7 +234,7 @@ export const AppShell: React.FC = () => {
                   'px-3.5 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold',
                   language === 'en'
                     ? 'bg-white text-[#28665F] shadow-2xs font-black'
-                    : 'text-[#68727D] hover:text-[#20272E]'
+                    : 'text-teal-100 hover:text-white'
                 )}
                 title="English"
               >
@@ -245,9 +246,9 @@ export const AppShell: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-[#F7F8FA] transition-colors focus:outline-none"
+                className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none"
               >
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-[#28665F]/30 bg-[#EAF3F1] flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-white/40 bg-white/20 flex items-center justify-center shrink-0 shadow-2xs">
                   <img
                     src="/favicon.png"
                     alt="Nori avatar"
@@ -255,7 +256,7 @@ export const AppShell: React.FC = () => {
                   />
                 </div>
                 <div className="hidden sm:block text-left">
-                  <span className="text-sm sm:text-base font-extrabold text-[#20272E] leading-tight">
+                  <span className="text-sm sm:text-base font-extrabold text-white leading-tight">
                     {user?.fullName || t('nav.student')}
                   </span>
                 </div>
