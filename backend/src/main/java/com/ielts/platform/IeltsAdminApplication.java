@@ -18,8 +18,8 @@ public class IeltsAdminApplication {
 
     private static void loadDotenv() {
         Path[] candidatePaths = new Path[]{
-                Path.of(".env"),
                 Path.of("backend/.env"),
+                Path.of(".env"),
                 Path.of("../backend/.env"),
                 Path.of("../.env")
         };
@@ -47,7 +47,6 @@ public class IeltsAdminApplication {
                         }
                     }
                 } catch (IOException ignored) {}
-                break;
             }
         }
     }

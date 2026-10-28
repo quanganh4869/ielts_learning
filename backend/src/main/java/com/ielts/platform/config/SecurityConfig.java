@@ -140,6 +140,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/actuator/**",
                                 "/auth/session",
+                                "/auth/refresh",
                                 "/auth/login"
                         )
                 )

@@ -72,6 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setAccessToken(token) // Kept in memory only for legacy props
           return mappedUser
         }
+      } else {
+        const errText = await res.text()
+        console.error('Failed to establish backend session. HTTP status:', res.status, errText)
       }
     } catch (e) {
       console.error('Failed to establish backend session:', e)
@@ -206,9 +209,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Error exchanging code for session:', e)
           }
         }
+
+        // 3. Check existing active Supabase session
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.access_token) {
+            await establishBackendSession(session.access_token, session.refresh_token)
+            return
+          }
+        } catch (e) {
+          console.warn('Error reading active session from Supabase:', e)
+        }
       }
 
-      // 3. Normal session restore via HttpOnly cookie check
+      // 4. Normal session restore via HttpOnly cookie check
       await syncBackendUser()
     } finally {
       setIsLoading(false)
@@ -221,15 +235,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isSupabaseConfigured()) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
             if (session?.access_token) {
-              await establishBackendSession(session.access_token, session.refresh_token)
+              setIsLoading(true)
+              try {
+                await establishBackendSession(session.access_token, session.refresh_token)
+              } finally {
+                setIsLoading(false)
+              }
             }
           } else if (event === 'SIGNED_OUT') {
             setUser(null)
             setAccessToken(null)
+            setIsLoading(false)
           }
-          setIsLoading(false)
         }
       )
 
