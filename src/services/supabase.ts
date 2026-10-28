@@ -4,12 +4,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-project.s
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'mock-anon-key'
 
 /**
- * In-memory storage adapter to guarantee ZERO credentials or tokens touch
- * localStorage, sessionStorage, or IndexedDB.
- * All long-term session persistence is managed strictly via server-issued
- * HttpOnly, SameSite=Lax cookies.
+ * PKCE-aware storage adapter:
+ * - Temporary PKCE 'code-verifier' challenge required across the Google OAuth browser redirect
+ *   is held in sessionStorage for the handshake duration and promptly removed after exchange.
+ * - ZERO access tokens, refresh tokens, JWTs, or session credentials touch persistent client storage.
+ * - All authenticated user session state is managed strictly via server-issued HttpOnly cookies.
  */
-class InMemoryStorageAdapter implements Storage {
+class PkceSessionStorageAdapter implements Storage {
   private memoryStore: Record<string, string> = {}
 
   get length(): number {
@@ -18,9 +19,28 @@ class InMemoryStorageAdapter implements Storage {
 
   clear(): void {
     this.memoryStore = {}
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
+          const key = window.sessionStorage.key(i)
+          if (key && key.includes('code-verifier')) {
+            window.sessionStorage.removeItem(key)
+          }
+        }
+      } catch (e) {
+        console.warn('Error clearing PKCE storage:', e)
+      }
+    }
   }
 
   getItem(key: string): string | null {
+    if (key.includes('code-verifier') && typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        return window.sessionStorage.getItem(key)
+      } catch {
+        return null
+      }
+    }
     return this.memoryStore[key] ?? null
   }
 
@@ -30,14 +50,25 @@ class InMemoryStorageAdapter implements Storage {
 
   removeItem(key: string): void {
     delete this.memoryStore[key]
+    if (key.includes('code-verifier') && typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        window.sessionStorage.removeItem(key)
+      } catch {}
+    }
   }
 
   setItem(key: string, value: string): void {
-    this.memoryStore[key] = value
+    if (key.includes('code-verifier') && typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        window.sessionStorage.setItem(key, value)
+      } catch {}
+    } else {
+      this.memoryStore[key] = value
+    }
   }
 }
 
-export const inMemoryAuthStorage = new InMemoryStorageAdapter()
+export const inMemoryAuthStorage = new PkceSessionStorageAdapter()
 
 /**
  * Official Supabase Client initialized with anonymous public key.
