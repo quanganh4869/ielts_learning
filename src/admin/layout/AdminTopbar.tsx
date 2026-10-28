@@ -47,7 +47,7 @@ const ROUTE_LABELS: Record<string, string> = {
 
 export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
   const { admin } = useAdmin()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -134,12 +134,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-[#E3E7EB] py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
               <div className="px-4 py-2.5 border-b border-[#E3E7EB]">
-                <p className="text-xs font-bold text-[#20272E]">{admin.fullName}</p>
-                <p className="text-2xs text-[#68727D] truncate">{admin.email}</p>
-                <div className="mt-1.5 inline-flex items-center gap-1 text-2xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Đang hoạt động (Lead)
-                </div>
+                <p className="text-xs font-bold text-[#20272E] truncate">{user?.email || admin.email}</p>
               </div>
 
               <div className="py-1 text-xs">

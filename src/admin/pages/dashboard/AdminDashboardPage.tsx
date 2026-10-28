@@ -51,10 +51,24 @@ export const AdminDashboardPage: React.FC = () => {
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute right-32 -top-12 w-48 h-48 bg-white/5 rounded-full blur-xl pointer-events-none" />
 
-        <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Chào mừng trở lại
-          </h1>
+        <div className="relative z-10 flex items-center gap-3.5 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden bg-white/10 backdrop-blur-xs border border-white/20 p-1 flex items-center justify-center shrink-0 shadow-inner">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover rounded-xl"
+            >
+              <source src="/loading-nori.webm" type="video/webm" />
+              <source src="/loading-nori.mp4" type="video/mp4" />
+            </video>
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Chào mừng trở lại
+            </h1>
+          </div>
         </div>
       </div>
 

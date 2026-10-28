@@ -13,7 +13,6 @@ import {
   Settings,
   ChevronDown,
   X,
-  ExternalLink,
 } from 'lucide-react'
 import { ADMIN_BRAND_ASSETS } from '../utils/adminAssets'
 
@@ -207,17 +206,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           </button>
         </div>
 
-        {/* Quick Portal Switcher Banner */}
-        <div className="px-3 pt-3 pb-1">
-          <Link
-            to="/app/dashboard"
-            className="flex items-center justify-between px-3 py-1.5 rounded-lg text-2xs font-bold text-[#28665F] bg-[#EAF3F1]/80 hover:bg-[#EAF3F1] border border-[#28665F]/20 transition-all group"
-          >
-            <span className="truncate">Cổng học viên (LMS)</span>
-            <ExternalLink className="w-3 h-3 text-[#28665F] shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
-
         {/* Navigation List */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 text-xs">
           {NAVIGATION_ITEMS.map((item) => {
@@ -297,17 +285,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
             )
           })}
         </nav>
-
-        {/* System Version & Health Status */}
-        <div className="p-3 border-t border-[#E3E7EB] bg-[#F7F8FA] text-2xs text-[#68727D]">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Phiên bản v1.3.0</span>
-            <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Sẵn sàng
-            </span>
-          </div>
-        </div>
       </aside>
     </>
   )
