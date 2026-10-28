@@ -1,18 +1,46 @@
 import React, { useState, useEffect } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/common/Button'
 import { BrandLogo } from '@/components/brand'
 import { Menu, X, ArrowRight, Globe } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useLanguage } from '@/context/LanguageContext'
+import { useAuth } from '@/context/AuthContext'
 
 export const PublicLayout: React.FC = () => {
   const { language, setLanguage, tText } = useLanguage()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isHomePage = location.pathname === '/'
+
+  // Auto-route authenticated users directly to their appropriate dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const isAdmin =
+        Boolean(user.isAdmin) ||
+        user.role === 'admin' ||
+        Boolean(user.roles?.includes('ROLE_ADMIN')) ||
+        Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
+
+      const savedTarget = sessionStorage.getItem('auth_redirect_target')
+      if (savedTarget) {
+        sessionStorage.removeItem('auth_redirect_target')
+      }
+
+      const defaultPath = isAdmin ? '/admin/dashboard' : '/app/dashboard'
+      const destination = savedTarget || defaultPath
+
+      if (!isAdmin && destination.startsWith('/admin')) {
+        navigate('/app/dashboard', { replace: true })
+      } else {
+        navigate(destination, { replace: true })
+      }
+    }
+  }, [isLoading, isAuthenticated, user, navigate])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,21 +125,38 @@ export const PublicLayout: React.FC = () => {
               </button>
             </div>
 
-            <Link to="/login">
-              <Button variant="ghost" size="md" className="font-bold text-sm text-[#4A5568] hover:text-[#28665F]">
-                {tText('Đăng nhập', 'Log in')}
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button
-                variant="primary"
-                size="md"
-                className="font-bold text-sm shadow-xs"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                {tText('Bắt đầu học', 'Get Started')}
-              </Button>
-            </Link>
+            {isAuthenticated && user ? (
+              <Link to={user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN') ? '/admin/dashboard' : '/app/dashboard'}>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="font-bold text-sm shadow-xs"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  {user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
+                    ? tText('Vào trang quản trị', 'Admin Console')
+                    : tText('Vào không gian học', 'Go to Dashboard')}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="md" className="font-bold text-sm text-[#4A5568] hover:text-[#28665F]">
+                    {tText('Đăng nhập', 'Log in')}
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="font-bold text-sm shadow-xs"
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                  >
+                    {tText('Bắt đầu học', 'Get Started')}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* MOBILE MENU TOGGLE */}
