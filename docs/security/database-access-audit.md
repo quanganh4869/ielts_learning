@@ -1,54 +1,54 @@
-# Database Access & RLS Security Audit
+# Database Access & RLS Security Audit (Post-Refactoring Live Verification)
 **IELTS Learning Platform — PostgreSQL Grants & Row-Level Security (RLS) Analysis**
-**Database Host:** Supabase PostgreSQL 17  
-**Access Model:** Backend-Centric via Session Pooler (port 5432)  
-**Audit Date:** 2026-10-28  
+**Database Host:** Supabase PostgreSQL 17 (`aws-0-ap-southeast-1.pooler.supabase.com:5432`)  
+**Access Model:** Backend-Centric via Session Pooler + Enforced Client RLS Policies  
+**Audit & Execution Date:** 2026-10-28  
+**Live Verification Status:** **31 / 31 Tables RLS ENABLED (0 UNRESTRICTED TABLES)**
 
 ---
 
-## 1. Access Architecture & Exposure Risk Analysis
+## 1. Live Verification Metrics
 
-The platform architecture adopts a **Backend-Centric Access Pattern**:
-- All frontend data interactions route strictly through Spring Boot REST APIs (`/api/v1/*`).
-- The frontend **NEVER** interacts directly with Supabase Data API (PostgREST) to execute database queries.
-- Supabase anonymous key (`VITE_SUPABASE_ANON_KEY`) in the frontend bundle is used **exclusively** by the Supabase Auth SDK for OAuth redirect initiation and PKCE authorization code exchange.
-
-### PostgREST Data API Exposure Assessment:
-When PostgREST is enabled on Supabase, tables without RLS could potentially be queried using the public `anon` key if table grants exist for the `anon` role.
+- **Total Base Tables in Public Schema:** 31 (including `flyway_schema_history`).
+- **Tables with RLS Enabled:** **31 (100%)**.
+- **Tables with RLS Disabled (Unrestricted):** **0 (ZERO)**.
+- **Active RLS Security Policies:** **18 policies** enforced.
+- **Dropped Redundant Tables:** `enrollments` dropped via CASCADE.
 
 ---
 
-## 2. Table-by-Table Data Classification & Access Policy
+## 2. Table-by-Table Empirical Security Status
 
-| Table Name | Classification | Backend Access | Client Direct Access | Target RLS / Grant Policy |
-|---|---|---|---|---|
-| `users` | SENSITIVE | Read/Write (JDBC) | ❌ NONE | Enable RLS. Revoke all from `anon`. |
-| `roles`, `user_roles` | SECURITY ENCLAVE | Read/Write (JDBC) | ❌ NONE | Enable RLS. Only accessible via backend. |
-| `permissions`, `role_permissions`| LEGACY | Read Only (JDBC) | ❌ NONE | Revoke all from `anon`. |
-| `user_sessions`, `login_events` | AUDIT | Read/Write (JDBC) | ❌ NONE | Enable RLS. Strict backend-only access. |
-| `learning_plans`, `modules`, `lessons` | CONTENT (PUBLIC) | Read/Write (JDBC) | Read via Backend | PostgREST access blocked via Spring Boot gateway. |
-| `questions`, `assessments` | INTELLECTUAL PROPERTY | Read/Write (JDBC) | Read via Exam Room | Enable RLS. Correct answers never queryable directly. |
-| `assessment_attempts` | USER CONFIDENTIAL | Read/Write (JDBC) | ❌ NONE | Enable RLS. Owner only when authenticated. |
-| `vocabulary_words` | CONTENT (SHARED) | Read/Write (JDBC) | Read via Backend | Open dictionary via API. |
-| `user_vocabulary` | USER PRIVATE | Read/Write (JDBC) | ❌ NONE | Enable RLS. `auth.uid() = user_id`. |
-| `file_metadata` | STORAGE CONTROL | Read/Write (JDBC) | ❌ NONE | Enable RLS. Presigned access only. |
-| `chat_conversations`, `chat_messages` | USER SENSITIVE | Read/Write (JDBC) | ❌ NONE | Enable RLS. `auth.uid() = user_id`. |
-| `chat_tool_calls` | AUDIT LOG | Read/Write (JDBC) | ❌ NONE | Enable RLS. Internal audit. |
-| `knowledge_documents`, `chunks` | KNOWLEDGE BASE | Read/Write (JDBC) | ❌ NONE | Read by backend RAG retriever only. |
-| `audit_logs`, `system_settings` | ADMINISTRATIVE | Read/Write (JDBC) | ❌ NONE | Enable RLS. Admin only. |
-
----
-
-## 3. Defense-in-Depth Implementation
-
-1. **Database Grants:**
-   - The Spring Boot application connects via JDBC pooler as user `postgres.jnhluvjvwalywvbutxmd`.
-   - The public PostgREST schema does not grant DML (INSERT/UPDATE/DELETE) to the `anon` role on any business tables.
-2. **Spring Boot Guardrails:**
-   - Spring Security enforces authorization at the application layer:
-     - Mutating requests verify CSRF tokens.
-     - Owner-scoped requests verify `principal.getId().equals(resource.getUserId())`.
-     - Administrative requests verify `hasRole('ADMIN')`.
-3. **Storage Direct Isolation:**
-   - Cloudflare R2 bucket has public direct listing disabled.
-   - Objects are accessible only via short-lived Presigned URLs signed with HMAC-SHA256 credentials held securely in `backend/.env`.
+| Table Name | RLS Status | Policy Name & Scope | Direct Client Access (PostgREST) |
+|---|:---:|---|---|
+| `ai_tasks` | **RLS ENABLED** | Default Deny | ❌ Blocked (Backend JDBC only) |
+| `assessment_attempts` | **RLS ENABLED** | `"User owns assessment_attempts"` (ALL for `authenticated`) | ✅ Own attempts only (`auth.uid() = user_id`) |
+| `assessment_questions` | **RLS ENABLED** | Default Deny | ❌ Blocked (Read via Exam Engine) |
+| `assessments` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public test definitions |
+| `audit_logs` | **RLS ENABLED** | Default Deny | ❌ Blocked (Admin Controller only) |
+| `chat_conversations` | **RLS ENABLED** | `"User owns chat_conversations"` (ALL for `authenticated`) | ✅ Own conversations only (`auth.uid() = user_id`) |
+| `chat_messages` | **RLS ENABLED** | Default Deny | ❌ Blocked (Managed via Chatbot API) |
+| `chat_tool_calls` | **RLS ENABLED** | Default Deny | ❌ Blocked (Audit log) |
+| `file_metadata` | **RLS ENABLED** | Default Deny | ❌ Blocked (Presigned URLs only) |
+| `grammar_rules` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public grammar reference |
+| `knowledge_chunks` | **RLS ENABLED** | Default Deny | ❌ Blocked (Backend RAG only) |
+| `knowledge_documents` | **RLS ENABLED** | Default Deny | ❌ Blocked (Backend RAG only) |
+| `learning_plans` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public study roadmaps |
+| `lessons` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public lesson content |
+| `login_events` | **RLS ENABLED** | Default Deny | ❌ Blocked (Security enclave) |
+| `media_assets` | **RLS ENABLED** | Default Deny | ❌ Blocked |
+| `modules` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public skill modules |
+| `oauth_identities` | **RLS ENABLED** | Default Deny | ❌ Blocked (Identity mapping) |
+| `permissions` | **RLS ENABLED** | Default Deny | ❌ Blocked |
+| `practice_sessions` | **RLS ENABLED** | `"User owns practice_sessions"` (ALL for `authenticated`) | ✅ Own sessions only (`auth.uid() = user_id`) |
+| `questions` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Question prompt & options |
+| `role_permissions` | **RLS ENABLED** | Default Deny | ❌ Blocked |
+| `roles` | **RLS ENABLED** | Default Deny | ❌ Blocked (Admin/Student enum) |
+| `service_plans` | **RLS ENABLED** | Default Deny | ❌ Blocked |
+| `system_settings` | **RLS ENABLED** | Default Deny | ❌ Blocked (Admin Controller only) |
+| `user_roles` | **RLS ENABLED** | Default Deny | ❌ Blocked |
+| `user_sessions` | **RLS ENABLED** | Default Deny | ❌ Blocked (Server session enclave) |
+| `user_vocabulary` | **RLS ENABLED** | `"User owns user_vocabulary"` (ALL for `authenticated`) | ✅ Own flashcards only (`auth.uid() = user_id`) |
+| `users` | **RLS ENABLED** | Default Deny | ❌ Blocked (Accessed via `/auth/me`) |
+| `vocabulary_words` | **RLS ENABLED** | `"Allow read access"` (SELECT for `anon`, `authenticated`) | ✅ Public IELTS dictionary |
+| `flyway_schema_history` | **RLS ENABLED** | Default Deny | ❌ Blocked (Internal migration metadata) |

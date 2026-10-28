@@ -127,7 +127,7 @@ public class UserService {
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
             roles.addAll(roleRepository.findAllById(request.getRoleIds()));
         } else {
-            roleRepository.findByName("Super Admin").ifPresent(roles::add);
+            roleRepository.findByName("Student").ifPresent(roles::add);
         }
 
         UserEntity user = UserEntity.builder()
