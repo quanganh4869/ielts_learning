@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
-import { AlertCircle, ShieldCheck } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Card } from '@/components/common/Card'
 import { BrandLogo } from '@/components/brand'
 import { useAuth } from '@/context/AuthContext'
@@ -85,12 +85,6 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-[#20272E]">
             {tText('Đăng nhập hệ thống', 'Log In to Platform')}
           </h1>
-          <p className="text-xs text-[#68727D] mt-1.5 max-w-xs text-center">
-            {tText(
-              'Hệ thống xác thực bảo mật duy nhất qua tài khoản Google Gmail',
-              'Single secure authentication via Google Gmail account'
-            )}
-          </p>
         </div>
 
         <Card className="p-6 sm:p-8 bg-white border border-[#E3E7EB] rounded-2xl shadow-sm">
@@ -101,7 +95,7 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div>
             <button
               type="button"
               onClick={handleGoogleClick}
@@ -128,18 +122,6 @@ export const LoginPage: React.FC = () => {
               </svg>
               <span>{tText('Tiếp tục với tài khoản Google', 'Continue with Google')}</span>
             </button>
-
-            <div className="pt-4 border-t border-[#E3E7EB]">
-              <div className="flex items-center gap-2 text-2xs text-[#68727D] justify-center text-center">
-                <ShieldCheck className="w-4 h-4 text-[#28665F] shrink-0" />
-                <span>
-                  {tText(
-                    'Xác thực bảo mật qua Google OAuth & OpenID Connect',
-                    'Secured by Google OAuth & OpenID Connect'
-                  )}
-                </span>
-              </div>
-            </div>
           </div>
         </Card>
       </div>
