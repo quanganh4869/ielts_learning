@@ -18,7 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_file_metadata_owner_purpose ON file_metadata(owne
 COMMENT ON TABLE permissions IS 'DEPRECATED: Architectural refactoring streamlined authorization to ROLE_STUDENT and ROLE_ADMIN.';
 COMMENT ON TABLE role_permissions IS 'DEPRECATED: Replaced by declarative role-based authorization.';
 COMMENT ON TABLE service_plans IS 'LEGACY: Reserved for future billing; currently unused as curriculum is open-access.';
-COMMENT ON TABLE enrollments IS 'LEGACY: Curriculum access is granted directly via user authentication without course gating.';
+-- COMMENT ON TABLE enrollments IS 'LEGACY: Dropped in V8';
 COMMENT ON TABLE media_assets IS 'LEGACY: Consolidated into file_metadata which manages Cloudflare R2 presigned URLs.';
 
 -- 3. Ensure Strict Consistency on Active Business Tables
