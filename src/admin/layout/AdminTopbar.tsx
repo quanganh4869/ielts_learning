@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Menu,
   Bell,
-  ArrowUpRight,
   LogOut,
   History,
   Settings,
@@ -109,15 +108,6 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => 
 
       {/* Right: Switcher, Notifications, Admin Profile */}
       <div className="flex items-center gap-3 sm:gap-4">
-        {/* Switch to Student Web App */}
-        <Link
-          to="/app/dashboard"
-          className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#F7F8FA] border border-[#E3E7EB] text-[#20272E] hover:border-[#28665F] hover:text-[#28665F] transition-all"
-        >
-          <span>Trang học viên</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
-
         {/* Notifications Icon with simple tooltip/indicator */}
         <div className="relative">
           <button
