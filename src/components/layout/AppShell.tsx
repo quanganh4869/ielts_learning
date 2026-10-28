@@ -62,7 +62,7 @@ export const AppShell: React.FC = () => {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/')
   }
 
   return (

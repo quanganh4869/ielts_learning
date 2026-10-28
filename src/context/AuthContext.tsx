@@ -352,7 +352,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null)
       setAccessToken(null)
       setIsLoading(false)
-      window.location.href = '/login'
+      window.location.href = '/'
     }
   }
 
