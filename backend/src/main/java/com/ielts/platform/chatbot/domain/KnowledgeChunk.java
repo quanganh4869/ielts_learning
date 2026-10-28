@@ -33,7 +33,8 @@ public class KnowledgeChunk {
     @Column(name = "token_count")
     private Integer tokenCount;
 
-    @Column(columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String metadata;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -33,7 +33,8 @@ public class ChatConversation {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @Column(columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String metadata;
 
     @PrePersist

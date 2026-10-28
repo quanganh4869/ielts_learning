@@ -24,10 +24,12 @@ public class ChatToolCall {
     @Column(name = "tool_name", nullable = false, length = 128)
     private String toolName;
 
-    @Column(name = "input_arguments", columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "input_arguments", columnDefinition = "jsonb")
     private String inputArguments;
 
-    @Column(name = "output_result", columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "output_result", columnDefinition = "jsonb")
     private String outputResult;
 
     @Column(nullable = false, length = 32)

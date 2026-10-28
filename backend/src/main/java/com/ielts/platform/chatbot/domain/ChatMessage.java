@@ -33,10 +33,12 @@ public class ChatMessage {
     @Column(nullable = false, length = 32)
     private String status; // 'PENDING', 'COMPLETED', 'FAILED', 'FILTERED'
 
-    @Column(columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String citations; // JSON string of citations
 
-    @Column(columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String metadata; // JSON string
 
     @Column(name = "created_at", nullable = false, updatable = false)
