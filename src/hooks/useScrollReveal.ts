@@ -25,24 +25,15 @@ export function useScrollReveal(dependency?: unknown) {
       },
       {
         root: null,
-        rootMargin: '50px 0px 50px 0px',
-        threshold: 0.01,
+        rootMargin: '0px 0px -40px 0px',
+        threshold: 0.08,
       }
     )
 
     const elements = containerRef.current.querySelectorAll('.reveal-init')
     elements.forEach((el) => observer.observe(el))
 
-    // Fallback: If after 400ms any element is still not active, force reveal to avoid blank screen
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        const remaining = containerRef.current.querySelectorAll('.reveal-init:not(.reveal-active)')
-        remaining.forEach((el) => el.classList.add('reveal-active'))
-      }
-    }, 400)
-
     return () => {
-      clearTimeout(timer)
       observer.disconnect()
     }
   }, [dependency])

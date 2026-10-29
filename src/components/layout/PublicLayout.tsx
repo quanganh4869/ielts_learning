@@ -52,7 +52,7 @@ export const PublicLayout: React.FC = () => {
 
   const navLinks = [
     { label: tText('Phương pháp', 'Methodology'), href: '#method' },
-    { label: tText('Lộ trình học', 'Roadmap'), href: '#roadmap' },
+    { label: tText('Lộ trình', 'Roadmap'), href: '#roadmap' },
     { label: tText('4 Kỹ năng', '4 Skills'), href: '#skills' },
     { label: 'Writing Coach', href: '#writing-coach' },
     { label: 'Flashcards', href: '#flashcards' },
@@ -75,17 +75,19 @@ export const PublicLayout: React.FC = () => {
             : 'bg-white/85 backdrop-blur-xs border-b border-[#E3E7EB]/60'
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between gap-4">
           {/* BRAND LOGO */}
-          <BrandLogo variant="horizontal" size="md" to="/" />
+          <div className="shrink-0">
+            <BrandLogo variant="horizontal" size="md" to="/" />
+          </div>
 
           {/* DESKTOP NAVIGATION LINKS */}
-          <nav className="hidden xl:flex items-center gap-7 text-sm font-bold text-[#68727D]">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-bold text-[#68727D]">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={getHref(link.href)}
-                className="hover:text-[#28665F] transition-colors relative py-1 focus:outline-none focus:text-[#28665F]"
+                className="hover:text-[#28665F] transition-colors relative py-1 focus:outline-none focus:text-[#28665F] whitespace-nowrap"
               >
                 {link.label}
               </a>
@@ -93,30 +95,30 @@ export const PublicLayout: React.FC = () => {
           </nav>
 
           {/* ACTIONS: LANGUAGE TOGGLE + LOGIN & START CTA */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Language switcher */}
-            <div className="flex items-center gap-1 bg-[#F2F4F7] p-1 rounded-xl border border-[#E3E7EB] text-xs font-bold text-[#68727D] mr-1">
-              <Globe className="w-3.5 h-3.5 ml-1 text-[#28665F]" />
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            {/* Clean frameless language switcher */}
+            <div className="flex items-center text-xs font-bold text-[#68727D] tracking-wider select-none px-1">
               <button
                 type="button"
                 onClick={() => setLanguage('vi')}
                 className={cn(
-                  'px-2 py-0.5 rounded-lg transition-all',
+                  'px-1.5 py-1 transition-colors cursor-pointer',
                   language === 'vi'
-                    ? 'bg-[#28665F] text-white shadow-xs font-bold'
+                    ? 'text-[#28665F] font-black underline underline-offset-4 decoration-2'
                     : 'text-[#68727D] hover:text-[#20272E]'
                 )}
                 title="Tiếng Việt"
               >
-                VN
+                VIE
               </button>
+              <span className="text-[#D1D5DB] font-normal select-none mx-0.5">/</span>
               <button
                 type="button"
                 onClick={() => setLanguage('en')}
                 className={cn(
-                  'px-2 py-0.5 rounded-lg transition-all',
+                  'px-1.5 py-1 transition-colors cursor-pointer',
                   language === 'en'
-                    ? 'bg-[#28665F] text-white shadow-xs font-bold'
+                    ? 'text-[#28665F] font-black underline underline-offset-4 decoration-2'
                     : 'text-[#68727D] hover:text-[#20272E]'
                 )}
                 title="English"
@@ -160,25 +162,26 @@ export const PublicLayout: React.FC = () => {
           </div>
 
           {/* MOBILE MENU TOGGLE */}
-          <div className="flex items-center gap-2 xl:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             {/* Mobile Language switcher */}
-            <div className="flex items-center bg-[#F2F4F7] p-0.5 rounded-lg border border-[#E3E7EB] text-[11px] font-bold">
+            <div className="flex items-center text-[11px] font-bold text-[#68727D] select-none px-1">
               <button
                 type="button"
                 onClick={() => setLanguage('vi')}
                 className={cn(
-                  'px-1.5 py-0.5 rounded',
-                  language === 'vi' ? 'bg-[#28665F] text-white' : 'text-[#68727D]'
+                  'px-1 py-0.5 transition-colors cursor-pointer',
+                  language === 'vi' ? 'text-[#28665F] font-black underline underline-offset-4 decoration-2' : 'hover:text-[#20272E]'
                 )}
               >
-                VN
+                VIE
               </button>
+              <span className="text-[#D1D5DB] select-none mx-0.5">/</span>
               <button
                 type="button"
                 onClick={() => setLanguage('en')}
                 className={cn(
-                  'px-1.5 py-0.5 rounded',
-                  language === 'en' ? 'bg-[#28665F] text-white' : 'text-[#68727D]'
+                  'px-1 py-0.5 transition-colors cursor-pointer',
+                  language === 'en' ? 'text-[#28665F] font-black underline underline-offset-4 decoration-2' : 'hover:text-[#20272E]'
                 )}
               >
                 ENG
@@ -202,7 +205,7 @@ export const PublicLayout: React.FC = () => {
 
         {/* MOBILE DRAWER */}
         {isMobileMenuOpen && (
-          <div className="xl:hidden bg-white border-b border-[#E3E7EB] px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in fade-in slide-in-from-top-2">
+          <div className="lg:hidden bg-white border-b border-[#E3E7EB] px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in fade-in slide-in-from-top-2">
             <nav className="flex flex-col space-y-1">
               {navLinks.map((link) => (
                 <a

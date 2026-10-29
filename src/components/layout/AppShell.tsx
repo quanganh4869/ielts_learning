@@ -208,9 +208,9 @@ export const AppShell: React.FC = () => {
               </NavLink>
             )}
 
-            {/* Language Switcher (VN / ENG) */}
+            {/* Language Switcher (VIE / ENG) */}
             <div
-              className="inline-flex items-center p-1 bg-white/10 border border-white/20 rounded-xl text-xs sm:text-sm font-bold shadow-2xs"
+              className="inline-flex items-center text-xs font-bold text-white/80 select-none px-2"
               role="group"
               aria-label="Chuyển đổi ngôn ngữ"
             >
@@ -218,23 +218,24 @@ export const AppShell: React.FC = () => {
                 type="button"
                 onClick={() => setLanguage('vi')}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold',
+                  'px-1.5 py-1 transition-colors cursor-pointer',
                   language === 'vi'
-                    ? 'bg-white text-[#28665F] shadow-2xs font-black'
-                    : 'text-teal-100 hover:text-white'
+                    ? 'text-white font-black underline underline-offset-4 decoration-2'
+                    : 'text-white/60 hover:text-white'
                 )}
                 title="Tiếng Việt"
               >
-                VN
+                VIE
               </button>
+              <span className="text-white/30 select-none mx-1">/</span>
               <button
                 type="button"
                 onClick={() => setLanguage('en')}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-lg transition-all text-xs sm:text-sm font-bold',
+                  'px-1.5 py-1 transition-colors cursor-pointer',
                   language === 'en'
-                    ? 'bg-white text-[#28665F] shadow-2xs font-black'
-                    : 'text-teal-100 hover:text-white'
+                    ? 'text-white font-black underline underline-offset-4 decoration-2'
+                    : 'text-white/60 hover:text-white'
                 )}
                 title="English"
               >

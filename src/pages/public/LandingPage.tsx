@@ -184,10 +184,9 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* LEFT COLUMN: HERO CONTENT (~52%) */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
-              {/* Friendly badge chip */}
-              <div className="reveal-init inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-[#28665F]/20 shadow-xs mb-5">
-                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-                <span className="text-xs font-bold text-[#28665F]">
+              {/* Clean typographic kicker without pill box or green dot */}
+              <div className="reveal-init mb-4">
+                <span className="text-xs font-black uppercase tracking-wider text-[#28665F]">
                   Lộ trình học IELTS cá nhân hóa • Chuẩn Cambridge
                 </span>
               </div>
@@ -214,7 +213,7 @@ export const LandingPage: React.FC = () => {
                   <Button
                     size="lg"
                     variant="primary"
-                    className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md rounded-2xl hover:scale-[1.02] transition-transform"
+                    className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md"
                     rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
                   >
                     Bắt đầu học miễn phí
@@ -224,7 +223,7 @@ export const LandingPage: React.FC = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full sm:w-auto font-bold text-base h-13 px-7 rounded-2xl bg-white hover:bg-[#F2F7F5] border-[#D1D5DB]"
+                    className="w-full sm:w-auto font-bold text-base h-13 px-7 bg-white text-[#20272E]"
                   >
                     Khám phá phương pháp
                   </Button>
@@ -233,69 +232,30 @@ export const LandingPage: React.FC = () => {
 
               {/* REASSURANCE CHIPS */}
               <div className="reveal-init reveal-delay-3 flex flex-wrap items-center gap-y-2.5 gap-x-6 pt-7 text-xs font-bold text-[#4B5563]">
-                <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-xl border border-[#E3E7EB] shadow-2xs">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
                   <span>Đánh giá đầu vào chuẩn xác</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-xl border border-[#E3E7EB] shadow-2xs">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
                   <span>Luyện viết chuẩn 4 tiêu chí</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-xl border border-[#E3E7EB] shadow-2xs">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
                   <span>100% đề thi Cambridge & IDP</span>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT COLUMN: AUTHENTIC PHOTOGRAPHY WITH LIVE OVERLAY WIDGETS (~48%) */}
+            {/* RIGHT COLUMN: PURE AUTHENTIC PHOTOGRAPHY (~48%) - NO OVERLAYS, NO FLOATING TEXT, NO FRAMED BADGES */}
             <div className="lg:col-span-5 reveal-init reveal-delay-2 relative">
-              <div className="relative rounded-3xl overflow-hidden border border-[#28665F]/20 shadow-2xl bg-white group">
-                {/* Authentic Real-life Photo of Focused IELTS Students */}
-                <div className="relative aspect-[4/3] sm:aspect-[16/11] w-full overflow-hidden">
-                  <img
-                    src="/images/landing/hero-student-study.jpg"
-                    alt="Nhóm học viên tập trung học tập và luyện thi IELTS với laptop và tài liệu học thuật"
-                    className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
-                    loading="eager"
-                  />
-                  {/* Subtle gradient vignette for readability of overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-                </div>
-
-                {/* Floating Top Badge: Authentic Study Milestone */}
-                <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/95 backdrop-blur-md border border-white/40 shadow-md text-xs font-bold text-[#20272E]">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Lớp học trực tuyến • Học viên đang hoạt động</span>
-                  </div>
-                  <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#28665F]/90 backdrop-blur-md text-white text-xs font-bold shadow-md">
-                    <Target className="w-3.5 h-3.5 text-teal-200" />
-                    <span>Mục tiêu Band 7.5+</span>
-                  </div>
-                </div>
-
-                {/* Floating Bottom Card: Real Interactive Achievement Snippet */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-white/50 shadow-lg">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-[#E3E7EB]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#EAF4EE] border border-[#28665F]/20 flex items-center justify-center font-bold text-[#28665F] text-xs shrink-0">
-                        8.0
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-[#20272E] leading-tight">IELTS Writing Task 2 Polish</h4>
-                        <span className="text-[10px] text-[#68727D] font-medium">Sửa câu & Tối ưu Collocations C1/C2</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                      ✓ Đạt chuẩn Cambridge
-                    </span>
-                  </div>
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <span className="text-[#68727D] text-[11px] font-medium">Tiến độ hôm nay:</span>
-                    <span className="font-extrabold text-[#28665F] text-[11px]">45 phút • 3/3 bài tập hoàn thành</span>
-                  </div>
-                </div>
+              <div className="overflow-hidden shadow-xl bg-white">
+                <img
+                  src="/images/landing/hero-student-study.jpg"
+                  alt="Nhóm học viên tập trung học tập và luyện thi IELTS với laptop và tài liệu học thuật"
+                  className="w-full h-auto object-cover object-center"
+                  loading="eager"
+                />
               </div>
             </div>
           </div>
@@ -308,7 +268,7 @@ export const LandingPage: React.FC = () => {
       <section id="method" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-2">
               Phương pháp học cốt lõi
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -319,10 +279,10 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* 3 Authentic Methodology Tiles with Real Educational Photography */}
+          {/* 3 Authentic Methodology Tiles with Pure Real Educational Photography */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Tile 1: Placement & Diagnostics */}
-            <div className="reveal-init reveal-delay-1 rounded-3xl bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
+            <div className="reveal-init reveal-delay-1 bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-placement-test.jpg"
@@ -330,12 +290,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-white/95 backdrop-blur-xs text-xs font-black text-[#28665F] shadow-xs">
-                  01. Đánh giá đầu vào
-                </div>
               </div>
               <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#28665F] uppercase tracking-wider block mb-1.5">
+                    01. Đánh giá đầu vào
+                  </span>
                   <h3 className="text-xl font-black text-[#20272E]">Chẩn đoán đúng lỗ hổng</h3>
                   <p className="text-xs sm:text-sm text-[#4B5563] font-medium leading-relaxed mt-2.5">
                     Không mất thời gian học lại phần bạn đã vững. Bài Placement Test định vị chính xác điểm yếu: bẫy phân vân T/F/NG, thiếu từ vựng chủ đề, hay lỗi lạc đề Task 2.
@@ -349,7 +309,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Tile 2: Weekly Structured Roadmap */}
-            <div className="reveal-init reveal-delay-2 rounded-3xl bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
+            <div className="reveal-init reveal-delay-2 bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-roadmap-plan.jpg"
@@ -357,12 +317,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-white/95 backdrop-blur-xs text-xs font-black text-[#28665F] shadow-xs">
-                  02. Lộ trình cá nhân hóa
-                </div>
               </div>
               <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#28665F] uppercase tracking-wider block mb-1.5">
+                    02. Lộ trình cá nhân hóa
+                  </span>
                   <h3 className="text-xl font-black text-[#20272E]">Lộ trình chia nhỏ mỗi tuần</h3>
                   <p className="text-xs sm:text-sm text-[#4B5563] font-medium leading-relaxed mt-2.5">
                     Mỗi ngày bạn luôn biết rõ mình cần hoàn thành gì: 15 phút từ vựng chủ đề, 1 bài nghe kỹ thuật bắt từ khóa, và 1 bài viết đoạn thân bài có hướng dẫn chấm chi tiết.
@@ -376,7 +336,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Tile 3: AI Coaching & Retention */}
-            <div className="reveal-init reveal-delay-3 rounded-3xl bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
+            <div className="reveal-init reveal-delay-3 bg-[#FAFBFB] border border-[#E3E7EB] overflow-hidden flex flex-col justify-between hover:border-[#28665F]/40 hover:shadow-md transition-all group">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-ai-coaching.jpg"
@@ -384,12 +344,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-white/95 backdrop-blur-xs text-xs font-black text-[#28665F] shadow-xs">
-                  03. Phản hồi chuẩn xác
-                </div>
               </div>
               <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#28665F] uppercase tracking-wider block mb-1.5">
+                    03. Phản hồi chuẩn xác
+                  </span>
                   <h3 className="text-xl font-black text-[#20272E]">Sửa lỗi & Ghi nhớ dài hạn</h3>
                   <p className="text-xs sm:text-sm text-[#4B5563] font-medium leading-relaxed mt-2.5">
                     Sửa từng lỗi câu với Writing Coach và nhắc lại từ vựng thông minh qua thuật toán Spaced Repetition (SM-2). Những lỗi sai biến thành điểm mạnh trong bài thi thật.
@@ -411,7 +371,7 @@ export const LandingPage: React.FC = () => {
       <section id="process" className="py-20 sm:py-26 bg-[#FAFBFB] border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-2">
               Quy trình học chuẩn
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -422,10 +382,10 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Stepper Cards with Real Photography Headers */}
+          {/* Stepper Cards with Pure Real Photography */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Step 1 */}
-            <div className="reveal-init reveal-delay-1 rounded-3xl bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
+            <div className="reveal-init reveal-delay-1 bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-placement-test.jpg"
@@ -433,12 +393,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-white text-[#28665F] font-black text-xs flex items-center justify-center shadow-xs">
-                  01
-                </div>
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#28665F] tracking-wider block mb-1">
+                    BƯỚC 01
+                  </span>
                   <h4 className="text-base font-black text-[#20272E]">Đánh giá trình độ</h4>
                   <p className="text-xs text-[#68727D] font-medium leading-relaxed mt-2">
                     Làm bài kiểm tra đầu vào 4 kỹ năng rút gọn để hệ thống xác định chính xác band xuất phát và mục tiêu.
@@ -451,7 +411,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Step 2 */}
-            <div className="reveal-init reveal-delay-2 rounded-3xl bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
+            <div className="reveal-init reveal-delay-2 bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-roadmap-plan.jpg"
@@ -459,12 +419,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-white text-[#2563EB] font-black text-xs flex items-center justify-center shadow-xs">
-                  02
-                </div>
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#2563EB] tracking-wider block mb-1">
+                    BƯỚC 02
+                  </span>
                   <h4 className="text-base font-black text-[#20272E]">Xây dựng lộ trình</h4>
                   <p className="text-xs text-[#68727D] font-medium leading-relaxed mt-2">
                     Tự động phân bổ theo 3 giai đoạn: Foundation (5.0 - 6.0), Intensive (6.0 - 7.0), và Mastery (7.0 - 8.5+).
@@ -477,7 +437,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Step 3 */}
-            <div className="reveal-init reveal-delay-3 rounded-3xl bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
+            <div className="reveal-init reveal-delay-3 bg-white border border-[#E3E7EB] shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F]/40 transition-colors">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-deliberate-practice.jpg"
@@ -485,12 +445,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-white text-[#D97706] font-black text-xs flex items-center justify-center shadow-xs">
-                  03
-                </div>
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#D97706] tracking-wider block mb-1">
+                    BƯỚC 03
+                  </span>
                   <h4 className="text-base font-black text-[#20272E]">Luyện tập có chủ đích</h4>
                   <p className="text-xs text-[#68727D] font-medium leading-relaxed mt-2">
                     Tập trung giải quyết từng dạng đề: Form Completion, T/F/NG, Matching Headings, Task 1 Report và Task 2 Essay.
@@ -503,7 +463,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Step 4 */}
-            <div className="reveal-init reveal-delay-3 rounded-3xl bg-[#EAF4EE] border border-[#28665F]/30 shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F] transition-colors">
+            <div className="reveal-init reveal-delay-3 bg-[#EAF4EE] border border-[#28665F]/30 shadow-xs flex flex-col justify-between overflow-hidden hover:border-[#28665F] transition-colors">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 <img
                   src="/images/landing/method-ai-coaching.jpg"
@@ -511,12 +471,12 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-[#28665F] text-white font-black text-xs flex items-center justify-center shadow-xs">
-                  04
-                </div>
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
+                  <span className="text-xs font-black text-[#28665F] tracking-wider block mb-1">
+                    BƯỚC 04
+                  </span>
                   <h4 className="text-base font-black text-[#20272E]">Sửa lỗi & Lặp lại</h4>
                   <p className="text-xs text-[#4B5563] font-medium leading-relaxed mt-2">
                     Rà soát lỗi sai hệ thống, nhận xét 4 tiêu chí Writing Coach và ôn từ vựng định kỳ qua Flashcard Spaced Repetition.
@@ -537,7 +497,7 @@ export const LandingPage: React.FC = () => {
       <section id="skills" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-12 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Không gian luyện tập
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -582,7 +542,7 @@ export const LandingPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Column: Description */}
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F] text-xs font-bold">
+                  <div className="flex items-center gap-2 text-[#28665F] text-xs font-bold uppercase tracking-wider">
                     <Headphones className="w-4 h-4" />
                     <span>Luyện Nghe Có Định Hướng</span>
                   </div>
@@ -656,7 +616,7 @@ export const LandingPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Column: Description */}
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F] text-xs font-bold">
+                  <div className="flex items-center gap-2 text-[#28665F] text-xs font-bold uppercase tracking-wider">
                     <BookOpen className="w-4 h-4" />
                     <span>Luyện Đọc Học Thuật Split-Screen</span>
                   </div>
@@ -718,7 +678,7 @@ export const LandingPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Column: Description */}
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F] text-xs font-bold">
+                  <div className="flex items-center gap-2 text-[#28665F] text-xs font-bold uppercase tracking-wider">
                     <PenTool className="w-4 h-4" />
                     <span>Trợ Lý Viết Chuyên Nghiệp (Writing Coach)</span>
                   </div>
@@ -786,7 +746,7 @@ export const LandingPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Column: Description */}
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F] text-xs font-bold">
+                  <div className="flex items-center gap-2 text-[#28665F] text-xs font-bold uppercase tracking-wider">
                     <Mic className="w-4 h-4" />
                     <span>Luyện Nói Phản Xạ 3 Parts</span>
                   </div>
@@ -837,8 +797,8 @@ export const LandingPage: React.FC = () => {
                       Describe an environmental law you think should be introduced.
                     </p>
                     <div className="p-2 rounded-xl bg-[#F2F4F7] flex items-center justify-between text-[11px]">
-                      <span className="flex items-center gap-1.5 font-bold text-[#20272E]">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Đang ghi âm...
+                      <span className="font-bold text-[#20272E]">
+                        Đang ghi âm...
                       </span>
                       <span className="font-mono text-[#28665F] font-bold">01:18 / 02:00</span>
                     </div>
@@ -856,7 +816,7 @@ export const LandingPage: React.FC = () => {
       <section className="py-20 sm:py-26 bg-[#FAFBFB] border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Trải nghiệm bài học thực tế
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -879,7 +839,7 @@ export const LandingPage: React.FC = () => {
                   Unit 4: Reading Mastery — Kỹ thuật giải True / False / Not Given
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-[#28665F] bg-[#EAF4EE] px-2.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-bold text-[#28665F]">
                 Cambridge Curriculum
               </span>
             </div>
@@ -954,7 +914,7 @@ export const LandingPage: React.FC = () => {
       <section id="writing-coach" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Writing Coach tương tác
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1021,7 +981,7 @@ export const LandingPage: React.FC = () => {
                     Topic: Taxes on junk food to reduce obesity
                   </h4>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F] font-bold text-xs">
+                <span className="text-[#28665F] font-bold text-xs uppercase tracking-wider">
                   {writingMode === 'draft' ? 'Đánh giá: Band 6.0' : 'Đánh giá: Band 8.0'}
                 </span>
               </div>
@@ -1104,7 +1064,7 @@ export const LandingPage: React.FC = () => {
       <section id="flashcards" className="py-20 sm:py-26 bg-[#FAFBFB] border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Trải nghiệm Flashcard 3D thực tế
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1182,7 +1142,7 @@ export const LandingPage: React.FC = () => {
                   {/* FRONT FACE */}
                   <div className="flashcard-face rounded-3xl bg-white border-2 border-[#28665F]/20 p-6 sm:p-7 flex flex-col justify-between">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full">
+                      <span className="text-xs font-black text-[#28665F] uppercase tracking-wider">
                         {currentCard.level}
                       </span>
                       <span className="text-[11px] font-bold text-[#9AA4AF]">
@@ -1203,7 +1163,7 @@ export const LandingPage: React.FC = () => {
                             handleSpeak(currentCard.audioText)
                           }}
                           className={cn(
-                            'p-1.5 rounded-full hover:bg-[#EAF4EE] text-[#28665F] transition-colors',
+                            'p-1.5 rounded-lg hover:bg-[#EAF4EE] text-[#28665F] transition-colors',
                             isPlayingAudio && 'bg-[#EAF4EE] scale-110'
                           )}
                           title="Nghe phát âm chuẩn"
@@ -1227,7 +1187,7 @@ export const LandingPage: React.FC = () => {
                   {/* BACK FACE */}
                   <div className="flashcard-face flashcard-face-back rounded-3xl bg-[#EAF4EE] border-2 border-[#28665F]/30 p-6 sm:p-7 flex flex-col justify-between">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#28665F] bg-white px-3 py-1 rounded-full shadow-2xs">
+                      <span className="text-xs font-black text-[#28665F] uppercase tracking-wider">
                         Định nghĩa & Ví dụ
                       </span>
                       <span className="text-[11px] font-bold text-[#28665F]/80">
@@ -1305,7 +1265,7 @@ export const LandingPage: React.FC = () => {
       <section id="roadmap" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Lộ trình cá nhân hóa
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1321,7 +1281,7 @@ export const LandingPage: React.FC = () => {
             <div className="reveal-init reveal-delay-1 p-7 rounded-3xl bg-[#FAFBFB] border border-[#E3E7EB] flex flex-col justify-between hover:border-[#28665F]/40 transition-colors">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black px-3 py-1 rounded-full bg-[#EAF4EE] text-[#28665F]">
+                  <span className="text-xs font-black text-[#28665F] uppercase tracking-wider">
                     Giai đoạn 1
                   </span>
                   <span className="text-xs font-bold text-[#68727D]">4 - 6 tuần</span>
@@ -1359,14 +1319,16 @@ export const LandingPage: React.FC = () => {
 
             {/* Phase 2: Intensive */}
             <div className="reveal-init reveal-delay-2 p-7 rounded-3xl bg-[#EAF4EE] border-2 border-[#28665F]/30 flex flex-col justify-between shadow-sm hover:border-[#28665F] transition-colors relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#28665F] text-white text-[10px] font-black uppercase tracking-wider">
-                Phổ biến nhất
-              </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black px-3 py-1 rounded-full bg-white text-[#28665F] shadow-2xs">
-                    Giai đoạn 2
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-[#28665F] uppercase tracking-wider">
+                      Giai đoạn 2
+                    </span>
+                    <span className="text-[10px] font-black text-[#28665F] uppercase tracking-wider">
+                      • Phổ biến nhất
+                    </span>
+                  </div>
                   <span className="text-xs font-bold text-[#28665F]">6 - 8 tuần</span>
                 </div>
                 <div>
@@ -1404,7 +1366,7 @@ export const LandingPage: React.FC = () => {
             <div className="reveal-init reveal-delay-3 p-7 rounded-3xl bg-[#FAFBFB] border border-[#E3E7EB] flex flex-col justify-between hover:border-[#28665F]/40 transition-colors">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FFF9EE] text-[#D97706]">
+                  <span className="text-xs font-black text-[#D97706] uppercase tracking-wider">
                     Giai đoạn 3
                   </span>
                   <span className="text-xs font-bold text-[#68727D]">4 - 6 tuần</span>
@@ -1451,7 +1413,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Left Column: CDI Features & Real Exam Room Photo */}
             <div className="lg:col-span-5 reveal-init space-y-5">
-              <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block">
+              <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
                 Phòng thi mô phỏng CDI
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1503,7 +1465,6 @@ export const LandingPage: React.FC = () => {
                 {/* CDI Topbar */}
                 <div className="flex items-center justify-between pb-3 border-b border-gray-700 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span className="font-bold text-gray-200">IELTS Academic — Reading Practice Test 1</span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1572,7 +1533,7 @@ export const LandingPage: React.FC = () => {
       <section className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Đo lường & Động lực học tập
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1711,7 +1672,7 @@ export const LandingPage: React.FC = () => {
       <section id="faq" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-[#EAF4EE] px-3 py-1 rounded-full border border-[#28665F]/20 inline-block mb-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
               Giải đáp thắc mắc
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
@@ -1765,7 +1726,7 @@ export const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center p-8 sm:p-12 lg:p-14">
               {/* Left Column: CTA Pitch */}
               <div className="lg:col-span-7 space-y-5 text-left">
-                <span className="text-xs font-black uppercase tracking-wider text-[#28665F] bg-white px-3.5 py-1 rounded-full shadow-2xs inline-block">
+                <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
                   Bắt đầu ngay hôm nay
                 </span>
 
@@ -1814,18 +1775,13 @@ export const LandingPage: React.FC = () => {
 
               {/* Right Column: Confident Student Photograph */}
               <div className="lg:col-span-5">
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[1/1] border border-[#28665F]/20 shadow-lg bg-white group">
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[1/1] border border-[#28665F]/20 shadow-lg bg-white">
                   <img
                     src="/images/landing/cta-learner-confidence.jpg"
                     alt="Học viên tự tin, sẵn sàng chinh phục kỳ thi IELTS chuẩn quốc tế"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-white/95 backdrop-blur-md border border-white/40 shadow-sm text-xs font-bold text-[#20272E] flex items-center justify-between">
-                    <span>Hơn 12.000+ học viên đồng hành</span>
-                    <span className="text-[#28665F] font-black">Band 7.0+ Avg</span>
-                  </div>
                 </div>
               </div>
             </div>
