@@ -1,0 +1,29 @@
+package com.ielts.platform.api.dashboard;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import com.ielts.platform.core.common.ApiResponse;
+import com.ielts.platform.core.security.PermissionConstants;
+import com.ielts.platform.schemas.dashboard.DashboardSummaryDto;
+import com.ielts.platform.services.DashboardService;
+
+@RestController
+@RequestMapping("/admin/dashboard")
+@RequiredArgsConstructor
+@Tag(name = "Admin Dashboard", description = "High-level summary metrics, activity charts, and attention alerts")
+public class DashboardController {
+
+    private final DashboardService dashboardService;
+
+    @GetMapping("/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or hasAuthority('" + PermissionConstants.ADMIN_READ + "')")
+    @Operation(summary = "Get aggregated admin KPIs, 7-day activity metrics, and attention items")
+    public ApiResponse<DashboardSummaryDto> getSummary() {
+        return ApiResponse.ok(dashboardService.getDashboardSummary());
+    }
+}

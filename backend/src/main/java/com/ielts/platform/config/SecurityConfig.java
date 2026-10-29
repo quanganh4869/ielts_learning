@@ -1,17 +1,10 @@
 package com.ielts.platform.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ielts.platform.common.ApiResponse;
-import com.ielts.platform.security.ClientIpResolver;
-import com.ielts.platform.security.CookieOrHeaderBearerTokenResolver;
-import com.ielts.platform.security.CsrfCookieFilter;
-import com.ielts.platform.security.RateLimitingFilter;
-import com.ielts.platform.security.SlidingWindowRateLimiter;
-import com.ielts.platform.security.SpaCsrfTokenRequestHandler;
-import com.ielts.platform.security.supabase.SupabaseAudienceValidator;
-import com.ielts.platform.security.supabase.SupabaseJwtAuthenticationConverter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -38,12 +31,21 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import com.ielts.platform.config.properties.AuthProperties;
+import com.ielts.platform.config.properties.RateLimitingProperties;
+import com.ielts.platform.config.properties.SupabaseProperties;
+import com.ielts.platform.core.common.ApiResponse;
+import com.ielts.platform.core.filter.CsrfCookieFilter;
+import com.ielts.platform.core.filter.RateLimitingFilter;
+import com.ielts.platform.core.security.ClientIpResolver;
+import com.ielts.platform.core.security.CookieOrHeaderBearerTokenResolver;
+import com.ielts.platform.core.security.SlidingWindowRateLimiter;
+import com.ielts.platform.core.security.SpaCsrfTokenRequestHandler;
+import com.ielts.platform.core.security.supabase.SupabaseAudienceValidator;
+import com.ielts.platform.core.security.supabase.SupabaseJwtAuthenticationConverter;
 
 @Slf4j
 @Configuration
