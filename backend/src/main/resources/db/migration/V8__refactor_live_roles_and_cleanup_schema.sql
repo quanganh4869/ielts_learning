@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS enrollments CASCADE;
 -- 2. Remap user roles to strictly Admin and Student
 UPDATE user_roles 
 SET role_id = 'role_admin' 
-WHERE user_id IN (SELECT id FROM users WHERE email IN ('quanganhqb04@gmail.com', 'admin@ieltsplatform.com'));
+WHERE user_id IN (SELECT id FROM users WHERE email IN ('quanganhqb04@gmail.com', 'admin@ieltsplatform.com', 'anhquangnguyen2k4@gmail.com'));
 
 UPDATE user_roles 
 SET role_id = 'role_student' 
