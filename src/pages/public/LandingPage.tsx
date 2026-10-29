@@ -184,15 +184,8 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* LEFT COLUMN: HERO CONTENT (~52%) */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
-              {/* Clean typographic kicker without pill box or green dot */}
-              <div className="reveal-init mb-4">
-                <span className="text-xs font-black uppercase tracking-wider text-[#28665F]">
-                  Lộ trình học IELTS cá nhân hóa • Chuẩn Cambridge
-                </span>
-              </div>
-
               {/* GIANT FRIENDLY HEADING */}
-              <h1 className="reveal-init reveal-delay-1 text-[36px] sm:text-[48px] lg:text-[56px] font-black text-[#20272E] tracking-tight leading-[1.12]">
+              <h1 className="reveal-init text-[36px] sm:text-[48px] lg:text-[56px] font-black text-[#20272E] tracking-tight leading-[1.12]">
                 Chinh phục mục tiêu IELTS theo cách học{' '}
                 <span className="text-[#28665F] underline decoration-[#28665F]/30 decoration-wavy decoration-2">
                   của riêng bạn.
@@ -301,10 +294,6 @@ export const LandingPage: React.FC = () => {
                     Không mất thời gian học lại phần bạn đã vững. Bài Placement Test định vị chính xác điểm yếu: bẫy phân vân T/F/NG, thiếu từ vựng chủ đề, hay lỗi lạc đề Task 2.
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#E3E7EB] flex items-center justify-between text-xs font-bold text-[#28665F]">
-                  <span>Kiểm tra đầu vào 15 phút</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
               </div>
             </div>
 
@@ -328,10 +317,6 @@ export const LandingPage: React.FC = () => {
                     Mỗi ngày bạn luôn biết rõ mình cần hoàn thành gì: 15 phút từ vựng chủ đề, 1 bài nghe kỹ thuật bắt từ khóa, và 1 bài viết đoạn thân bài có hướng dẫn chấm chi tiết.
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#E3E7EB] flex items-center justify-between text-xs font-bold text-[#28665F]">
-                  <span>Phân chia 3 giai đoạn rõ ràng</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
               </div>
             </div>
 
@@ -354,10 +339,6 @@ export const LandingPage: React.FC = () => {
                   <p className="text-xs sm:text-sm text-[#4B5563] font-medium leading-relaxed mt-2.5">
                     Sửa từng lỗi câu với Writing Coach và nhắc lại từ vựng thông minh qua thuật toán Spaced Repetition (SM-2). Những lỗi sai biến thành điểm mạnh trong bài thi thật.
                   </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-[#E3E7EB] flex items-center justify-between text-xs font-bold text-[#28665F]">
-                  <span>Thuật toán SM-2 thông minh</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
             </div>
@@ -537,7 +518,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Interactive Skill Showcase Body with Realistic Photography */}
-          <div className="reveal-init bg-[#FAFBFB] border border-[#E3E7EB] rounded-3xl p-6 sm:p-10 shadow-sm">
+          <div className="reveal-init p-6 sm:p-10">
             {activeSkill === 'listening' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Column: Description */}
@@ -709,7 +690,7 @@ export const LandingPage: React.FC = () => {
 
                 {/* Right Column: Skill Real Photo + Writing Score Preview */}
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="rounded-2xl overflow-hidden aspect-[16/9] border border-[#E3E7EB] shadow-xs bg-slate-100">
+                  <div className="rounded-2xl overflow-hidden aspect-[16/9]">
                     <img
                       src="/images/landing/skill-writing-real.jpg"
                       alt="Người học soạn thảo bài luận IELTS Writing trên máy tính kết hợp ghi chép dàn ý"
@@ -718,22 +699,22 @@ export const LandingPage: React.FC = () => {
                     />
                   </div>
 
-                  <div className="bg-white rounded-2xl border border-[#E3E7EB] p-4 shadow-sm space-y-2.5">
+                  <div className="space-y-2.5">
                     <div className="flex items-center justify-between pb-1.5 border-b border-[#E3E7EB]">
                       <span className="text-xs font-black text-[#20272E]">Writing Task 2: Technology & Education</span>
                       <span className="text-xs font-bold text-[#28665F] font-mono">264 words</span>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
-                      <div className="p-1.5 rounded-lg bg-[#EAF4EE] text-[#28665F]">
+                      <div className="p-1.5 text-[#28665F]">
                         <span className="block font-black text-xs">7.5</span> Task
                       </div>
-                      <div className="p-1.5 rounded-lg bg-[#EAF4EE] text-[#28665F]">
+                      <div className="p-1.5 text-[#28665F]">
                         <span className="block font-black text-xs">8.0</span> Coherence
                       </div>
-                      <div className="p-1.5 rounded-lg bg-[#FFF9EE] text-[#D97706]">
+                      <div className="p-1.5 text-[#D97706]">
                         <span className="block font-black text-xs">7.0</span> Lexical
                       </div>
-                      <div className="p-1.5 rounded-lg bg-[#EAF4EE] text-[#28665F]">
+                      <div className="p-1.5 text-[#28665F]">
                         <span className="block font-black text-xs">7.5</span> Grammar
                       </div>
                     </div>
@@ -914,50 +895,18 @@ export const LandingPage: React.FC = () => {
       <section id="writing-coach" className="py-20 sm:py-26 bg-white border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-14 reveal-init">
-            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block mb-3">
-              Writing Coach tương tác
-            </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
               Biến câu văn Band 6.0 thành tuyệt tác Band 8.0
             </h2>
             <p className="text-base sm:text-lg text-[#68727D] mt-4 font-medium leading-relaxed">
-              Nhấn vào công tắc bên dưới để so sánh trực quan câu văn học viên viết với câu đã được Writing Coach nâng cấp chuẩn 4 tiêu chí chấm thi.
+              So sánh trực quan câu văn học viên viết với câu đã được Writing Coach nâng cấp chuẩn 4 tiêu chí chấm thi Cambridge.
             </p>
-
-            {/* Toggle Mode Button */}
-            <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl bg-[#F2F4F7] border border-[#E3E7EB] mt-7">
-              <button
-                type="button"
-                onClick={() => setWritingMode('draft')}
-                className={cn(
-                  'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer',
-                  writingMode === 'draft'
-                    ? 'bg-white text-[#20272E] shadow-xs'
-                    : 'text-[#68727D] hover:text-[#20272E]'
-                )}
-              >
-                Bản nháp học viên (Band 6.0)
-              </button>
-              <button
-                type="button"
-                onClick={() => setWritingMode('polished')}
-                className={cn(
-                  'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer',
-                  writingMode === 'polished'
-                    ? 'bg-[#28665F] text-white shadow-xs'
-                    : 'text-[#68727D] hover:text-[#20272E]'
-                )}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Bản nâng cấp Writing Coach (Band 8.0)
-              </button>
-            </div>
           </div>
 
           {/* Interactive Comparison Card with Real Photograph Context */}
           <div className="reveal-init max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Real Educational Photo of Student Reviewing Essay */}
-            <div className="lg:col-span-5 rounded-3xl overflow-hidden border border-[#E3E7EB] shadow-md bg-white">
+            <div className="lg:col-span-5 rounded-3xl overflow-hidden">
               <div className="aspect-[4/3] sm:aspect-[1/1] w-full overflow-hidden">
                 <img
                   src="/images/landing/writing-coach-study.jpg"
@@ -966,14 +915,10 @@ export const LandingPage: React.FC = () => {
                   loading="lazy"
                 />
               </div>
-              <div className="p-4 bg-[#FAFBFB] border-t border-[#E3E7EB] text-xs font-bold text-[#68727D] flex items-center justify-between">
-                <span>4 Tiêu chí chấm thi Cambridge</span>
-                <span className="text-[#28665F]">TR • CC • LR • GRA</span>
-              </div>
             </div>
 
             {/* Interactive Feedback Breakdown Card */}
-            <div className="lg:col-span-7 bg-[#FAFBFB] rounded-3xl border border-[#E3E7EB] p-6 sm:p-8 shadow-sm space-y-5">
+            <div className="lg:col-span-7 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E3E7EB]">
                 <div>
                   <span className="text-[11px] font-bold text-[#68727D] block">Đề bài IELTS Writing Task 2</span>
@@ -982,76 +927,72 @@ export const LandingPage: React.FC = () => {
                   </h4>
                 </div>
                 <span className="text-[#28665F] font-bold text-xs uppercase tracking-wider">
-                  {writingMode === 'draft' ? 'Đánh giá: Band 6.0' : 'Đánh giá: Band 8.0'}
+                  Đánh giá Band 8.0
                 </span>
               </div>
 
-              {/* Sentence Box */}
-              <div className="space-y-2">
-                <span className="text-xs font-black uppercase tracking-wider text-[#68727D]">
-                  {writingMode === 'draft' ? 'Câu học viên nộp:' : 'Câu sau khi Writing Coach chỉnh sửa:'}
-                </span>
-
-                {writingMode === 'draft' ? (
-                  <div className="p-4 rounded-2xl bg-white border border-[#E3E7EB] text-xs sm:text-sm leading-relaxed text-[#20272E] font-medium animate-in fade-in duration-300">
+              {/* Sentence Comparison Box */}
+              <div className="space-y-3">
+                <div>
+                  <span className="text-xs font-bold text-[#68727D] block mb-1">
+                    Câu gốc học viên:
+                  </span>
+                  <div className="text-xs sm:text-sm leading-relaxed text-[#68727D] italic">
                     &quot;I think putting big tax on junk food is good because many people eat too much bad food and get fat, so they will stop buying it when it is expensive.&quot;
                   </div>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-[#EAF4EE] border border-[#28665F]/30 text-xs sm:text-sm leading-relaxed text-[#1E4D48] font-bold animate-in fade-in duration-300">
+                </div>
+
+                <div className="pt-2 border-t border-[#E3E7EB]">
+                  <span className="text-xs font-bold text-[#28665F] block mb-1">
+                    Câu nâng cấp Writing Coach:
+                  </span>
+                  <div className="text-xs sm:text-sm leading-relaxed text-[#1E4D48] font-bold">
                     &quot;Levying prohibitive taxes on unhealthy fast food serves as an effective fiscal deterrent, disincentivizing excessive consumption while alleviating the burden of obesity on national healthcare systems.&quot;
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Criteria Breakdown Tags */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="p-3 rounded-xl bg-white border border-[#E3E7EB] text-xs space-y-1">
-                  <div className="flex justify-between items-center font-bold">
+              <div className="grid grid-cols-2 gap-2.5 pt-2">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center font-bold text-xs">
                     <span className="text-[#68727D]">Task Response</span>
-                    <span className="text-[#28665F]">{writingMode === 'draft' ? '6.0' : '8.0'}</span>
+                    <span className="text-[#28665F]">8.0</span>
                   </div>
-                  <p className="text-[11px] text-[#68727D] font-medium">
-                    {writingMode === 'draft' ? 'Lập luận đơn giản, lặp ý.' : 'Luận điểm sắc bén, nhìn nhận ở góc độ y tế.'}
+                  <p className="text-[11px] text-[#68727D]">
+                    Luận điểm sắc bén, nhìn nhận ở góc độ kinh tế và y tế công cộng.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white border border-[#E3E7EB] text-xs space-y-1">
-                  <div className="flex justify-between items-center font-bold">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center font-bold text-xs">
                     <span className="text-[#68727D]">Coherence & Cohesion</span>
-                    <span className="text-[#28665F]">{writingMode === 'draft' ? '6.0' : '8.0'}</span>
+                    <span className="text-[#28665F]">8.0</span>
                   </div>
-                  <p className="text-[11px] text-[#68727D] font-medium">
-                    {writingMode === 'draft' ? 'Lạm dụng từ nối "so", "because".' : 'Liên kết câu mượt mà qua mệnh đề quan hệ.'}
+                  <p className="text-[11px] text-[#68727D]">
+                    Liên kết câu mượt mà qua cấu trúc phân từ hiện tại (participle clause).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white border border-[#E3E7EB] text-xs space-y-1">
-                  <div className="flex justify-between items-center font-bold">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center font-bold text-xs">
                     <span className="text-[#68727D]">Lexical Resource</span>
-                    <span className="text-[#28665F]">{writingMode === 'draft' ? '5.5' : '8.5'}</span>
+                    <span className="text-[#28665F]">8.5</span>
                   </div>
-                  <p className="text-[11px] text-[#68727D] font-medium">
-                    {writingMode === 'draft' ? 'Từ vựng thông thường.' : 'Collocations C1/C2: "fiscal deterrent".'}
+                  <p className="text-[11px] text-[#68727D]">
+                    Collocations C1/C2: &quot;fiscal deterrent&quot;, &quot;alleviating the burden&quot;.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white border border-[#E3E7EB] text-xs space-y-1">
-                  <div className="flex justify-between items-center font-bold">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center font-bold text-xs">
                     <span className="text-[#68727D]">Grammar Range</span>
-                    <span className="text-[#28665F]">{writingMode === 'draft' ? '6.0' : '8.0'}</span>
+                    <span className="text-[#28665F]">8.0</span>
                   </div>
-                  <p className="text-[11px] text-[#68727D] font-medium">
-                    {writingMode === 'draft' ? 'Câu ghép đơn giản.' : 'Danh từ hóa (Nominalization) chuẩn mực.'}
+                  <p className="text-[11px] text-[#68727D]">
+                    Danh từ hóa (Nominalization) chuẩn mực của văn phong học thuật.
                   </p>
                 </div>
-              </div>
-
-              <div className="pt-2 text-center">
-                <Link to="/register">
-                  <Button variant="primary" size="md" className="font-bold shadow-xs" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                    Luyện viết và nhận sửa câu ngay
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
@@ -1085,12 +1026,6 @@ export const LandingPage: React.FC = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              </div>
-              <div className="p-4 bg-white text-xs font-bold text-[#68727D] space-y-1">
-                <span className="text-[#28665F] block font-black">Thuật toán Spaced Repetition (SM-2)</span>
-                <p className="text-[11px] font-medium leading-relaxed">
-                  Tự động tính chu kỳ ôn tập tối ưu (1 ngày → 3 ngày → 7 ngày → 14 ngày) để khắc sâu vào trí nhớ dài hạn.
-                </p>
               </div>
             </div>
 
@@ -1175,13 +1110,6 @@ export const LandingPage: React.FC = () => {
                         ({currentCard.partOfSpeech})
                       </span>
                     </div>
-
-                    <div className="pt-3 border-t border-[#F2F4F7] flex items-center justify-between text-xs text-[#68727D]">
-                      <span className="font-semibold">Thuật toán SM-2: Lần ôn thứ {currentCard.repetitionCount}</span>
-                      <span className="text-[#28665F] font-bold flex items-center gap-1">
-                        <RotateCw className="w-3.5 h-3.5" /> Lật thẻ
-                      </span>
-                    </div>
                   </div>
 
                   {/* BACK FACE */}
@@ -1226,28 +1154,12 @@ export const LandingPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-
-                    <div className="pt-3 border-t border-[#28665F]/15 flex items-center justify-between text-xs text-[#28665F]">
-                      <span className="font-bold">✓ Đã nhớ từ này</span>
-                      <span className="font-bold flex items-center gap-1">
-                        <RotateCw className="w-3.5 h-3.5" /> Lật lại
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Action Bar */}
-              <div className="flex items-center gap-3 mt-5">
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={() => setIsFlipped(!isFlipped)}
-                  className="font-bold text-xs bg-white cursor-pointer"
-                  leftIcon={<RotateCw className="w-3.5 h-3.5" />}
-                >
-                  {isFlipped ? 'Xem mặt trước' : 'Lật xem nghĩa (Flip)'}
-                </Button>
+              <div className="mt-5">
                 <Link to="/register">
                   <Button variant="primary" size="md" className="font-bold text-xs" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                     Khám phá kho 2.000+ từ vựng
@@ -1410,21 +1322,23 @@ export const LandingPage: React.FC = () => {
          ========================================================================= */}
       <section id="exam-simulation" className="py-20 sm:py-26 bg-[#FAFBFB] border-b border-[#E3E7EB]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
             {/* Left Column: CDI Features & Real Exam Room Photo */}
-            <div className="lg:col-span-5 reveal-init space-y-5">
-              <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
-                Phòng thi mô phỏng CDI
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#20272E] tracking-tight leading-tight">
-                Làm quen với phòng thi máy tính IDP & British Council
-              </h2>
-              <p className="text-base text-[#68727D] font-medium leading-relaxed">
-                Đừng để bỡ ngỡ về giao diện làm rơi điểm số trong ngày thi thật. Nền tảng tái hiện trung thực 100% trải nghiệm thi trên máy tính của kỳ thi Computer-delivered IELTS chính thức.
-              </p>
+            <div className="lg:col-span-6 reveal-init flex flex-col justify-between space-y-5">
+              <div className="space-y-3">
+                <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
+                  Phòng thi mô phỏng CDI
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-[#20272E] tracking-tight leading-tight">
+                  Làm quen với phòng thi máy tính IDP & British Council
+                </h2>
+                <p className="text-sm text-[#68727D] font-medium leading-relaxed">
+                  Tái hiện trung thực 100% trải nghiệm thi trên máy tính của kỳ thi Computer-delivered IELTS chính thức: bấm giờ từng giây, bảng điều hướng 40 câu hỏi, chia đôi màn hình đọc - trả lời.
+                </p>
+              </div>
 
-              {/* Authentic Photo of Computer Lab Exam Room */}
-              <div className="rounded-2xl overflow-hidden aspect-[16/9] border border-[#E3E7EB] shadow-xs">
+              {/* Large, Beautiful Exam Room Photo */}
+              <div className="rounded-2xl overflow-hidden aspect-[16/10] border border-[#E3E7EB] shadow-xs flex-1 min-h-[260px]">
                 <img
                   src="/images/landing/cdi-exam-room.jpg"
                   alt="Phòng thi máy tính chuẩn hóa với các dãy máy trạm riêng biệt cho thí sinh"
@@ -1433,24 +1347,7 @@ export const LandingPage: React.FC = () => {
                 />
               </div>
 
-              <div className="space-y-2.5 pt-2 text-xs font-semibold text-[#4B5563]">
-                <div className="p-3 rounded-2xl bg-white border border-[#E3E7EB] flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-[#28665F] shrink-0" />
-                  <div>
-                    <strong className="text-[#20272E] block">Đồng hồ đếm ngược từng giây</strong>
-                    <span>Tập thói quen phân bổ thời gian chuẩn xác cho từng Section.</span>
-                  </div>
-                </div>
-                <div className="p-3 rounded-2xl bg-white border border-[#E3E7EB] flex items-center gap-3">
-                  <Layers className="w-4 h-4 text-[#28665F] shrink-0" />
-                  <div>
-                    <strong className="text-[#20272E] block">Bảng điều hướng 40 câu hỏi</strong>
-                    <span>Dễ dàng nhận biết câu đã làm, câu chưa làm và gắn cờ (Review flag).</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
+              <div>
                 <Link to="/register">
                   <Button variant="primary" size="md" className="font-bold shadow-xs" rightIcon={<ArrowRight className="w-4 h-4" />}>
                     Vào phòng thi thử ngay
@@ -1460,30 +1357,26 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Right Column: CDI Workspace Mockup */}
-            <div className="lg:col-span-7 reveal-init reveal-delay-2">
-              <div className="rounded-3xl bg-[#20272E] text-white p-4 sm:p-6 shadow-2xl border border-gray-800 space-y-4">
+            <div className="lg:col-span-6 reveal-init reveal-delay-2 flex flex-col">
+              <div className="rounded-2xl bg-[#20272E] text-white p-5 shadow-xl border border-gray-800 space-y-4 flex-1 flex flex-col justify-between">
                 {/* CDI Topbar */}
                 <div className="flex items-center justify-between pb-3 border-b border-gray-700 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-200">IELTS Academic — Reading Practice Test 1</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-black/50 px-3 py-1 rounded-lg border border-gray-700 font-mono text-emerald-400 font-bold">
-                      ⏱ 58:24 remaining
-                    </div>
+                  <span className="font-bold text-gray-200">IELTS Academic — Reading Practice Test 1</span>
+                  <div className="bg-black/50 px-3 py-1 rounded-lg border border-gray-700 font-mono text-emerald-400 font-bold">
+                    ⏱ 58:24 remaining
                   </div>
                 </div>
 
                 {/* CDI Split Screen Preview */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-[#2A3441] p-4 rounded-xl border border-gray-700 space-y-2 h-48 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3 text-xs flex-1">
+                  <div className="bg-[#2A3441] p-4 rounded-xl border border-gray-700 space-y-2 h-52 overflow-y-auto">
                     <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold">Reading Passage 1</span>
                     <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
                       &quot;The transition towards renewable micro-grids requires both decentralized battery storage and community-level incentives. Early trials in Scandinavia demonstrated a 40% reduction in grid instability during peak winter hours...&quot;
                     </p>
                   </div>
 
-                  <div className="bg-[#2A3441] p-4 rounded-xl border border-gray-700 space-y-3 h-48 overflow-y-auto">
+                  <div className="bg-[#2A3441] p-4 rounded-xl border border-gray-700 space-y-3 h-52 overflow-y-auto">
                     <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold">Questions 1-5</span>
                     <div className="space-y-2 text-[11px]">
                       <p className="text-gray-200 font-bold">1. Micro-grids eliminated 100% of power failures?</p>
@@ -1722,68 +1615,42 @@ export const LandingPage: React.FC = () => {
          ========================================================================= */}
       <section id="cta" className="py-20 sm:py-28 bg-[#FAFBFB]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="reveal-init rounded-3xl bg-gradient-to-br from-[#EAF4EE] via-[#FFF9EE] to-[#EAF4EE] border-2 border-[#28665F]/20 shadow-xl overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center p-8 sm:p-12 lg:p-14">
-              {/* Left Column: CTA Pitch */}
-              <div className="lg:col-span-7 space-y-5 text-left">
-                <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
-                  Bắt đầu ngay hôm nay
-                </span>
+          <div className="reveal-init rounded-3xl bg-gradient-to-br from-[#EAF4EE] via-[#FFF9EE] to-[#EAF4EE] border-2 border-[#28665F]/20 shadow-xl overflow-hidden p-8 sm:p-12 lg:p-14 text-center max-w-3xl mx-auto space-y-6">
+            <span className="text-xs font-black uppercase tracking-wider text-[#28665F] inline-block">
+              Bắt đầu ngay hôm nay
+            </span>
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
-                  Sẵn sàng chinh phục mục tiêu IELTS của bạn?
-                </h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#20272E] tracking-tight leading-tight">
+              Sẵn sàng chinh phục mục tiêu IELTS của bạn?
+            </h2>
 
-                <p className="text-sm sm:text-base text-[#4B5563] font-medium leading-relaxed">
-                  Tạo tài khoản miễn phí để làm bài đánh giá năng lực đầu vào và nhận ngay lộ trình học tập được thiết kế riêng cho mục tiêu Band điểm của bạn.
-                </p>
+            <p className="text-sm sm:text-base text-[#4B5563] font-medium leading-relaxed">
+              Tạo tài khoản miễn phí để làm bài đánh giá năng lực đầu vào và nhận ngay lộ trình học tập được thiết kế riêng cho mục tiêu Band điểm của bạn.
+            </p>
 
-                <div className="flex flex-wrap items-center gap-3.5 pt-2 w-full sm:w-auto">
-                  <Link to="/register" className="w-full sm:w-auto">
-                    <Button
-                      size="lg"
-                      variant="primary"
-                      className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md rounded-2xl"
-                      rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
-                    >
-                      Tạo tài khoản học miễn phí
-                    </Button>
-                  </Link>
-                  <Link to="/login" className="w-full sm:w-auto">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full sm:w-auto font-bold text-base h-13 px-7 rounded-2xl bg-white"
-                    >
-                      Đăng nhập tài khoản
-                    </Button>
-                  </Link>
-                </div>
+            <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+              <Link to="/register">
+                <Button
+                  size="lg"
+                  variant="primary"
+                  className="font-black text-base h-13 px-8 shadow-md rounded-2xl"
+                  rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+                >
+                  Tạo tài khoản học miễn phí
+                </Button>
+              </Link>
+            </div>
 
-                <div className="pt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold text-[#68727D]">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Miễn phí đăng ký
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Kiểm tra đầu vào 15 phút
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Không cần thẻ tín dụng
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Column: Confident Student Photograph */}
-              <div className="lg:col-span-5">
-                <div className="relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[1/1] border border-[#28665F]/20 shadow-lg bg-white">
-                  <img
-                    src="/images/landing/cta-learner-confidence.jpg"
-                    alt="Học viên tự tin, sẵn sàng chinh phục kỳ thi IELTS chuẩn quốc tế"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-bold text-[#68727D]">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Miễn phí đăng ký
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Kiểm tra đầu vào 15 phút
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> Không cần thẻ tín dụng
+              </span>
             </div>
           </div>
         </div>

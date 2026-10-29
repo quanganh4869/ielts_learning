@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/common/Button'
 import { BrandLogo } from '@/components/brand'
-import { Menu, X, ArrowRight, Globe } from 'lucide-react'
+import { Menu, X, ArrowRight, ChevronDown } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useLanguage } from '@/context/LanguageContext'
 import { useAuth } from '@/context/AuthContext'
@@ -14,6 +14,8 @@ export const PublicLayout: React.FC = () => {
   const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const isHomePage = location.pathname === '/'
 
@@ -50,6 +52,17 @@ export const PublicLayout: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsNavDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const navLinks = [
     { label: tText('Phương pháp', 'Methodology'), href: '#method' },
     { label: tText('Lộ trình', 'Roadmap'), href: '#roadmap' },
@@ -62,6 +75,19 @@ export const PublicLayout: React.FC = () => {
 
   const getHref = (anchor: string) => {
     return isHomePage ? anchor : `/${anchor}`
+  }
+
+  const handleStartLearning = () => {
+    if (isAuthenticated && user) {
+      const isAdmin =
+        Boolean(user.isAdmin) ||
+        user.role === 'admin' ||
+        Boolean(user.roles?.includes('ROLE_ADMIN')) ||
+        Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
+      navigate(isAdmin ? '/admin/dashboard' : '/app/dashboard')
+    } else {
+      navigate('/login')
+    }
   }
 
   return (
@@ -81,20 +107,36 @@ export const PublicLayout: React.FC = () => {
             <BrandLogo variant="horizontal" size="md" to="/" />
           </div>
 
-          {/* DESKTOP NAVIGATION LINKS */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-bold text-[#68727D]">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={getHref(link.href)}
-                className="hover:text-[#28665F] transition-colors relative py-1 focus:outline-none focus:text-[#28665F] whitespace-nowrap"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
+          {/* DESKTOP NAVIGATION: COMPACT DROPDOWN MENU SO LANGUAGE TOGGLE NEVER SHIFTS NAV */}
+          <div className="hidden lg:block relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsNavDropdownOpen(!isNavDropdownOpen)}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold text-[#68727D] hover:text-[#28665F] hover:bg-[#F2F4F7] transition-colors cursor-pointer select-none"
+            >
+              <span>{tText('Menu', 'Menu')}</span>
+              <ChevronDown
+                className={cn('w-4 h-4 transition-transform duration-200', isNavDropdownOpen && 'rotate-180 text-[#28665F]')}
+              />
+            </button>
 
-          {/* ACTIONS: LANGUAGE TOGGLE + LOGIN & START CTA */}
+            {isNavDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-52 rounded-2xl bg-white border border-[#E3E7EB] shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={getHref(link.href)}
+                    onClick={() => setIsNavDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm font-bold text-[#4B5563] hover:text-[#28665F] hover:bg-[#F2F4F7] transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ACTIONS: LANGUAGE TOGGLE + SINGLE UNIFIED START BUTTON */}
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             {/* Clean frameless language switcher */}
             <div className="flex items-center text-xs font-bold text-[#68727D] tracking-wider select-none px-1">
@@ -127,38 +169,20 @@ export const PublicLayout: React.FC = () => {
               </button>
             </div>
 
-            {isAuthenticated && user ? (
-              <Link to={user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN') ? '/admin/dashboard' : '/app/dashboard'}>
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="font-bold text-sm shadow-xs"
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
-                >
-                  {user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
-                    ? tText('Vào trang quản trị', 'Admin Console')
-                    : tText('Vào không gian học', 'Go to Dashboard')}
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="ghost" size="md" className="font-bold text-sm text-[#4A5568] hover:text-[#28665F]">
-                    {tText('Đăng nhập', 'Log in')}
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    className="font-bold text-sm shadow-xs"
-                    rightIcon={<ArrowRight className="w-4 h-4" />}
-                  >
-                    {tText('Bắt đầu học', 'Get Started')}
-                  </Button>
-                </Link>
-              </>
-            )}
+            {/* UNIFIED START BUTTON */}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleStartLearning}
+              className="font-bold text-sm shadow-xs cursor-pointer"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              {isAuthenticated && user
+                ? (user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
+                  ? tText('Vào trang quản trị', 'Admin Console')
+                  : tText('Vào không gian học', 'Go to Dashboard'))
+                : tText('Bắt đầu học', 'Get Started')}
+            </Button>
           </div>
 
           {/* MOBILE MENU TOGGLE */}
@@ -188,11 +212,14 @@ export const PublicLayout: React.FC = () => {
               </button>
             </div>
 
-            <Link to="/register">
-              <Button variant="primary" size="sm" className="font-bold text-xs">
-                {tText('Bắt đầu', 'Start')}
-              </Button>
-            </Link>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleStartLearning}
+              className="font-bold text-xs cursor-pointer"
+            >
+              {tText('Bắt đầu học', 'Get Started')}
+            </Button>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-[#68727D] hover:text-[#20272E] rounded-lg hover:bg-[#F2F4F7] transition-colors focus:outline-none"
@@ -218,17 +245,19 @@ export const PublicLayout: React.FC = () => {
                 </a>
               ))}
             </nav>
-            <div className="pt-2 border-t border-[#E3E7EB] flex flex-col gap-2">
-              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" size="md" className="w-full font-bold">
-                  {tText('Đăng nhập', 'Log in')}
-                </Button>
-              </Link>
-              <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="primary" size="md" className="w-full font-bold" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                  {tText('Bắt đầu học ngay', 'Get Started Free')}
-                </Button>
-              </Link>
+            <div className="pt-2 border-t border-[#E3E7EB]">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  handleStartLearning()
+                }}
+                className="w-full font-bold cursor-pointer"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                {tText('Bắt đầu học', 'Get Started')}
+              </Button>
             </div>
           </div>
         )}
@@ -311,18 +340,6 @@ export const PublicLayout: React.FC = () => {
                   'Create your free account to take the placement test and experience proactive IELTS learning with mascot Nori.'
                 )}
               </p>
-              <div className="pt-2 flex items-center gap-3">
-                <Link to="/register">
-                  <Button variant="primary" size="sm" className="font-bold" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    {tText('Đăng ký miễn phí', 'Create Free Account')}
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="outline" size="sm" className="font-bold">
-                    {tText('Đăng nhập', 'Sign In')}
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
 
@@ -333,17 +350,6 @@ export const PublicLayout: React.FC = () => {
                 '© 2026 IELTS Learning Platform. Academic & General Training IELTS Preparation System.'
               )}
             </span>
-            <div className="flex items-center gap-6">
-              <a href={getHref('#faq')} className="hover:text-[#28665F] transition-colors">
-                FAQ
-              </a>
-              <Link to="/login" className="hover:text-[#28665F] transition-colors">
-                {tText('Đăng nhập', 'Log in')}
-              </Link>
-              <Link to="/register" className="hover:text-[#28665F] transition-colors font-bold text-[#28665F]">
-                {tText('Bắt đầu học', 'Sign up')}
-              </Link>
-            </div>
           </div>
         </div>
       </footer>
