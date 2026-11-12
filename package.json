@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "cd backend && mvn spring-boot:run",
+    "dev:frontend": "vite",
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue.bold,green.bold\" --kill-others-on-fail \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "clsx": "^2.1.1",
+    "concurrently": "^10.0.7",
     "lucide-react": "^1.61.0",
     "oxlint": "^1.88.0",
     "react-router-dom": "^7.18.4",
