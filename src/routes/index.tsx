@@ -85,6 +85,7 @@ import { RolesListPage } from '@/admin/pages/security/RolesListPage'
 import { RoleDetailPage } from '@/admin/pages/security/RoleDetailPage'
 import { AuditLogsPage } from '@/admin/pages/security/AuditLogsPage'
 import { AdminSettingsPage } from '@/admin/pages/settings/AdminSettingsPage'
+import { AdminHelpPage } from '@/admin/pages/help/AdminHelpPage'
 
 export const router = createBrowserRouter([
   // Public Landing Layout
@@ -234,8 +235,9 @@ export const router = createBrowserRouter([
       { path: 'security/roles/:roleId', element: <RoleDetailPage /> },
       { path: 'security/audit-logs', element: <AuditLogsPage /> },
 
-      // Group 10: System Settings
+      // Group 10: System Settings & Help
       { path: 'settings', element: <AdminSettingsPage /> },
+      { path: 'help', element: <AdminHelpPage /> },
     ],
   },
 

@@ -248,3 +248,69 @@
     transition: none !important;
   }
 }
+
+/* =========================================================================
+   DARK EMERALD GLASSMORPHISM (VERDILO-INSPIRED ADMIN SYSTEM)
+   ========================================================================= */
+.admin-dark-theme {
+  --admin-bg-base: #07100D;
+  --admin-bg-surface: rgba(13, 26, 21, 0.72);
+  --admin-bg-panel: rgba(16, 32, 26, 0.55);
+  --admin-bg-card: rgba(18, 38, 30, 0.6);
+  --admin-border-subtle: rgba(112, 229, 178, 0.08);
+  --admin-border-medium: rgba(112, 229, 178, 0.16);
+  --admin-border-focus: rgba(112, 229, 178, 0.35);
+  --admin-mint: #70E5B2;
+  --admin-mint-light: #82F0BB;
+  --admin-text-primary: #F0FDF4;
+  --admin-text-secondary: #94A3B8;
+  --admin-text-muted: #64748B;
+  background-color: var(--admin-bg-base);
+  color: var(--admin-text-primary);
+}
+
+.glass-panel {
+  background: rgba(14, 28, 23, 0.68);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(112, 229, 178, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(112, 229, 178, 0.04) inset;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(112, 229, 178, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(112, 229, 178, 0.08) inset;
+}
+
+.glass-pill {
+  background: rgba(112, 229, 178, 0.12);
+  border: 1px solid rgba(112, 229, 178, 0.24);
+  color: #70E5B2;
+}
+
+.glass-input {
+  background: rgba(7, 16, 13, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(112, 229, 178, 0.14);
+  color: #F0FDF4;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: #70E5B2;
+  box-shadow: 0 0 0 3px rgba(112, 229, 178, 0.15);
+}
+
+.admin-glow-radial {
+  background: radial-gradient(circle at 50% 0%, rgba(112, 229, 178, 0.07) 0%, transparent 70%);
+}
+
+.admin-sidebar-glow {
+  background: radial-gradient(circle at 0% 50%, rgba(112, 229, 178, 0.05) 0%, transparent 70%);
+}
+
