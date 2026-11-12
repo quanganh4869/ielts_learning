@@ -4,6 +4,9 @@ import { adminService, CURRENT_ADMIN_USER } from '../services/adminService'
 
 interface AdminContextType {
   admin: AdminUser
+  theme: 'dark' | 'light'
+  setTheme: (theme: 'dark' | 'light') => void
+  toggleTheme: () => void
   can: (action: PermissionAction, module: SystemModule) => boolean
   recordAudit: (
     action: AdminAuditLog['action'],
@@ -19,6 +22,19 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined)
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [admin] = useState<AdminUser>(CURRENT_ADMIN_USER)
+  const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('ielts_admin_theme') as 'dark' | 'light') || 'dark'
+  })
+
+  const setTheme = (newTheme: 'dark' | 'light') => {
+    setThemeState(newTheme)
+    localStorage.setItem('ielts_admin_theme', newTheme)
+  }
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+  }
 
   // Permission evaluation based on role
   const can = useMemo(() => {
@@ -62,7 +78,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }
 
   return (
-    <AdminContext.Provider value={{ admin, can, recordAudit }}>
+    <AdminContext.Provider value={{ admin, theme, setTheme, toggleTheme, can, recordAudit }}>
       {children}
     </AdminContext.Provider>
   )

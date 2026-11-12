@@ -14,6 +14,8 @@ import {
   TrendingUp,
   ExternalLink,
   ChevronRight,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useAdmin } from '../context/AdminContext'
 import { useAuth } from '@/context/AuthContext'
@@ -23,7 +25,7 @@ interface AdminCommandBarProps {
 }
 
 export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSidebar }) => {
-  const { admin } = useAdmin()
+  const { admin, theme, toggleTheme } = useAdmin()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -146,7 +148,27 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
         </div>
 
         {/* Right: Quick Create Button + Notifications + Profile Avatar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Theme Switcher Button (Dark Emerald vs Light Emerald) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border shadow-xs hover:scale-105 active:scale-95"
+            style={{
+              backgroundColor: theme === 'dark' ? 'rgba(16, 32, 26, 0.8)' : '#FFFFFF',
+              borderColor: theme === 'dark' ? 'rgba(112, 229, 178, 0.2)' : '#CBD5E1',
+              color: theme === 'dark' ? '#70E5B2' : '#28665F',
+            }}
+            title={theme === 'dark' ? 'Chuyển sang giao diện Sáng (Light Theme)' : 'Chuyển sang giao diện Tối (Dark Theme)'}
+            aria-label="Chuyển đổi giao diện Sáng / Tối"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-300 stroke-[2.2]" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#28665F] stroke-[2.2]" />
+            )}
+          </button>
+
           {/* Quick Create Mint Button */}
           <div className="relative">
             <button

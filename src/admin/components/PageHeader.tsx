@@ -16,13 +16,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E3E7EB] ${className}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#70E5B2]/10 ${className}`}>
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-extrabold text-[#20272E] tracking-tight">{title}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#F0FDF4] tracking-tight">{title}</h1>
           {badge}
         </div>
-        {subtitle && <p className="text-xs sm:text-sm text-[#68727D] mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs sm:text-sm text-[#CBD5E1] mt-1 font-medium">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
     </div>

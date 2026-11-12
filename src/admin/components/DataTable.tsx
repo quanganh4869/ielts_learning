@@ -94,10 +94,10 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={`bg-white border border-[#E3E7EB] rounded-xl overflow-hidden shadow-2xs ${className}`}>
+    <div className={`glass-panel border border-[#70E5B2]/15 rounded-2xl overflow-hidden shadow-xl ${className}`}>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs sm:text-sm text-[#20272E]">
-          <thead className="bg-[#F7F8FA] border-b border-[#E3E7EB] text-xs font-bold text-[#68727D] uppercase tracking-wider select-none">
+        <table className="w-full text-left text-xs sm:text-sm text-[#F0FDF4]">
+          <thead className="bg-[#07100D]/75 border-b border-[#70E5B2]/10 text-xs font-bold text-[#94A3B8] uppercase tracking-wider select-none">
             <tr>
               {columns.map((col) => {
                 const isSorted = sortColumn === col.key
@@ -107,7 +107,7 @@ export function DataTable<T>({
                     style={{ width: col.width }}
                     className={`py-3 px-4 ${
                       col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                    } ${col.sortable && onSort ? 'cursor-pointer hover:text-[#20272E]' : ''}`}
+                    } ${col.sortable && onSort ? 'cursor-pointer hover:text-[#70E5B2]' : ''}`}
                     onClick={() => col.sortable && onSort && onSort(col.key)}
                   >
                     <div
@@ -129,7 +129,7 @@ export function DataTable<T>({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E3E7EB]">
+          <tbody className="divide-y divide-[#70E5B2]/5">
             {data.map((item) => {
               const key = keyExtractor(item)
               return (
@@ -137,7 +137,7 @@ export function DataTable<T>({
                   key={key}
                   onClick={(e) => handleRowClick(item, e)}
                   className={`transition-colors ${
-                    onRowClick ? 'cursor-pointer hover:bg-[#F7F8FA]/80' : 'hover:bg-slate-50/50'
+                    onRowClick ? 'cursor-pointer hover:bg-white/[0.03]' : 'hover:bg-white/[0.02]'
                   }`}
                 >
                   {columns.map((col) => {

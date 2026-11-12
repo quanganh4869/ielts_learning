@@ -53,13 +53,13 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#68727D]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#70E5B2]/70" />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full h-9.5 pl-9 pr-3 rounded-lg border border-[#E3E7EB] bg-white text-xs sm:text-sm text-[#20272E] placeholder:text-[#68727D] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/75 text-xs sm:text-sm text-[#F0FDF4] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#70E5B2]/25 focus:border-[#70E5B2] transition-all shadow-inner"
           />
         </div>
 
@@ -102,7 +102,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
               <select
                 value={f.value}
                 onChange={(e) => f.onChange(e.target.value)}
-                className="h-8 text-xs rounded-lg border border-[#E3E7EB] bg-white px-2.5 font-medium text-[#20272E] focus:outline-none focus:border-[#28665F]"
+                className="h-8 text-xs rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/80 px-2.5 font-medium text-[#F0FDF4] focus:outline-none focus:border-[#70E5B2]"
               >
                 {f.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>

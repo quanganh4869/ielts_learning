@@ -87,8 +87,8 @@ export const AssessmentAttemptsPage: React.FC = () => {
       header: 'Thí sinh',
       render: (a) => (
         <div>
-          <span className="font-semibold text-xs sm:text-sm text-[#20272E] block">{a.userName}</span>
-          <span className="text-2xs text-[#68727D] block">{a.userEmail}</span>
+          <span className="font-semibold text-xs sm:text-sm text-[#F0FDF4] block">{a.userName}</span>
+          <span className="text-2xs text-[#CBD5E1] block">{a.userEmail}</span>
         </div>
       ),
     },
@@ -96,7 +96,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'assessment',
       header: 'Bài thi thử',
       render: (a) => (
-        <span className="font-medium text-xs text-[#20272E] block max-w-xs">{a.assessmentTitle}</span>
+        <span className="font-medium text-xs text-[#F0FDF4] block max-w-xs">{a.assessmentTitle}</span>
       ),
     },
     {
@@ -106,10 +106,10 @@ export const AssessmentAttemptsPage: React.FC = () => {
         <div>
           {a.overallBand ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-[#28665F]">Band {a.overallBand.toFixed(1)}</span>
+              <span className="text-sm font-bold text-[#70E5B2]">Band {a.overallBand.toFixed(1)}</span>
             </div>
           ) : (
-            <span className="text-2xs text-[#68727D] italic">Đang chờ chấm</span>
+            <span className="text-2xs text-[#94A3B8] italic">Đang chờ chấm</span>
           )}
         </div>
       ),
@@ -118,7 +118,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'time',
       header: 'Thời gian thi',
       render: (a) => (
-        <div className="text-2xs text-[#68727D]">
+        <div className="text-2xs text-[#CBD5E1]">
           <div>Bắt đầu: {a.startedAt}</div>
           {a.submittedAt && <div>Nộp: {a.submittedAt}</div>}
         </div>
@@ -141,7 +141,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
             ev.stopPropagation()
             setDeletingAttempt(a)
           }}
-          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
           title="Xóa lượt làm bài này"
         >
           <Trash2 className="w-4 h-4" />
@@ -177,11 +177,11 @@ export const AssessmentAttemptsPage: React.FC = () => {
 
       <FilterPanel isOpen={isFilterOpen} onReset={() => setStatusFilter('all')}>
         <div>
-          <label className="text-xs font-bold text-[#20272E] block mb-1.5">Trạng thái bài thi</label>
+          <label className="text-xs font-bold text-[#F0FDF4] block mb-1.5">Trạng thái bài thi</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="w-full text-xs rounded-lg border border-[#E3E7EB] bg-white p-2 text-[#20272E] outline-none"
+            className="w-full text-xs rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/80 p-2 text-[#F0FDF4] outline-none focus:border-[#70E5B2]"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="completed">Đã nộp bài (Completed)</option>

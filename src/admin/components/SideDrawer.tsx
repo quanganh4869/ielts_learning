@@ -43,20 +43,20 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
-        <div className={`w-screen ${width} bg-white shadow-2xl border-l border-[#E3E7EB] flex flex-col justify-between animate-in slide-in-from-right duration-250`}>
+        <div className={`w-screen ${width} bg-[#0E1C17] text-[#F0FDF4] shadow-2xl border-l border-[#70E5B2]/20 flex flex-col justify-between animate-in slide-in-from-right duration-250`}>
           {/* Header */}
-          <div className="p-5 border-b border-[#E3E7EB] flex items-start justify-between gap-4">
+          <div className="p-5 border-b border-[#70E5B2]/15 bg-[#07100D]/80 flex items-start justify-between gap-4">
             <div className="flex items-center gap-2.5">
               <div>
-                <h3 className="text-base font-bold text-[#20272E]">{title}</h3>
-                {subtitle && <p className="text-xs text-[#68727D] mt-0.5">{subtitle}</p>}
+                <h3 className="text-base font-bold text-[#F0FDF4]">{title}</h3>
+                {subtitle && <p className="text-xs text-[#CBD5E1] mt-0.5">{subtitle}</p>}
               </div>
               {badge}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-[#68727D] hover:text-[#20272E] rounded-lg hover:bg-[#F7F8FA] transition-colors"
+              className="p-1.5 text-[#94A3B8] hover:text-[#70E5B2] rounded-lg hover:bg-[#70E5B2]/10 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -69,7 +69,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
 
           {/* Optional Footer */}
           {footer && (
-            <div className="p-4 border-t border-[#E3E7EB] bg-[#F7F8FA]">
+            <div className="p-4 border-t border-[#70E5B2]/15 bg-[#07100D]/80">
               {footer}
             </div>
           )}

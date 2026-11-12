@@ -26,9 +26,9 @@ export const Pagination: React.FC<PaginationProps> = ({
   const endItem = Math.min(currentPage * pageSize, totalItems)
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white border-t border-[#E3E7EB] text-xs text-[#68727D] ${className}`}>
+    <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-[#0D1A15]/60 border-t border-[#70E5B2]/15 text-xs text-[#94A3B8] ${className}`}>
       <div>
-        Hiển thị <span className="font-semibold text-[#20272E]">{startItem}</span> - <span className="font-semibold text-[#20272E]">{endItem}</span> trong số <span className="font-semibold text-[#20272E]">{totalItems}</span> bản ghi
+        Hiển thị <span className="font-semibold text-[#F0FDF4]">{startItem}</span> - <span className="font-semibold text-[#F0FDF4]">{endItem}</span> trong số <span className="font-semibold text-[#F0FDF4]">{totalItems}</span> bản ghi
       </div>
 
       <div className="flex items-center gap-1.5">
@@ -37,13 +37,13 @@ export const Pagination: React.FC<PaginationProps> = ({
           size="sm"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="h-8 px-2"
+          className="h-8 px-2 border-[#70E5B2]/20 hover:border-[#70E5B2]/40 text-[#F0FDF4] disabled:opacity-30 cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span className="sr-only">Trang trước</span>
         </Button>
 
-        <span className="px-2.5 py-1 text-xs font-semibold text-[#20272E]">
+        <span className="px-2.5 py-1 text-xs font-semibold text-[#F0FDF4]">
           {currentPage} / {Math.max(totalPages, 1)}
         </span>
 
@@ -52,7 +52,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           size="sm"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="h-8 px-2"
+          className="h-8 px-2 border-[#70E5B2]/20 hover:border-[#70E5B2]/40 text-[#F0FDF4] disabled:opacity-30 cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
           <span className="sr-only">Trang sau</span>

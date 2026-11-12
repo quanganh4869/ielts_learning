@@ -75,32 +75,32 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const Icon = iconConfig.icon
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-2xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#E3E7EB] space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-[#0E1C17] text-[#F0FDF4] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#70E5B2]/20 space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconConfig.bg}`}>
               <Icon className="w-5 h-5 stroke-2" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-[#20272E] leading-snug">{title}</h3>
+            <h3 className="text-base sm:text-lg font-bold text-[#F0FDF4] leading-snug">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-[#68727D] hover:text-[#20272E] p-1 rounded-lg transition-colors"
+            className="text-[#94A3B8] hover:text-[#70E5B2] p-1.5 rounded-lg hover:bg-[#70E5B2]/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Message */}
-        <p className="text-xs sm:text-sm text-[#68727D] leading-relaxed">{message}</p>
+        <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">{message}</p>
 
         {/* Scope warning pill */}
         {scopeWarning && (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 leading-normal">
+          <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-normal">
             <strong>Lưu ý phạm vi ảnh hưởng:</strong> {scopeWarning}
           </div>
         )}
@@ -108,8 +108,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         {/* Reason Input */}
         {requireReason && (
           <div className="space-y-1.5 pt-1">
-            <label className="text-xs font-bold text-[#20272E]">
-              Lý do thực hiện <span className="text-rose-500">*</span>
+            <label className="text-xs font-bold text-[#F0FDF4]">
+              Lý do thực hiện <span className="text-rose-400">*</span>
             </label>
             <textarea
               value={reason}
@@ -119,20 +119,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               }}
               rows={2}
               placeholder={reasonPlaceholder}
-              className="w-full text-xs sm:text-sm p-2.5 rounded-lg border border-[#E3E7EB] focus:outline-none focus:ring-2 focus:ring-[#28665F]/20 focus:border-[#28665F] transition-all resize-none"
+              className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/75 text-[#F0FDF4] placeholder:text-[#64748B] focus:outline-none focus:border-[#70E5B2] focus:ring-2 focus:ring-[#70E5B2]/20 transition-all resize-none"
             />
           </div>
         )}
 
         {/* Error message */}
         {error && (
-          <div className="text-xs font-medium text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+          <div className="text-xs font-medium text-rose-300 bg-rose-500/15 p-2.5 rounded-xl border border-rose-500/30">
             {error}
           </div>
         )}
 
         {/* Footer actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E3E7EB]">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#70E5B2]/15">
           <Button
             variant="outline"
             size="sm"

@@ -53,7 +53,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
       {/* Backdrop click dismiss */}
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
@@ -62,21 +62,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative w-full bg-white rounded-2xl shadow-2xl border border-[#E3E7EB] flex flex-col max-h-[92vh] overflow-hidden z-10 animate-in zoom-in-95 duration-200',
+          'relative w-full bg-[#0E1C17] text-[#F0FDF4] rounded-2xl shadow-2xl border border-[#70E5B2]/20 flex flex-col max-h-[92vh] overflow-hidden z-10 animate-in zoom-in-95 duration-200',
           maxWidth
         )}
       >
         {/* Modal Window Header */}
-        <div className="px-6 py-5 border-b border-[#E3E7EB] bg-[#FAFBFB] flex items-center justify-between gap-4 shrink-0">
+        <div className="px-6 py-5 border-b border-[#70E5B2]/15 bg-[#07100D]/85 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             {icon && (
-              <div className="w-10 h-10 rounded-xl bg-[#28665F]/10 border border-[#28665F]/20 flex items-center justify-center text-[#28665F] shrink-0 shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-[#70E5B2]/10 border border-[#70E5B2]/20 flex items-center justify-center text-[#70E5B2] shrink-0 shadow-2xs">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#20272E] truncate">
+                <h3 className="text-base sm:text-lg font-extrabold text-[#F0FDF4] truncate">
                   {title}
                 </h3>
                 {badge && (
@@ -91,7 +91,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 )}
               </div>
               {subtitle && (
-                <p className="text-xs text-[#68727D] mt-0.5 line-clamp-1">
+                <p className="text-xs text-[#94A3B8] mt-0.5 line-clamp-1">
                   {subtitle}
                 </p>
               )}
@@ -101,7 +101,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-[#68727D] hover:text-[#20272E] rounded-xl hover:bg-[#E3E7EB]/50 transition-colors shrink-0"
+            className="p-2 text-[#94A3B8] hover:text-[#70E5B2] rounded-xl hover:bg-[#70E5B2]/10 transition-colors shrink-0 cursor-pointer"
             aria-label="Đóng cửa sổ"
           >
             <X className="w-5 h-5" />
@@ -115,7 +115,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
         {/* Modal Window Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-[#E3E7EB] bg-[#FAFBFB] flex items-center justify-between gap-3 shrink-0">
+          <div className="px-6 py-4 border-t border-[#70E5B2]/15 bg-[#07100D]/85 flex items-center justify-between gap-3 shrink-0">
             {footer}
           </div>
         )}

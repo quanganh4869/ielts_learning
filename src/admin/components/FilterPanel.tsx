@@ -18,15 +18,15 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className={`p-4 bg-[#F7F8FA] border border-[#E3E7EB] rounded-xl space-y-3 transition-all ${className}`}>
-      <div className="flex items-center justify-between pb-2 border-b border-[#E3E7EB]">
-        <span className="text-xs font-bold text-[#20272E] uppercase tracking-wider">Bộ lọc nâng cao</span>
+    <div className={`p-4 bg-[#0E1C17]/85 backdrop-blur-md border border-[#70E5B2]/20 rounded-2xl shadow-lg space-y-3 transition-all ${className}`}>
+      <div className="flex items-center justify-between pb-2.5 border-b border-[#70E5B2]/15">
+        <span className="text-xs font-bold text-[#70E5B2] uppercase tracking-wider">Bộ lọc nâng cao</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={onReset}
-          className="h-7 text-xs text-[#68727D] hover:text-[#28665F]"
-          leftIcon={<RotateCcw className="w-3 h-3" />}
+          className="h-7 text-xs text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10 transition-colors"
+          leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
         >
           Đặt lại bộ lọc
         </Button>
