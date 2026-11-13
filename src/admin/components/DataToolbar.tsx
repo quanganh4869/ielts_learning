@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Search, Filter, Download } from 'lucide-react'
 import { Button } from '@/components/common/Button'
+import { useAdmin } from '../context/AdminContext'
 
 export interface ToolbarFilterOption {
   label: string
@@ -48,18 +49,25 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
   onReset,
   isFiltered,
 }) => {
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   return (
     <div className={`space-y-3 ${className}`}>
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#70E5B2]/70" />
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#70E5B2]/70' : 'text-[#28665F]'}`} />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/75 text-xs sm:text-sm text-[#F0FDF4] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#70E5B2]/25 focus:border-[#70E5B2] transition-all shadow-inner"
+            className={`w-full h-10 pl-9 pr-3 rounded-xl border text-xs sm:text-sm transition-all focus:outline-none focus:ring-2 ${
+              isDark
+                ? 'border-[#70E5B2]/20 bg-[#07100D]/80 text-[#F0FDF4] placeholder:text-[#64748B] focus:ring-[#70E5B2]/20 focus:border-[#70E5B2]'
+                : 'border-[#CBD5E1] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:ring-[#28665F]/20 focus:border-[#28665F] shadow-2xs'
+            }`}
           />
         </div>
 
@@ -98,11 +106,15 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
         <div className="flex flex-wrap items-center gap-3 pt-1">
           {filters.map((f) => (
             <div key={f.key} className="flex items-center gap-1.5 text-xs">
-              <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider">{f.label}:</span>
+              <span className={`text-2xs font-bold uppercase tracking-wider ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>{f.label}:</span>
               <select
                 value={f.value}
                 onChange={(e) => f.onChange(e.target.value)}
-                className="h-8 text-xs rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/80 px-2.5 font-medium text-[#F0FDF4] focus:outline-none focus:border-[#70E5B2]"
+                className={`h-8 text-xs rounded-xl border px-2.5 font-medium focus:outline-none ${
+                  isDark
+                    ? 'border-[#70E5B2]/20 bg-[#07100D]/80 text-[#F0FDF4] focus:border-[#70E5B2]'
+                    : 'border-[#CBD5E1] bg-white text-[#0F172A] focus:border-[#28665F]'
+                }`}
               >
                 {f.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>

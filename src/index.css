@@ -400,8 +400,9 @@
 }
 
 .admin-light-theme header {
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
   border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   color: #0F172A !important;
 }
 
@@ -421,16 +422,60 @@
   box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.08) !important;
 }
 
+/* CRITICAL TEXT CONTRAST IN LIGHT THEME */
+.admin-light-theme .text-\[\#F0FDF4\],
+.admin-light-theme .text-\[\#F0FDF4\]\/90,
+.admin-light-theme .text-\[\#F0FDF4\]\/80,
 .admin-light-theme .text-\[\#20272E\],
 .admin-light-theme .text-slate-900,
 .admin-light-theme .text-gray-900 {
   color: #0F172A !important;
 }
 
+.admin-light-theme .text-\[\#CBD5E1\],
+.admin-light-theme .text-\[\#CBD5E1\]\/90,
+.admin-light-theme .text-\[\#CBD5E1\]\/80,
+.admin-light-theme .text-\[\#94A3B8\],
 .admin-light-theme .text-\[\#68727D\],
 .admin-light-theme .text-slate-600,
 .admin-light-theme .text-gray-600 {
   color: #475569 !important;
+}
+
+.admin-light-theme .text-\[\#70E5B2\] {
+  color: #28665F !important;
+}
+
+/* CRITICAL TABLE STYLING IN LIGHT THEME */
+.admin-light-theme table {
+  color: #0F172A !important;
+}
+
+.admin-light-theme thead,
+.admin-light-theme thead.bg-\[\#07100D\]\/75,
+.admin-light-theme thead.bg-\[\#07100D\],
+.admin-light-theme thead tr {
+  background-color: #F8FAFC !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+}
+
+.admin-light-theme thead th,
+.admin-light-theme thead th span {
+  color: #334155 !important;
+  font-weight: 800 !important;
+}
+
+.admin-light-theme tbody tr {
+  border-color: #F1F5F9 !important;
+}
+
+.admin-light-theme tbody tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+.admin-light-theme .divide-\[\#70E5B2\]\/5 > :not([hidden]) ~ :not([hidden]),
+.admin-light-theme .divide-y > :not([hidden]) ~ :not([hidden]) {
+  border-color: #F1F5F9 !important;
 }
 
 .admin-light-theme .bg-white {
@@ -440,10 +485,17 @@
 }
 
 .admin-light-theme .bg-\[\#F7F8FA\],
+.admin-light-theme .bg-\[\#FAFBFB\],
 .admin-light-theme .bg-slate-50,
 .admin-light-theme .bg-gray-50 {
   background-color: #F8FAFC !important;
   border-color: #E2E8F0 !important;
+}
+
+.admin-light-theme .bg-slate-100 {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
 }
 
 .admin-light-theme input,
@@ -454,9 +506,23 @@
   border-color: #CBD5E1 !important;
 }
 
+.admin-light-theme option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
 .admin-light-theme input::placeholder,
 .admin-light-theme textarea::placeholder {
   color: #94A3B8 !important;
+}
+
+.admin-light-theme .bg-\[\#28665F\]\/10 {
+  background-color: #EAF4EE !important;
+  border-color: rgba(40, 102, 95, 0.3) !important;
+}
+.admin-light-theme .text-\[\#28665F\] {
+  color: #1E4D47 !important;
+  font-weight: 700 !important;
 }
 
 .glass-panel {

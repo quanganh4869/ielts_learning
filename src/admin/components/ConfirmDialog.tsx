@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react'
 import { Button } from '@/components/common/Button'
+import { useAdmin } from '../context/AdminContext'
 
 export interface ConfirmDialogProps {
   isOpen: boolean
@@ -72,35 +73,61 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     },
   }[severity]
 
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
   const Icon = iconConfig.icon
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-[#0E1C17] text-[#F0FDF4] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#70E5B2]/20 space-y-4">
+      <div
+        className={`rounded-2xl max-w-lg w-full p-6 shadow-2xl border space-y-4 ${
+          isDark
+            ? 'bg-[#0E1C17] text-[#F0FDF4] border-[#70E5B2]/20'
+            : 'bg-white text-[#0F172A] border-[#CBD5E1]'
+        }`}
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconConfig.bg}`}>
               <Icon className="w-5 h-5 stroke-2" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-[#F0FDF4] leading-snug">{title}</h3>
+            <h3
+              className={`text-base sm:text-lg font-bold leading-snug ${
+                isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'
+              }`}
+            >
+              {title}
+            </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-[#94A3B8] hover:text-[#70E5B2] p-1.5 rounded-lg hover:bg-[#70E5B2]/10 transition-colors cursor-pointer"
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              isDark
+                ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
+                : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
+            }`}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Message */}
-        <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">{message}</p>
+        <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
+          {message}
+        </p>
 
         {/* Scope warning pill */}
         {scopeWarning && (
-          <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-normal">
+          <div
+            className={`p-3 rounded-xl text-xs leading-normal border ${
+              isDark
+                ? 'bg-amber-500/15 border-amber-500/30 text-amber-200'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
+            }`}
+          >
             <strong>Lưu ý phạm vi ảnh hưởng:</strong> {scopeWarning}
           </div>
         )}
@@ -108,7 +135,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         {/* Reason Input */}
         {requireReason && (
           <div className="space-y-1.5 pt-1">
-            <label className="text-xs font-bold text-[#F0FDF4]">
+            <label className={`text-xs font-bold ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>
               Lý do thực hiện <span className="text-rose-400">*</span>
             </label>
             <textarea
@@ -119,7 +146,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               }}
               rows={2}
               placeholder={reasonPlaceholder}
-              className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/75 text-[#F0FDF4] placeholder:text-[#64748B] focus:outline-none focus:border-[#70E5B2] focus:ring-2 focus:ring-[#70E5B2]/20 transition-all resize-none"
+              className={`w-full text-xs sm:text-sm p-2.5 rounded-xl border transition-all resize-none ${
+                isDark
+                  ? 'border-[#70E5B2]/20 bg-[#07100D]/75 text-[#F0FDF4] placeholder:text-[#64748B] focus:border-[#70E5B2]'
+                  : 'border-[#CBD5E1] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#28665F]'
+              }`}
             />
           </div>
         )}

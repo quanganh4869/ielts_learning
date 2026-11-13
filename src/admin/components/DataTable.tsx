@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 import { ArrowUpDown } from 'lucide-react'
+import { useAdmin } from '../context/AdminContext'
 import { EmptyState } from './EmptyState'
 import { PageSkeleton } from './PageSkeleton'
 import { ErrorState } from './ErrorState'
@@ -93,11 +94,26 @@ export function DataTable<T>({
     }
   }
 
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   return (
-    <div className={`glass-panel border border-[#70E5B2]/15 rounded-2xl overflow-hidden shadow-xl ${className}`}>
+    <div
+      className={`rounded-2xl overflow-hidden shadow-xl border transition-all ${
+        isDark
+          ? 'glass-panel border-[#70E5B2]/15 bg-[#0E1C17]/75'
+          : 'bg-white border-[#E2E8F0] shadow-sm'
+      } ${className}`}
+    >
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs sm:text-sm text-[#F0FDF4]">
-          <thead className="bg-[#07100D]/75 border-b border-[#70E5B2]/10 text-xs font-bold text-[#94A3B8] uppercase tracking-wider select-none">
+        <table className={`w-full text-left text-xs sm:text-sm ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>
+          <thead
+            className={`border-b text-xs font-bold uppercase tracking-wider select-none ${
+              isDark
+                ? 'bg-[#07100D]/85 border-[#70E5B2]/15 text-[#94A3B8]'
+                : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#334155]'
+            }`}
+          >
             <tr>
               {columns.map((col) => {
                 const isSorted = sortColumn === col.key
@@ -105,9 +121,9 @@ export function DataTable<T>({
                   <th
                     key={col.key}
                     style={{ width: col.width }}
-                    className={`py-3 px-4 ${
+                    className={`py-3.5 px-4 ${
                       col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                    } ${col.sortable && onSort ? 'cursor-pointer hover:text-[#70E5B2]' : ''}`}
+                    } ${col.sortable && onSort ? (isDark ? 'cursor-pointer hover:text-[#70E5B2]' : 'cursor-pointer hover:text-[#28665F]') : ''}`}
                     onClick={() => col.sortable && onSort && onSort(col.key)}
                   >
                     <div
@@ -119,7 +135,7 @@ export function DataTable<T>({
                       {col.sortable && onSort && (
                         <ArrowUpDown
                           className={`w-3.5 h-3.5 ${
-                            isSorted ? 'text-[#28665F]' : 'text-slate-400'
+                            isSorted ? (isDark ? 'text-[#70E5B2]' : 'text-[#28665F]') : 'text-slate-400'
                           } ${isSorted && sortDirection === 'desc' ? 'rotate-180' : ''}`}
                         />
                       )}
@@ -129,7 +145,7 @@ export function DataTable<T>({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#70E5B2]/5">
+          <tbody className={`divide-y ${isDark ? 'divide-[#70E5B2]/5' : 'divide-[#F1F5F9]'}`}>
             {data.map((item) => {
               const key = keyExtractor(item)
               return (
@@ -137,7 +153,9 @@ export function DataTable<T>({
                   key={key}
                   onClick={(e) => handleRowClick(item, e)}
                   className={`transition-colors ${
-                    onRowClick ? 'cursor-pointer hover:bg-white/[0.03]' : 'hover:bg-white/[0.02]'
+                    onRowClick ? 'cursor-pointer' : ''
+                  } ${
+                    isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#F8FAFC]'
                   }`}
                 >
                   {columns.map((col) => {

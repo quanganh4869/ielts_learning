@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
+import { useAdmin } from '../../context/AdminContext'
 import { PageHeader } from '../../components/PageHeader'
 import { DataTable, Column } from '../../components/DataTable'
 import { StatusBadge } from '../../components/StatusBadge'
@@ -67,15 +68,26 @@ export const AssessmentsListPage: React.FC = () => {
     }
   }
 
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   const columns: Column<AdminAssessment>[] = [
     {
       key: 'title',
       header: 'Tên bài thi & Cấu hình',
       render: (a) => (
         <div className="space-y-0.5">
-          <span className="font-bold text-sm text-[#20272E] block">{a.title}</span>
-          <div className="flex items-center gap-1.5 text-2xs text-[#68727D]">
-            <span className="font-mono bg-slate-100 px-1.5 py-0.2 rounded font-semibold">{a.code}</span>
+          <span className={`font-bold text-sm block ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>{a.title}</span>
+          <div className={`flex items-center gap-1.5 text-2xs ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
+            <span
+              className={`font-mono px-1.5 py-0.5 rounded font-semibold border ${
+                isDark
+                  ? 'bg-[#07100D] text-[#70E5B2] border-[#70E5B2]/20'
+                  : 'bg-slate-100 text-slate-800 border-slate-200'
+              }`}
+            >
+              {a.code}
+            </span>
             <span>•</span>
             <span className="capitalize">{a.type.replace('_', ' ')}</span>
           </div>
@@ -86,7 +98,13 @@ export const AssessmentsListPage: React.FC = () => {
       key: 'skills',
       header: 'Kỹ năng đánh giá',
       render: (a) => (
-        <span className="capitalize text-2xs font-bold px-2 py-0.5 rounded-full bg-[#28665F]/10 text-[#28665F] border border-[#28665F]/20">
+        <span
+          className={`capitalize text-2xs font-bold px-2 py-0.5 rounded-full border ${
+            isDark
+              ? 'bg-[#70E5B2]/15 text-[#70E5B2] border-[#70E5B2]/30'
+              : 'bg-[#EAF4EE] text-[#1E4D47] border-[#28665F]/30'
+          }`}
+        >
           {a.skills.join(', ')}
         </span>
       ),
@@ -95,9 +113,9 @@ export const AssessmentsListPage: React.FC = () => {
       key: 'duration',
       header: 'Thời lượng & Câu hỏi',
       render: (a) => (
-        <div className="text-xs text-[#20272E]">
+        <div className={`text-xs ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>
           <div>{a.durationMinutes} phút làm bài</div>
-          <div className="text-2xs text-[#68727D]">{a.totalQuestions} câu hỏi chuẩn</div>
+          <div className={`text-2xs ${isDark ? 'text-[#CBD5E1]' : 'text-[#64748B]'}`}>{a.totalQuestions} câu hỏi chuẩn</div>
         </div>
       ),
     },
@@ -106,8 +124,8 @@ export const AssessmentsListPage: React.FC = () => {
       header: 'Lượt nộp & Điểm TB',
       render: (a) => (
         <div className="text-xs">
-          <span className="font-semibold text-[#20272E]">{a.totalAttempts} lượt nộp</span>
-          <div className="text-2xs text-[#28665F] font-bold">Band TB: {a.avgBandScore.toFixed(1)}</div>
+          <span className={`font-semibold ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>{a.totalAttempts} lượt nộp</span>
+          <div className={`text-2xs font-bold ${isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'}`}>Band TB: {a.avgBandScore.toFixed(1)}</div>
         </div>
       ),
     },
@@ -128,7 +146,11 @@ export const AssessmentsListPage: React.FC = () => {
             e.stopPropagation()
             setDeletingAssessment(a)
           }}
-          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+            isDark
+              ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
+              : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
+          }`}
           title="Xóa đề thi này"
         >
           <Trash2 className="w-4 h-4" />

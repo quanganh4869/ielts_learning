@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { useAdmin } from '../context/AdminContext'
 
 export interface AdminModalProps {
   isOpen: boolean
@@ -52,6 +53,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     purple: 'bg-purple-50 text-purple-700 border-purple-200',
   }
 
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
       {/* Backdrop click dismiss */}
@@ -62,21 +66,38 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative w-full bg-[#0E1C17] text-[#F0FDF4] rounded-2xl shadow-2xl border border-[#70E5B2]/20 flex flex-col max-h-[92vh] overflow-hidden z-10 animate-in zoom-in-95 duration-200',
+          'relative w-full rounded-2xl shadow-2xl border flex flex-col max-h-[92vh] overflow-hidden z-10 animate-in zoom-in-95 duration-200',
+          isDark
+            ? 'bg-[#0E1C17] text-[#F0FDF4] border-[#70E5B2]/20'
+            : 'bg-white text-[#0F172A] border-[#CBD5E1]',
           maxWidth
         )}
       >
         {/* Modal Window Header */}
-        <div className="px-6 py-5 border-b border-[#70E5B2]/15 bg-[#07100D]/85 flex items-center justify-between gap-4 shrink-0">
+        <div
+          className={`px-6 py-5 border-b flex items-center justify-between gap-4 shrink-0 ${
+            isDark ? 'bg-[#07100D]/85 border-[#70E5B2]/15' : 'bg-[#F8FAFC] border-[#E2E8F0]'
+          }`}
+        >
           <div className="flex items-center gap-3 min-w-0">
             {icon && (
-              <div className="w-10 h-10 rounded-xl bg-[#70E5B2]/10 border border-[#70E5B2]/20 flex items-center justify-center text-[#70E5B2] shrink-0 shadow-2xs">
+              <div
+                className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 shadow-2xs ${
+                  isDark
+                    ? 'bg-[#70E5B2]/10 border-[#70E5B2]/20 text-[#70E5B2]'
+                    : 'bg-[#EAF4EE] border-[#28665F]/20 text-[#28665F]'
+                }`}
+              >
                 {icon}
               </div>
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#F0FDF4] truncate">
+                <h3
+                  className={`text-base sm:text-lg font-extrabold truncate ${
+                    isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'
+                  }`}
+                >
                   {title}
                 </h3>
                 {badge && (
@@ -91,7 +112,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 )}
               </div>
               {subtitle && (
-                <p className="text-xs text-[#94A3B8] mt-0.5 line-clamp-1">
+                <p className={`text-xs mt-0.5 line-clamp-1 ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
                   {subtitle}
                 </p>
               )}
@@ -101,7 +122,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-[#94A3B8] hover:text-[#70E5B2] rounded-xl hover:bg-[#70E5B2]/10 transition-colors shrink-0 cursor-pointer"
+            className={`p-2 rounded-xl transition-colors shrink-0 cursor-pointer ${
+              isDark
+                ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
+                : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
+            }`}
             aria-label="Đóng cửa sổ"
           >
             <X className="w-5 h-5" />
@@ -115,7 +140,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
         {/* Modal Window Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-[#70E5B2]/15 bg-[#07100D]/85 flex items-center justify-between gap-3 shrink-0">
+          <div
+            className={`px-6 py-4 border-t flex items-center justify-between gap-3 shrink-0 ${
+              isDark ? 'bg-[#07100D]/85 border-[#70E5B2]/15' : 'bg-[#F8FAFC] border-[#E2E8F0]'
+            }`}
+          >
             {footer}
           </div>
         )}
