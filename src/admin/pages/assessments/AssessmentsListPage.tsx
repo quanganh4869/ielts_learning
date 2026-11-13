@@ -13,6 +13,9 @@ import { AdminAssessment } from '../../types/admin'
 
 export const AssessmentsListPage: React.FC = () => {
   const navigate = useNavigate()
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   const [assessments, setAssessments] = useState<AdminAssessment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -68,28 +71,27 @@ export const AssessmentsListPage: React.FC = () => {
     }
   }
 
-  const { theme } = useAdmin()
-  const isDark = theme === 'dark'
-
   const columns: Column<AdminAssessment>[] = [
     {
       key: 'title',
       header: 'Tên bài thi & Cấu hình',
       render: (a) => (
-        <div className="space-y-0.5">
-          <span className={`font-bold text-sm block ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>{a.title}</span>
-          <div className={`flex items-center gap-1.5 text-2xs ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
+        <div className="space-y-1">
+          <span className={`font-bold text-[15px] block ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+            {a.title}
+          </span>
+          <div className={`flex items-center gap-2 text-[13px] ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
             <span
-              className={`font-mono px-1.5 py-0.5 rounded font-semibold border ${
+              className={`font-mono px-2 py-0.5 rounded font-bold border text-xs ${
                 isDark
-                  ? 'bg-[#07100D] text-[#70E5B2] border-[#70E5B2]/20'
-                  : 'bg-slate-100 text-slate-800 border-slate-200'
+                  ? 'bg-[#07100D] text-[#70E5B2] border-[#70E5B2]/25'
+                  : 'bg-slate-100 text-slate-800 border-slate-300'
               }`}
             >
               {a.code}
             </span>
             <span>•</span>
-            <span className="capitalize">{a.type.replace('_', ' ')}</span>
+            <span className="capitalize font-semibold">{a.type.replace('_', ' ')}</span>
           </div>
         </div>
       ),
@@ -99,10 +101,10 @@ export const AssessmentsListPage: React.FC = () => {
       header: 'Kỹ năng đánh giá',
       render: (a) => (
         <span
-          className={`capitalize text-2xs font-bold px-2 py-0.5 rounded-full border ${
+          className={`capitalize text-xs font-bold px-3 py-1 rounded-full border inline-block ${
             isDark
-              ? 'bg-[#70E5B2]/15 text-[#70E5B2] border-[#70E5B2]/30'
-              : 'bg-[#EAF4EE] text-[#1E4D47] border-[#28665F]/30'
+              ? 'bg-[#70E5B2]/20 text-[#70E5B2] border-[#70E5B2]/30'
+              : 'bg-[#EAF4EE] text-[#164E46] border-[#28665F]/30'
           }`}
         >
           {a.skills.join(', ')}
@@ -113,9 +115,9 @@ export const AssessmentsListPage: React.FC = () => {
       key: 'duration',
       header: 'Thời lượng & Câu hỏi',
       render: (a) => (
-        <div className={`text-xs ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>
-          <div>{a.durationMinutes} phút làm bài</div>
-          <div className={`text-2xs ${isDark ? 'text-[#CBD5E1]' : 'text-[#64748B]'}`}>{a.totalQuestions} câu hỏi chuẩn</div>
+        <div className={`text-[14px] leading-relaxed ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+          <div className="font-semibold">{a.durationMinutes} phút làm bài</div>
+          <div className={`text-[13px] ${isDark ? 'text-[#CBD5E1]' : 'text-[#64748B]'}`}>{a.totalQuestions} câu hỏi chuẩn</div>
         </div>
       ),
     },
@@ -123,9 +125,13 @@ export const AssessmentsListPage: React.FC = () => {
       key: 'attempts',
       header: 'Lượt nộp & Điểm TB',
       render: (a) => (
-        <div className="text-xs">
-          <span className={`font-semibold ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>{a.totalAttempts} lượt nộp</span>
-          <div className={`text-2xs font-bold ${isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'}`}>Band TB: {a.avgBandScore.toFixed(1)}</div>
+        <div className="text-[14px] leading-relaxed">
+          <span className={`font-bold block ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+            {a.totalAttempts} lượt nộp
+          </span>
+          <div className={`text-[13px] font-extrabold ${isDark ? 'text-[#70E5B2]' : 'text-[#1B5E54]'}`}>
+            Band TB: {a.avgBandScore.toFixed(1)}
+          </div>
         </div>
       ),
     },
@@ -138,7 +144,7 @@ export const AssessmentsListPage: React.FC = () => {
       key: 'actions',
       header: '',
       align: 'center',
-      width: '60px',
+      width: '64px',
       render: (a) => (
         <button
           type="button"
@@ -146,14 +152,14 @@ export const AssessmentsListPage: React.FC = () => {
             e.stopPropagation()
             setDeletingAssessment(a)
           }}
-          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
             isDark
-              ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
+              ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/15'
               : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
           }`}
           title="Xóa đề thi này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4.5 h-4.5" />
         </button>
       ),
     },
@@ -168,10 +174,10 @@ export const AssessmentsListPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={() => navigate('/admin/assessments/builder')}
-              className="font-bold shadow-xs"
-              leftIcon={<Plus className="w-4 h-4" />}
+              className="font-bold shadow-xs h-11 px-4 text-[14px]"
+              leftIcon={<Plus className="w-4.5 h-4.5" />}
             >
               Question Set Builder (Tạo đề & Bulk Import)
             </Button>
@@ -198,13 +204,13 @@ export const AssessmentsListPage: React.FC = () => {
         emptyTitle="Chưa có đề thi nào trong hệ thống"
       />
 
-      {/* Confirm Delete Dialog */}
+      {/* Confirm Delete Assessment Dialog */}
       <ConfirmDialog
         isOpen={!!deletingAssessment}
         onClose={() => setDeletingAssessment(null)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa đề thi"
-        message={`Bạn có chắc chắn muốn xóa đề thi "${deletingAssessment?.title}" không? Hành động này không thể hoàn tác.`}
+        message={`Bạn có chắc chắn muốn xóa bài thi "${deletingAssessment?.title}" không? Dữ liệu câu hỏi liên kết sẽ không bị mất trong ngân hàng đề.`}
         confirmLabel={isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
         cancelLabel="Hủy bỏ"
         severity="danger"

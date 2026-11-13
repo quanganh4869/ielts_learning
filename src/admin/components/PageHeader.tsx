@@ -21,15 +21,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b transition-colors ${
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b transition-colors ${
         isDark ? 'border-[#70E5B2]/15' : 'border-[#E2E8F0]'
       } ${className}`}
     >
       <div>
         <div className="flex items-center gap-3">
           <h1
-            className={`text-xl sm:text-2xl font-black tracking-tight ${
-              isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'
+            className={`text-2xl sm:text-[30px] font-bold tracking-tight leading-tight ${
+              isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'
             }`}
           >
             {title}
@@ -38,7 +38,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
         {subtitle && (
           <p
-            className={`text-xs sm:text-sm mt-1 font-medium ${
+            className={`text-sm sm:text-[15px] mt-1.5 font-medium leading-relaxed ${
               isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'
             }`}
           >
@@ -46,7 +46,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           </p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
+      {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}
     </div>
   )
 }

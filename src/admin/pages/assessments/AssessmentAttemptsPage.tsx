@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
+import { useAdmin } from '../../context/AdminContext'
 import { PageHeader } from '../../components/PageHeader'
 import { DataToolbar } from '../../components/DataToolbar'
 import { FilterPanel } from '../../components/FilterPanel'
@@ -13,6 +14,9 @@ import { AdminAssessmentAttempt } from '../../types/admin'
 
 export const AssessmentAttemptsPage: React.FC = () => {
   const navigate = useNavigate()
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   const [attempts, setAttempts] = useState<AdminAssessmentAttempt[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -86,9 +90,13 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'user',
       header: 'Thí sinh',
       render: (a) => (
-        <div>
-          <span className="font-semibold text-xs sm:text-sm text-[#F0FDF4] block">{a.userName}</span>
-          <span className="text-2xs text-[#CBD5E1] block">{a.userEmail}</span>
+        <div className="space-y-0.5">
+          <span className={`font-bold text-[15px] block ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+            {a.userName}
+          </span>
+          <span className={`text-[13px] font-medium block ${isDark ? 'text-[#94A3B8]' : 'text-[#64748B]'}`}>
+            {a.userEmail}
+          </span>
         </div>
       ),
     },
@@ -96,7 +104,9 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'assessment',
       header: 'Bài thi thử',
       render: (a) => (
-        <span className="font-medium text-xs text-[#F0FDF4] block max-w-xs">{a.assessmentTitle}</span>
+        <span className={`font-semibold text-[14.5px] block max-w-sm ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+          {a.assessmentTitle}
+        </span>
       ),
     },
     {
@@ -106,10 +116,14 @@ export const AssessmentAttemptsPage: React.FC = () => {
         <div>
           {a.overallBand ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-[#70E5B2]">Band {a.overallBand.toFixed(1)}</span>
+              <span className={`text-[15px] font-extrabold ${isDark ? 'text-[#70E5B2]' : 'text-[#1B5E54]'}`}>
+                Band {a.overallBand.toFixed(1)}
+              </span>
             </div>
           ) : (
-            <span className="text-2xs text-[#94A3B8] italic">Đang chờ chấm</span>
+            <span className={`text-[13px] italic font-medium ${isDark ? 'text-[#94A3B8]' : 'text-[#64748B]'}`}>
+              Đang chờ chấm
+            </span>
           )}
         </div>
       ),
@@ -118,7 +132,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'time',
       header: 'Thời gian thi',
       render: (a) => (
-        <div className="text-2xs text-[#CBD5E1]">
+        <div className={`text-[13px] font-medium leading-relaxed ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
           <div>Bắt đầu: {a.startedAt}</div>
           {a.submittedAt && <div>Nộp: {a.submittedAt}</div>}
         </div>
@@ -133,7 +147,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
       key: 'actions',
       header: '',
       align: 'center',
-      width: '60px',
+      width: '64px',
       render: (a) => (
         <button
           type="button"
@@ -141,10 +155,14 @@ export const AssessmentAttemptsPage: React.FC = () => {
             ev.stopPropagation()
             setDeletingAttempt(a)
           }}
-          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+            isDark
+              ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/15'
+              : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
+          }`}
           title="Xóa lượt làm bài này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4.5 h-4.5" />
         </button>
       ),
     },
@@ -177,11 +195,17 @@ export const AssessmentAttemptsPage: React.FC = () => {
 
       <FilterPanel isOpen={isFilterOpen} onReset={() => setStatusFilter('all')}>
         <div>
-          <label className="text-xs font-bold text-[#F0FDF4] block mb-1.5">Trạng thái bài thi</label>
+          <label className={`text-[14px] font-bold block mb-1.5 ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
+            Trạng thái bài thi
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="w-full text-xs rounded-xl border border-[#70E5B2]/20 bg-[#07100D]/80 p-2 text-[#F0FDF4] outline-none focus:border-[#70E5B2]"
+            className={`w-full h-11 text-[14.5px] rounded-xl border p-2.5 outline-none font-medium transition-colors ${
+              isDark
+                ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] focus:border-[#70E5B2]'
+                : 'border-[#CBD5E1] bg-white text-[#0F172A] focus:border-[#28665F]'
+            }`}
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="completed">Đã nộp bài (Completed)</option>

@@ -55,31 +55,43 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
   return (
     <div className={`space-y-3 ${className}`}>
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search Input */}
+        {/* Search Input (Ergonomic 44px height) */}
         <div className="relative flex-1 max-w-md">
-          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-[#70E5B2]/70' : 'text-[#28665F]'}`} />
+          <Search
+            className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 ${
+              isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
+            }`}
+          />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className={`w-full h-10 pl-9 pr-3 rounded-xl border text-xs sm:text-sm transition-all focus:outline-none focus:ring-2 ${
+            className={`w-full h-11 pl-11 pr-4 rounded-xl border text-[14.5px] font-medium transition-all focus:outline-none focus:ring-2 ${
               isDark
-                ? 'border-[#70E5B2]/20 bg-[#07100D]/80 text-[#F0FDF4] placeholder:text-[#64748B] focus:ring-[#70E5B2]/20 focus:border-[#70E5B2]'
+                ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] placeholder:text-[#64748B] focus:ring-[#70E5B2]/25 focus:border-[#70E5B2]'
                 : 'border-[#CBD5E1] bg-white text-[#0F172A] placeholder:text-[#94A3B8] focus:ring-[#28665F]/20 focus:border-[#28665F] shadow-2xs'
             }`}
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {showFilterToggle && onToggleFilter && (
             <Button
               variant="outline"
-              size="sm"
+              size="md"
               onClick={onToggleFilter}
-              className={`h-9.5 text-xs font-semibold ${isFilterOpen ? 'border-[#28665F] text-[#28665F] bg-[#EAF3F1]' : ''}`}
-              leftIcon={<Filter className="w-3.5 h-3.5" />}
+              className={`h-11 px-4 text-[14px] font-bold ${
+                isFilterOpen
+                  ? isDark
+                    ? 'border-[#70E5B2] text-[#70E5B2] bg-[#70E5B2]/15'
+                    : 'border-[#28665F] text-[#28665F] bg-[#EAF3F1]'
+                  : isDark
+                  ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] hover:bg-[#12261F]'
+                  : 'border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#F8FAFC]'
+              }`}
+              leftIcon={<Filter className="w-4 h-4" />}
             >
               Bộ lọc {activeFilterCount > 0 && `(${activeFilterCount})`}
             </Button>
@@ -88,10 +100,14 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
           {onExport && (
             <Button
               variant="outline"
-              size="sm"
+              size="md"
               onClick={onExport}
-              className="h-9.5 text-xs font-semibold"
-              leftIcon={<Download className="w-3.5 h-3.5" />}
+              className={`h-11 px-4 text-[14px] font-bold ${
+                isDark
+                  ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] hover:bg-[#12261F]'
+                  : 'border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#F8FAFC]'
+              }`}
+              leftIcon={<Download className="w-4 h-4" />}
             >
               Xuất dữ liệu
             </Button>
@@ -102,21 +118,24 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
         </div>
       </div>
 
+      {/* Inline Quick Filter Dropdowns if provided */}
       {filters && filters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 pt-1">
-          {filters.map((f) => (
-            <div key={f.key} className="flex items-center gap-1.5 text-xs">
-              <span className={`text-2xs font-bold uppercase tracking-wider ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>{f.label}:</span>
+        <div className="flex items-center gap-3 flex-wrap pt-1">
+          {filters.map((filter) => (
+            <div key={filter.key} className="flex items-center gap-2">
+              <span className={`text-xs font-semibold ${isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'}`}>
+                {filter.label}:
+              </span>
               <select
-                value={f.value}
-                onChange={(e) => f.onChange(e.target.value)}
-                className={`h-8 text-xs rounded-xl border px-2.5 font-medium focus:outline-none ${
+                value={filter.value}
+                onChange={(e) => filter.onChange(e.target.value)}
+                className={`h-9 px-3 rounded-lg border text-xs font-medium outline-none transition-colors ${
                   isDark
-                    ? 'border-[#70E5B2]/20 bg-[#07100D]/80 text-[#F0FDF4] focus:border-[#70E5B2]'
+                    ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] focus:border-[#70E5B2]'
                     : 'border-[#CBD5E1] bg-white text-[#0F172A] focus:border-[#28665F]'
                 }`}
               >
-                {f.options.map((opt) => (
+                {filter.options.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -124,15 +143,17 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
               </select>
             </div>
           ))}
-          {onReset && isFiltered && (
-            <Button
-              variant="ghost"
-              size="sm"
+
+          {isFiltered && onReset && (
+            <button
+              type="button"
               onClick={onReset}
-              className="h-8 text-xs text-[#68727D] hover:text-[#28665F]"
+              className={`text-xs underline font-semibold transition-colors cursor-pointer ${
+                isDark ? 'text-[#70E5B2] hover:text-[#85F2C1]' : 'text-[#28665F] hover:text-[#20534D]'
+              }`}
             >
-              Đặt lại
-            </Button>
+              Xóa bộ lọc
+            </button>
           )}
         </div>
       )}

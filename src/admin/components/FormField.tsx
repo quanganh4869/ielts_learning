@@ -28,16 +28,16 @@ export const FormField: React.FC<FormFieldProps> = ({
     <div className={`space-y-1.5 ${className}`}>
       <div className="flex items-center justify-between">
         <label
-          className={`text-xs font-bold ${
-            isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'
+          className={`text-[14px] font-bold ${
+            isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'
           }`}
         >
-          {label} {required && <span className="text-rose-400">*</span>}
+          {label} {required && <span className="text-rose-500">*</span>}
         </label>
       </div>
       {hintText && (
         <p
-          className={`text-2xs leading-tight ${
+          className={`text-[13px] leading-relaxed ${
             isDark ? 'text-[#CBD5E1]' : 'text-[#475569]'
           }`}
         >
@@ -45,7 +45,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         </p>
       )}
       {children}
-      {error && <p className="text-2xs font-medium text-rose-500">{error}</p>}
+      {error && <p className="text-[13px] font-semibold text-rose-500">{error}</p>}
     </div>
   )
 }

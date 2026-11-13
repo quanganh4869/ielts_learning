@@ -58,6 +58,9 @@ export function DataTable<T>({
   onSort,
   className = '',
 }: DataTableProps<T>) {
+  const { theme } = useAdmin()
+  const isDark = theme === 'dark'
+
   if (isLoading) {
     return <PageSkeleton type="table" />
   }
@@ -94,24 +97,21 @@ export function DataTable<T>({
     }
   }
 
-  const { theme } = useAdmin()
-  const isDark = theme === 'dark'
-
   return (
     <div
-      className={`rounded-2xl overflow-hidden shadow-xl border transition-all ${
+      className={`rounded-2xl overflow-hidden border transition-all ${
         isDark
-          ? 'glass-panel border-[#70E5B2]/15 bg-[#0E1C17]/75'
+          ? 'bg-[#0C1A15] border-[#70E5B2]/20 shadow-xl'
           : 'bg-white border-[#E2E8F0] shadow-sm'
       } ${className}`}
     >
       <div className="overflow-x-auto">
-        <table className={`w-full text-left text-xs sm:text-sm ${isDark ? 'text-[#F0FDF4]' : 'text-[#0F172A]'}`}>
+        <table className={`w-full text-left ${isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'}`}>
           <thead
-            className={`border-b text-xs font-bold uppercase tracking-wider select-none ${
+            className={`border-b select-none ${
               isDark
-                ? 'bg-[#07100D]/85 border-[#70E5B2]/15 text-[#94A3B8]'
-                : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#334155]'
+                ? 'bg-[#07100D] border-[#70E5B2]/20 text-[#CBD5E1]'
+                : 'bg-[#F8FAFC] border-b-2 border-[#E2E8F0] text-[#334155]'
             }`}
           >
             <tr>
@@ -121,21 +121,21 @@ export function DataTable<T>({
                   <th
                     key={col.key}
                     style={{ width: col.width }}
-                    className={`py-3.5 px-4 ${
+                    className={`py-4 px-4.5 text-[13.5px] font-bold uppercase tracking-wider ${
                       col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                    } ${col.sortable && onSort ? (isDark ? 'cursor-pointer hover:text-[#70E5B2]' : 'cursor-pointer hover:text-[#28665F]') : ''}`}
+                    } ${col.sortable && onSort ? (isDark ? 'cursor-pointer hover:text-[#70E5B2]' : 'cursor-pointer hover:text-[#1B5E54]') : ''}`}
                     onClick={() => col.sortable && onSort && onSort(col.key)}
                   >
                     <div
-                      className={`inline-flex items-center gap-1.5 ${
+                      className={`inline-flex items-center gap-2 ${
                         col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'
                       }`}
                     >
                       <span>{col.header}</span>
                       {col.sortable && onSort && (
                         <ArrowUpDown
-                          className={`w-3.5 h-3.5 ${
-                            isSorted ? (isDark ? 'text-[#70E5B2]' : 'text-[#28665F]') : 'text-slate-400'
+                          className={`w-4 h-4 ${
+                            isSorted ? (isDark ? 'text-[#70E5B2]' : 'text-[#1B5E54]') : 'text-slate-400'
                           } ${isSorted && sortDirection === 'desc' ? 'rotate-180' : ''}`}
                         />
                       )}
@@ -145,7 +145,7 @@ export function DataTable<T>({
               })}
             </tr>
           </thead>
-          <tbody className={`divide-y ${isDark ? 'divide-[#70E5B2]/5' : 'divide-[#F1F5F9]'}`}>
+          <tbody className={`divide-y ${isDark ? 'divide-[#70E5B2]/10' : 'divide-[#F1F5F9]'}`}>
             {data.map((item) => {
               const key = keyExtractor(item)
               return (
@@ -155,14 +155,14 @@ export function DataTable<T>({
                   className={`transition-colors ${
                     onRowClick ? 'cursor-pointer' : ''
                   } ${
-                    isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#F8FAFC]'
+                    isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-[#F8FAFC]'
                   }`}
                 >
                   {columns.map((col) => {
                     return (
                       <td
                         key={col.key}
-                        className={`py-3.5 px-4 align-middle ${
+                        className={`py-4.5 px-4.5 align-middle text-[14.5px] sm:text-[15px] ${
                           col.align === 'center'
                             ? 'text-center'
                             : col.align === 'right'

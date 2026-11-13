@@ -23,19 +23,19 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
   return (
     <div
-      className={`p-4 rounded-2xl shadow-lg space-y-3 transition-all border ${
+      className={`p-5 rounded-2xl shadow-lg space-y-4 transition-all border ${
         isDark
-          ? 'bg-[#0E1C17]/85 backdrop-blur-md border-[#70E5B2]/20'
+          ? 'bg-[#0C1A15] border-[#70E5B2]/20'
           : 'bg-white border-[#E2E8F0]'
       } ${className}`}
     >
       <div
-        className={`flex items-center justify-between pb-2.5 border-b ${
+        className={`flex items-center justify-between pb-3 border-b ${
           isDark ? 'border-[#70E5B2]/15' : 'border-[#E2E8F0]'
         }`}
       >
         <span
-          className={`text-xs font-bold uppercase tracking-wider ${
+          className={`text-[13.5px] font-bold uppercase tracking-wider ${
             isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
           }`}
         >
@@ -45,9 +45,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           variant="ghost"
           size="sm"
           onClick={onReset}
-          className={`h-7 text-xs transition-colors ${
+          className={`h-8 px-3 text-xs font-bold transition-colors ${
             isDark
-              ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
+              ? 'text-[#CBD5E1] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
               : 'text-[#475569] hover:text-[#28665F] hover:bg-[#F1F5F9]'
           }`}
           leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
@@ -56,7 +56,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
         {children}
       </div>
     </div>

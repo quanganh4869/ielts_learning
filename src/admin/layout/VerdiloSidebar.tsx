@@ -14,7 +14,6 @@ import {
   HelpCircle as HelpIcon,
   X,
   LogOut,
-  ExternalLink,
 } from 'lucide-react'
 import { slidePill } from '@/shared/animations'
 import { useAdmin } from '../context/AdminContext'
@@ -36,8 +35,9 @@ interface SidebarItem {
 export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { admin } = useAdmin()
+  const { admin, theme } = useAdmin()
   const { user, logout } = useAuth()
+  const isDark = theme === 'dark'
 
   const navContainerRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
@@ -81,7 +81,7 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
         direction: 'auto',
       })
     }
-  }, [activeItem.id, location.pathname])
+  }, [activeItem.id, location.pathname, isDark])
 
   const handleLogout = () => {
     logout()
@@ -94,31 +94,55 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-xs lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
         />
       )}
 
-      {/* Verdilo Dark Emerald Glass Sidebar (230px fixed width) */}
+      {/* Verdilo Ergonomic Glass Sidebar (232px fixed width) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-58 bg-[#050D0B] border-r border-[#70E5B2]/10 flex flex-col justify-between transition-transform duration-300 ease-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-58 border-r flex flex-col justify-between transition-colors duration-200 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${
+          isDark
+            ? 'bg-[#07100D] border-[#70E5B2]/15 text-[#F8FAFC]'
+            : 'bg-white border-[#E2E8F0] shadow-sm text-[#0F172A]'
         }`}
       >
-        {/* Subtle Ambient Radial Emerald Glow */}
-        <div className="absolute top-0 left-0 w-full h-48 bg-[radial-gradient(circle_at_20%_0%,rgba(112,229,178,0.08)_0%,transparent_70%)] pointer-events-none" />
+        {/* Subtle Ambient Radial Emerald Glow in Dark Mode */}
+        {isDark && (
+          <div className="absolute top-0 left-0 w-full h-48 bg-[radial-gradient(circle_at_20%_0%,rgba(112,229,178,0.08)_0%,transparent_70%)] pointer-events-none" />
+        )}
 
         {/* TOP BRAND MONOGRAM & IDENTITY */}
-        <div className="p-4 pt-5 pb-4 flex items-center justify-between border-b border-[#70E5B2]/10 relative z-10">
+        <div
+          className={`p-4 pt-5 pb-4 flex items-center justify-between border-b relative z-10 ${
+            isDark ? 'border-[#70E5B2]/15' : 'border-[#E2E8F0]'
+          }`}
+        >
           <Link to="/admin/dashboard" className="flex items-center gap-2.5 group">
             {/* Monogram Logo */}
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#70E5B2] to-[#28665F] text-[#07100D] font-black text-sm flex items-center justify-center shadow-[0_0_12px_rgba(112,229,178,0.35)] group-hover:scale-105 transition-transform">
+            <div
+              className={`w-9 h-9 rounded-xl font-black text-sm flex items-center justify-center transition-transform group-hover:scale-105 shadow-md ${
+                isDark
+                  ? 'bg-gradient-to-br from-[#70E5B2] to-[#28665F] text-[#07100D] shadow-[0_0_14px_rgba(112,229,178,0.35)]'
+                  : 'bg-[#28665F] text-white shadow-xs'
+              }`}
+            >
               IL
             </div>
             <div>
-              <div className="text-xs font-extrabold text-[#F0FDF4] tracking-tight group-hover:text-[#70E5B2] transition-colors">
+              <div
+                className={`text-[15px] font-black tracking-tight transition-colors ${
+                  isDark ? 'text-[#F8FAFC] group-hover:text-[#70E5B2]' : 'text-[#0F172A] group-hover:text-[#28665F]'
+                }`}
+              >
                 IELTS Learning
               </div>
-              <div className="text-[10px] text-[#70E5B2] font-semibold tracking-wider uppercase">
+              <div
+                className={`text-[11px] font-bold tracking-wider uppercase ${
+                  isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
+                }`}
+              >
                 Admin Workspace
               </div>
             </div>
@@ -128,23 +152,31 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
           <button
             type="button"
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10 transition-colors"
+            className={`lg:hidden p-1.5 rounded-lg transition-colors ${
+              isDark
+                ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
+                : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
+            }`}
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* MIDDLE NAVIGATION CONTAINER WITH ACTIVE PILL */}
-        <div className="flex-1 px-2.5 py-3 overflow-y-auto relative" ref={navContainerRef}>
-          {/* Verdilo Active Sliding Pill (Absolute positioned) */}
+        <div className="flex-1 px-3 py-3 overflow-y-auto relative" ref={navContainerRef}>
+          {/* Verdilo Active Sliding Pill (Height 44px according to Master Prompt) */}
           <div
             ref={pillRef}
-            className="absolute rounded-[12px] bg-[#70E5B2] shadow-[0_0_16px_rgba(112,229,178,0.38)] pointer-events-none z-0 transition-opacity duration-200"
+            className={`absolute rounded-[12px] pointer-events-none z-0 transition-opacity duration-200 ${
+              isDark
+                ? 'bg-[#70E5B2] shadow-[0_0_16px_rgba(112,229,178,0.38)]'
+                : 'bg-[#28665F] shadow-sm'
+            }`}
             style={{
-              left: 10,
-              width: 'calc(100% - 20px)',
+              left: 12,
+              width: 'calc(100% - 24px)',
               top: 12,
-              height: 38,
+              height: 44,
               opacity: 0,
             }}
           />
@@ -164,23 +196,41 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
                     else itemRefs.current.delete(item.id)
                   }}
                   onClick={() => onClose()}
-                  className={`w-full h-[38px] px-3 rounded-[12px] flex items-center justify-between text-xs font-semibold transition-colors duration-150 relative select-none ${
+                  className={`w-full h-[44px] px-3.5 rounded-[12px] flex items-center justify-between text-[14.5px] font-semibold transition-colors duration-150 relative select-none ${
                     isActive
-                      ? 'text-[#07100D] font-bold'
-                      : 'text-[#94A3B8] hover:text-[#F0FDF4] hover:bg-white/[0.03]'
+                      ? isDark
+                        ? 'text-[#07100D] font-bold'
+                        : 'text-white font-bold'
+                      : isDark
+                      ? 'text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-white/[0.04]'
+                      : 'text-[#334155] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#07100D]' : 'text-[#70E5B2]/70'}`} />
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className={`w-5 h-5 stroke-[2] ${
+                        isActive
+                          ? isDark
+                            ? 'text-[#07100D]'
+                            : 'text-white'
+                          : isDark
+                          ? 'text-[#70E5B2]'
+                          : 'text-[#28665F]'
+                      }`}
+                    />
                     <span>{item.name}</span>
                   </div>
 
                   {item.badge && (
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      className={`text-xs font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center ${
                         isActive
-                          ? 'bg-[#07100D]/20 text-[#07100D]'
-                          : 'bg-[#70E5B2]/15 text-[#70E5B2] border border-[#70E5B2]/20'
+                          ? isDark
+                            ? 'bg-[#07100D]/20 text-[#07100D]'
+                            : 'bg-white/25 text-white'
+                          : isDark
+                          ? 'bg-[#70E5B2]/20 text-[#70E5B2] border border-[#70E5B2]/30'
+                          : 'bg-[#EAF4EE] text-[#1B5E54] border border-[#28665F]/30'
                       }`}
                     >
                       {item.badge}
@@ -192,18 +242,42 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
           </nav>
         </div>
 
-        {/* BOTTOM SYSTEM / ADMIN ACCOUNT PANEL (Compact & Refined) */}
-        <div className="p-2.5 border-t border-[#70E5B2]/10 bg-[#07100D]/60 relative z-10">
-          <div className="p-2 rounded-xl bg-[#0D1A15]/80 border border-[#70E5B2]/10 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-[#70E5B2]/20 border border-[#70E5B2]/30 text-[#70E5B2] font-bold text-xs flex items-center justify-center shrink-0">
+        {/* BOTTOM SYSTEM / ADMIN ACCOUNT PANEL */}
+        <div
+          className={`p-3 border-t relative z-10 ${
+            isDark ? 'border-[#70E5B2]/15 bg-[#07100D]' : 'border-[#E2E8F0] bg-[#F8FAFC]'
+          }`}
+        >
+          <div
+            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 ${
+              isDark
+                ? 'bg-[#0C1A15] border-[#70E5B2]/15'
+                : 'bg-white border-[#E2E8F0] shadow-xs'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className={`w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 border ${
+                  isDark
+                    ? 'bg-[#70E5B2]/20 border-[#70E5B2]/30 text-[#70E5B2]'
+                    : 'bg-[#EAF4EE] border-[#28665F]/30 text-[#1B5E54]'
+                }`}
+              >
                 {(admin?.fullName || user?.fullName || 'A').charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-bold text-[#F0FDF4] truncate leading-tight">
+                <div
+                  className={`text-[12.5px] font-bold truncate leading-tight ${
+                    isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'
+                  }`}
+                >
                   {admin?.fullName || user?.fullName || 'Lead Admin'}
                 </div>
-                <div className="text-[10px] text-[#70E5B2] truncate leading-tight">
+                <div
+                  className={`text-[11px] font-semibold truncate leading-tight ${
+                    isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
+                  }`}
+                >
                   Active • System Core
                 </div>
               </div>
@@ -212,10 +286,14 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
             <button
               type="button"
               onClick={handleLogout}
-              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+              className={`p-2 rounded-lg transition-colors shrink-0 cursor-pointer ${
+                isDark
+                  ? 'text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10'
+                  : 'text-[#64748B] hover:text-rose-600 hover:bg-rose-50'
+              }`}
               title="Đăng xuất"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
