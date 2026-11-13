@@ -94,7 +94,7 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
             : 'bg-white/95 border-[#E2E8F0] shadow-xs text-[#0F172A]'
         }`}
       >
-        {/* Left: Mobile hamburger + Status Indicator */}
+        {/* Left: Mobile hamburger */}
         <div className="flex items-center gap-3">
           {onToggleSidebar && (
             <button
@@ -114,24 +114,9 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
               </div>
             </button>
           )}
-
-          <div
-            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
-              isDark
-                ? 'bg-[#0C1A15] border-[#70E5B2]/20 text-[#70E5B2]'
-                : 'bg-[#EAF4EE] border-[#28665F]/30 text-[#1B5E54]'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full animate-pulse ${
-                isDark ? 'bg-[#70E5B2]' : 'bg-[#28665F]'
-              }`}
-            />
-            <span>IELTS Academic & CDI Production Node</span>
-          </div>
         </div>
 
-        {/* Middle: Verdilo Search Bar with Ctrl+K shortcut (Height 44px ergonomic) */}
+        {/* Middle: Verdilo Search Bar (Height 44px ergonomic) */}
         <div className="flex-1 max-w-md mx-4 hidden md:block">
           <button
             type="button"
@@ -152,15 +137,6 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
                 Search learners, courses, questions...
               </span>
             </div>
-            <kbd
-              className={`hidden lg:inline-flex items-center gap-0.5 px-2.5 py-1 text-xs font-mono font-bold border rounded-lg ${
-                isDark
-                  ? 'text-[#70E5B2] bg-[#07100D] border-[#70E5B2]/25'
-                  : 'text-[#1B5E54] bg-white border-[#CBD5E1]'
-              }`}
-            >
-              Ctrl + K
-            </kbd>
           </button>
         </div>
 
@@ -339,35 +315,16 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
             <button
               type="button"
               onClick={() => setIsProfileOpen((prev) => !prev)}
-              className={`flex items-center gap-2.5 p-1 pl-3 rounded-xl border text-left transition-all cursor-pointer group ${
+              className={`flex items-center justify-center px-4 py-2 rounded-xl border text-center transition-all cursor-pointer group shadow-xs hover:scale-105 active:scale-95 ${
                 isDark
-                  ? 'bg-[#0C1A15] hover:bg-[#12261F] border-[#70E5B2]/20'
-                  : 'bg-white hover:bg-[#F8FAFC] border-[#CBD5E1]'
+                  ? 'bg-[#0C1A15] hover:bg-[#12261F] border-[#70E5B2]/30 text-[#70E5B2]'
+                  : 'bg-white hover:bg-[#F8FAFC] border-[#CBD5E1] text-[#28665F]'
               }`}
+              title="Tài khoản Quản trị"
             >
-              <div className="hidden sm:block text-right pr-1">
-                <div
-                  className={`text-[13px] font-bold leading-tight ${
-                    isDark ? 'text-[#F8FAFC] group-hover:text-[#70E5B2]' : 'text-[#0F172A] group-hover:text-[#28665F]'
-                  }`}
-                >
-                  {admin?.fullName || user?.fullName || 'Administrator'}
-                </div>
-                <div
-                  className={`text-[11px] font-bold leading-tight ${
-                    isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
-                  }`}
-                >
-                  {admin?.role === 'super_admin' ? 'Lead Admin' : 'Admin'}
-                </div>
-              </div>
-              <div
-                className={`w-9 h-9 rounded-xl font-black text-sm flex items-center justify-center shrink-0 shadow-xs ${
-                  isDark ? 'bg-[#70E5B2] text-[#07100D]' : 'bg-[#28665F] text-white'
-                }`}
-              >
-                {(admin?.fullName || user?.fullName || 'A').charAt(0).toUpperCase()}
-              </div>
+              <span className="text-[16px] sm:text-[18px] font-black tracking-wider uppercase">
+                ADMIN
+              </span>
             </button>
 
             {isProfileOpen && (

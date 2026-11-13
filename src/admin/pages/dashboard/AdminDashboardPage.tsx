@@ -112,12 +112,11 @@ export const AdminDashboardPage: React.FC = () => {
       >
         <div>
           <h1
-            className={`text-2xl sm:text-[30px] font-extrabold tracking-tight flex items-center gap-2.5 ${
+            className={`text-2xl sm:text-[30px] font-extrabold tracking-tight ${
               isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'
             }`}
           >
-            <span>{getGreeting()}</span>
-            <Sparkles className={`w-5 h-5 ${isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'}`} />
+            {getGreeting()}
           </h1>
           <p
             className={`text-sm sm:text-[15px] mt-1.5 font-medium leading-relaxed ${

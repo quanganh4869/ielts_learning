@@ -44,8 +44,8 @@ const AdminLayoutInner: React.FC = () => {
       {/* Verdilo Monogrammed Sliding Sidebar */}
       <VerdiloSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main Content Area (Offset by sidebar width 256px on desktop) */}
-      <div className="flex-1 flex flex-col lg:pl-64 transition-all duration-200 relative z-10">
+      {/* Main Content Area (Offset by sidebar width 288px on desktop) */}
+      <div className="flex-1 flex flex-col lg:pl-72 transition-all duration-200 relative z-10">
         {/* Topbar / Command Bar with Search Ctrl+K & Quick Create */}
         <AdminCommandBar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 

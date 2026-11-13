@@ -98,9 +98,9 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
         />
       )}
 
-      {/* Verdilo Ergonomic Glass Sidebar (256px wide, large clear typography) */}
+      {/* Verdilo Ergonomic Glass Sidebar (288px wide, large clear typography) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col justify-between transition-colors duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r flex flex-col justify-between transition-colors duration-200 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } ${
           isDark
@@ -119,12 +119,12 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
             isDark ? 'border-[#70E5B2]/15' : 'border-[#E2E8F0]'
           }`}
         >
-          <Link to="/admin/dashboard" className="flex items-center gap-3 group">
+          <Link to="/admin/dashboard" className="flex items-center gap-3.5 group">
             {/* Monogram Logo */}
             <div
-              className={`w-10 h-10 rounded-xl font-black text-base flex items-center justify-center transition-transform group-hover:scale-105 shadow-md ${
+              className={`w-12 h-12 rounded-xl font-black text-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-md ${
                 isDark
-                  ? 'bg-gradient-to-br from-[#70E5B2] to-[#28665F] text-[#07100D] shadow-[0_0_14px_rgba(112,229,178,0.35)]'
+                  ? 'bg-gradient-to-br from-[#70E5B2] to-[#28665F] text-[#07100D] shadow-[0_0_16px_rgba(112,229,178,0.38)]'
                   : 'bg-[#28665F] text-white shadow-xs'
               }`}
             >
@@ -132,14 +132,14 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
             </div>
             <div>
               <div
-                className={`text-[17px] font-black tracking-tight leading-tight transition-colors ${
+                className={`text-[20px] font-black tracking-tight leading-tight transition-colors ${
                   isDark ? 'text-[#F8FAFC] group-hover:text-[#70E5B2]' : 'text-[#0F172A] group-hover:text-[#28665F]'
                 }`}
               >
                 IELTS Learning
               </div>
               <div
-                className={`text-[12px] font-extrabold tracking-wider uppercase mt-0.5 ${
+                className={`text-[13px] font-black tracking-wider uppercase mt-0.5 ${
                   isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
                 }`}
               >
@@ -163,8 +163,8 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
         </div>
 
         {/* MIDDLE NAVIGATION CONTAINER WITH ACTIVE PILL */}
-        <div className="flex-1 px-3 py-3 overflow-y-auto relative" ref={navContainerRef}>
-          {/* Verdilo Active Sliding Pill (Height 48px, rounded 14px) */}
+        <div className="flex-1 px-3.5 py-4 overflow-y-auto relative" ref={navContainerRef}>
+          {/* Verdilo Active Sliding Pill (Height 54px, rounded 14px) */}
           <div
             ref={pillRef}
             className={`absolute rounded-[14px] pointer-events-none z-0 transition-opacity duration-200 ${
@@ -173,16 +173,16 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
                 : 'bg-[#28665F] shadow-sm'
             }`}
             style={{
-              left: 12,
-              width: 'calc(100% - 24px)',
-              top: 12,
-              height: 48,
+              left: 14,
+              width: 'calc(100% - 28px)',
+              top: 16,
+              height: 54,
               opacity: 0,
             }}
           />
 
-          {/* Navigation Links list */}
-          <nav className="space-y-1.5 relative z-10">
+          {/* Navigation Links list (Enlarged typography & extended row spacing) */}
+          <nav className="space-y-3 relative z-10">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = activeItem.id === item.id
@@ -196,7 +196,7 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
                     else itemRefs.current.delete(item.id)
                   }}
                   onClick={() => onClose()}
-                  className={`w-full h-[48px] px-4 rounded-[14px] flex items-center justify-between text-[16px] font-bold tracking-tight transition-colors duration-150 relative select-none ${
+                  className={`w-full h-[54px] px-4 rounded-[14px] flex items-center justify-between text-[17.5px] sm:text-[18.5px] font-extrabold tracking-tight transition-colors duration-150 relative select-none ${
                     isActive
                       ? isDark
                         ? 'text-[#07100D] font-black'
@@ -208,7 +208,7 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
                 >
                   <div className="flex items-center gap-3.5">
                     <Icon
-                      className={`w-5.5 h-5.5 stroke-[2.2] shrink-0 ${
+                      className={`w-6 h-6 stroke-[2.3] shrink-0 ${
                         isActive
                           ? isDark
                             ? 'text-[#07100D]'
@@ -223,7 +223,7 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
 
                   {item.badge && (
                     <span
-                      className={`text-[12.5px] font-black px-2.5 py-0.5 rounded-full min-w-[24px] text-center ${
+                      className={`text-[13px] font-black px-2.5 py-0.5 rounded-full min-w-[26px] text-center ${
                         isActive
                           ? isDark
                             ? 'bg-[#07100D]/20 text-[#07100D]'
@@ -242,19 +242,13 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
           </nav>
         </div>
 
-        {/* BOTTOM SYSTEM / ADMIN ACCOUNT PANEL */}
+        {/* BOTTOM SYSTEM / ADMIN ACCOUNT PANEL (Clean, without redundant rounded border) */}
         <div
-          className={`p-3 border-t relative z-10 ${
+          className={`px-4 py-3.5 border-t relative z-10 ${
             isDark ? 'border-[#70E5B2]/15 bg-[#07100D]' : 'border-[#E2E8F0] bg-[#F8FAFC]'
           }`}
         >
-          <div
-            className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-              isDark
-                ? 'bg-[#0C1A15] border-[#70E5B2]/20'
-                : 'bg-white border-[#E2E8F0] shadow-xs'
-            }`}
-          >
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <div
                 className={`w-10 h-10 rounded-xl font-black text-sm flex items-center justify-center shrink-0 border ${
@@ -267,7 +261,7 @@ export const VerdiloSidebar: React.FC<VerdiloSidebarProps> = ({ isOpen, onClose 
               </div>
               <div className="min-w-0 flex-1">
                 <div
-                  className={`text-[14px] font-black truncate leading-tight ${
+                  className={`text-[15px] font-black truncate leading-tight ${
                     isDark ? 'text-[#F8FAFC]' : 'text-[#0F172A]'
                   }`}
                 >
