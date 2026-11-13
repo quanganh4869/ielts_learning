@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 import {
   Headphones,
   BookOpen,
@@ -128,6 +129,26 @@ const FAQ_ITEMS = [
 export const LandingPage: React.FC = () => {
   const containerRef = useScrollReveal()
   const { tText } = useLanguage()
+  const { user, isAuthenticated, loginWithGoogle } = useAuth()
+  const navigate = useNavigate()
+
+  const handleStartLearning = async () => {
+    if (isAuthenticated && user) {
+      const isAdmin =
+        Boolean(user.isAdmin) ||
+        user.role === 'admin' ||
+        Boolean(user.roles?.includes('ROLE_ADMIN')) ||
+        Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
+      navigate(isAdmin ? '/admin/dashboard' : '/app/dashboard')
+    } else {
+      try {
+        await loginWithGoogle()
+      } catch (err) {
+        console.error('Failed to initiate Google sign in:', err)
+        navigate('/login')
+      }
+    }
+  }
 
   // Interactive States
   const [activeSkill, setActiveSkill] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('writing')
@@ -202,16 +223,19 @@ export const LandingPage: React.FC = () => {
 
               {/* 2 MAIN CTAs */}
               <div className="reveal-init reveal-delay-3 flex flex-wrap items-center gap-3.5 pt-7 w-full sm:w-auto">
-                <Link to="/register" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    variant="primary"
-                    className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md"
-                    rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
-                  >
-                    Bắt đầu học miễn phí
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  variant="primary"
+                  onClick={handleStartLearning}
+                  className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md cursor-pointer"
+                  rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+                >
+                  {isAuthenticated && user
+                    ? (user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
+                      ? tText('Vào trang quản trị', 'Admin Console')
+                      : tText('Vào không gian học', 'Go to Dashboard'))
+                    : tText('Bắt đầu học miễn phí', 'Start Learning for Free')}
+                </Button>
                 <a href="#method" className="w-full sm:w-auto">
                   <Button
                     size="lg"
@@ -544,11 +568,9 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link to="/register">
-                      <Button variant="primary" size="md" className="font-bold">
-                        Trải nghiệm bài nghe thử
-                      </Button>
-                    </Link>
+                    <Button variant="primary" size="md" className="font-bold cursor-pointer" onClick={handleStartLearning}>
+                      Trải nghiệm bài nghe thử
+                    </Button>
                   </div>
                 </div>
 
@@ -618,11 +640,9 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link to="/register">
-                      <Button variant="primary" size="md" className="font-bold">
-                        Làm thử bài Reading
-                      </Button>
-                    </Link>
+                    <Button variant="primary" size="md" className="font-bold cursor-pointer" onClick={handleStartLearning}>
+                      Làm thử bài Reading
+                    </Button>
                   </div>
                 </div>
 
@@ -748,11 +768,9 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link to="/register">
-                      <Button variant="primary" size="md" className="font-bold">
-                        Luyện nói cùng đề mới nhất
-                      </Button>
-                    </Link>
+                    <Button variant="primary" size="md" className="font-bold cursor-pointer" onClick={handleStartLearning}>
+                      Luyện nói cùng đề mới nhất
+                    </Button>
                   </div>
                 </div>
 
@@ -1160,11 +1178,9 @@ export const LandingPage: React.FC = () => {
 
               {/* Action Bar */}
               <div className="mt-5">
-                <Link to="/register">
-                  <Button variant="primary" size="md" className="font-bold text-xs" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Khám phá kho 2.000+ từ vựng
-                  </Button>
-                </Link>
+                <Button variant="primary" size="md" className="font-bold text-xs cursor-pointer" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} onClick={handleStartLearning}>
+                  Khám phá kho 2.000+ từ vựng
+                </Button>
               </div>
             </div>
           </div>
@@ -1221,11 +1237,9 @@ export const LandingPage: React.FC = () => {
                 </ul>
               </div>
               <div className="pt-6">
-                <Link to="/register" className="w-full block">
-                  <Button variant="outline" size="sm" className="w-full font-bold">
-                    Khởi động Giai đoạn 1
-                  </Button>
-                </Link>
+                <Button variant="outline" size="sm" className="w-full font-bold cursor-pointer" onClick={handleStartLearning}>
+                  Khởi động Giai đoạn 1
+                </Button>
               </div>
             </div>
 
@@ -1266,11 +1280,9 @@ export const LandingPage: React.FC = () => {
                 </ul>
               </div>
               <div className="pt-6">
-                <Link to="/register" className="w-full block">
-                  <Button variant="primary" size="sm" className="w-full font-bold shadow-xs">
-                    Tham gia Giai đoạn 2
-                  </Button>
-                </Link>
+                <Button variant="primary" size="sm" className="w-full font-bold shadow-xs cursor-pointer" onClick={handleStartLearning}>
+                  Tham gia Giai đoạn 2
+                </Button>
               </div>
             </div>
 
@@ -1306,11 +1318,9 @@ export const LandingPage: React.FC = () => {
                 </ul>
               </div>
               <div className="pt-6">
-                <Link to="/register" className="w-full block">
-                  <Button variant="outline" size="sm" className="w-full font-bold">
-                    Khám phá Giai đoạn 3
-                  </Button>
-                </Link>
+                <Button variant="outline" size="sm" className="w-full font-bold cursor-pointer" onClick={handleStartLearning}>
+                  Khám phá Giai đoạn 3
+                </Button>
               </div>
             </div>
           </div>
@@ -1348,11 +1358,9 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div>
-                <Link to="/register">
-                  <Button variant="primary" size="md" className="font-bold shadow-xs" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                    Vào phòng thi thử ngay
-                  </Button>
-                </Link>
+                <Button variant="primary" size="md" className="font-bold shadow-xs cursor-pointer" rightIcon={<ArrowRight className="w-4 h-4" />} onClick={handleStartLearning}>
+                  Vào phòng thi thử ngay
+                </Button>
               </div>
             </div>
 
@@ -1629,16 +1637,19 @@ export const LandingPage: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
-              <Link to="/register">
-                <Button
-                  size="lg"
-                  variant="primary"
-                  className="font-black text-base h-13 px-8 shadow-md rounded-2xl"
-                  rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
-                >
-                  Tạo tài khoản học miễn phí
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="primary"
+                onClick={handleStartLearning}
+                className="font-black text-base h-13 px-8 shadow-md rounded-2xl cursor-pointer"
+                rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+              >
+                {isAuthenticated && user
+                  ? (user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
+                    ? tText('Vào trang quản trị', 'Admin Console')
+                    : tText('Vào không gian học', 'Go to Dashboard'))
+                  : tText('Tạo tài khoản học miễn phí', 'Get Started for Free')}
+              </Button>
             </div>
 
             <div className="pt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-bold text-[#68727D]">

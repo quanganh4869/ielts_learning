@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 
 export const PublicLayout: React.FC = () => {
   const { language, setLanguage, tText } = useLanguage()
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, loginWithGoogle } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -77,7 +77,7 @@ export const PublicLayout: React.FC = () => {
     return isHomePage ? anchor : `/${anchor}`
   }
 
-  const handleStartLearning = () => {
+  const handleStartLearning = async () => {
     if (isAuthenticated && user) {
       const isAdmin =
         Boolean(user.isAdmin) ||
@@ -86,7 +86,12 @@ export const PublicLayout: React.FC = () => {
         Boolean(user.roles?.includes('ROLE_SUPER_ADMIN'))
       navigate(isAdmin ? '/admin/dashboard' : '/app/dashboard')
     } else {
-      navigate('/login')
+      try {
+        await loginWithGoogle()
+      } catch (err) {
+        console.error('Failed to initiate Google sign in:', err)
+        navigate('/login')
+      }
     }
   }
 
