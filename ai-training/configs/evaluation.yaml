@@ -1,0 +1,42 @@
+# IELTS AI - Evaluation Configuration
+
+test_dataset: "data/splits/test.jsonl"
+reports_dir: "outputs/reports"
+metrics_dir: "outputs/metrics"
+
+tasks:
+  - id: "ielts_tutor"
+    name: "General IELTS Academic & Strategy Tutoring"
+    description: "Evaluates conceptual clarity, tone of voice and academic guidance."
+    sample_limit: 20
+
+  - id: "reading_tfng"
+    name: "Reading True / False / Not Given Reasoning"
+    description: "Evaluates precision in evidence location and strict prohibition of extrapolation."
+    sample_limit: 15
+
+  - id: "listening_analysis"
+    name: "Listening Transcript & Distractor Diagnosis"
+    description: "Evaluates acoustic cue parsing and explanation of speaker turns."
+    sample_limit: 15
+
+  - id: "writing_critique"
+    name: "Writing Task 1 & 2 Four-Criteria Feedback"
+    description: "Evaluates alignment with official Task Response, CC, LR and GRA rubrics."
+    sample_limit: 15
+
+  - id: "speaking_feedback"
+    name: "Speaking Naturalness & Pronunciation Guidance"
+    description: "Evaluates constructive advice without native-accent bias."
+    sample_limit: 15
+
+  - id: "structured_output"
+    name: "Valid JSON Formatting & Citation Extraction"
+    description: "Tests if model returns clean parseable JSON structures when prompted."
+    sample_limit: 10
+
+generation_params:
+  max_new_tokens: 512
+  temperature: 0.2
+  top_p: 0.9
+  do_sample: true

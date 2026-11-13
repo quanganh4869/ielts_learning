@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches & environments
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Large model weights and checkpoints (Do NOT commit to git)
+models/base/*
+!models/base/.gitkeep
+models/checkpoints/*
+!models/checkpoints/.gitkeep
+models/exports/*
+!models/exports/.gitkeep
+models/adapters/*
+!models/adapters/.gitkeep
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Data files (raw user documents, private sets)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/candidates/*
+!data/candidates/.gitkeep
+data/datasets/*
+!data/datasets/.gitkeep
+data/splits/*
+!data/splits/.gitkeep
+
+# Sample data can be kept for smoke testing
+!data/sample/**
+
+# Outputs & temporary logs
+outputs/logs/*
+!outputs/logs/.gitkeep
+outputs/reports/*
+!outputs/reports/.gitkeep
+outputs/metrics/*
+!outputs/metrics/.gitkeep
+*.log

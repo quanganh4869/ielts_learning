@@ -1,0 +1,31 @@
+# IELTS AI - Dataset Configuration
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  candidates_dir: "data/candidates"
+  datasets_dir: "data/datasets"
+  splits_dir: "data/splits"
+
+# Validation Thresholds & Sanity Constraints
+validation:
+  min_instruction_length: 5
+  min_response_length: 10
+  max_sequence_length: 2048
+  check_duplicate_hashes: true
+  similarity_threshold: 0.92
+  remove_pii: true
+  allowed_skills:
+    - "listening"
+    - "reading"
+    - "writing"
+    - "speaking"
+    - "general_tutor"
+
+# Split Ratios
+split:
+  train_ratio: 0.80
+  val_ratio: 0.10
+  test_ratio: 0.10
+  stratify_by_skill: true
+  seed: 42

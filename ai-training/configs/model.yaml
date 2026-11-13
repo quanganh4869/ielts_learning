@@ -1,0 +1,39 @@
+# IELTS AI - Model Configuration
+default_model: qwen2.5-0.5b
+
+models:
+  qwen2.5-0.5b:
+    name: "Qwen/Qwen2.5-0.5B-Instruct"
+    description: "Ultra-lightweight Qwen model for local development, rapid smoke testing and 4GB GPU/CPU execution."
+    architecture: "qwen2"
+    context_length: 2048
+    vram_required_gb: 3.5
+    recommended_device: "cuda_or_cpu"
+    quantization_supported: ["none", "4bit", "8bit"]
+    lora_target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+    license: "Apache-2.0"
+
+  qwen2.5-1.5b:
+    name: "Qwen/Qwen2.5-1.5B-Instruct"
+    description: "Balanced compact model with enhanced reasoning, suitable for 6GB-8GB VRAM or 4GB with strict QLoRA."
+    architecture: "qwen2"
+    context_length: 4096
+    vram_required_gb: 5.5
+    recommended_device: "cuda"
+    quantization_supported: ["4bit", "8bit"]
+    lora_target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    license: "Apache-2.0"
+
+  qwen2.5-7b:
+    name: "Qwen/Qwen2.5-7B-Instruct"
+    description: "Production-grade IELTS tutor model with deep academic reasoning and nuanced writing critique. Requires cloud GPU (16GB+ VRAM)."
+    architecture: "qwen2"
+    context_length: 8192
+    vram_required_gb: 14.0
+    recommended_device: "cuda_cloud"
+    quantization_supported: ["4bit", "8bit"]
+    lora_target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    license: "Apache-2.0"
+
+cache_dir: "models/base"
+trust_remote_code: true

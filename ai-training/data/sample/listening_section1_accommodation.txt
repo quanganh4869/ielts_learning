@@ -1,0 +1,25 @@
+# IELTS Listening Section 1: University Accommodation Registration
+
+## Audio Script Transcript
+
+Officer: Good morning, Student Accommodation Services. How may I help you today?
+Student: Hello, my name is Alex Chen. I'm an incoming postgraduate student for the Autumn semester, and I'd like to apply for on-campus accommodation.
+Officer: Certainly, Alex. Let me take down your details. Can you spell your surname for me?
+Student: Yes, it's C-H-E-N. My student identification number is ST-84920.
+Officer: Thank you. And which campus will your primary faculty be located on?
+Student: Originally I thought I would be at the North campus, but my program in Advanced Materials Engineering was moved to the Riverside campus.
+Officer: Right, Riverside campus. We have three main residence halls there: Parkview, Brookside, and Highfield Manor. Do you have a preference?
+Student: I prefer a studio flat with a private en-suite bathroom. Shared kitchens are fine, but a private bathroom is essential.
+Officer: In that case, Parkview Hall has studio units available from September 15th at £185 per week, including utilities and high-speed internet. Brookside has rooms from £145, but bathrooms are communal.
+Student: £185 at Parkview fits my budget perfectly. Please register me for that.
+Officer: Excellent. The deposit is £250, payable within 14 days of room allocation.
+
+## Questions 1-4: Form Completion
+1. Student ID: ST-84920
+Explanation: Alex clarifies his ID clearly as ST-84920.
+2. Campus Location: Riverside
+Explanation: The student mentions North campus first as a distractor ("Originally I thought..."), but corrects that the faculty was moved to Riverside campus.
+3. Residence Hall Chosen: Parkview
+Explanation: Chosen because it includes an en-suite private bathroom within the student's budget.
+4. Weekly Rent: £185
+Explanation: £145 was mentioned for Brookside (distractor), but Parkview is £185 per week.
