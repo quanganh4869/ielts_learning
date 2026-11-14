@@ -209,24 +209,24 @@ export const FloatingChatbot: React.FC = () => {
                 onClick={handleStartNewChat}
                 disabled={isLoading}
                 title={tText('Bắt đầu cuộc trò chuyện mới', 'New conversation')}
-                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white"
+                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white flex items-center justify-center shrink-0 cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
               </button>
               <Link
                 to="/app/ai-tutor"
                 onClick={() => setIsOpen(false)}
                 title={tText('Mở toàn màn hình', 'Open full workspace')}
-                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white"
+                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white flex items-center justify-center shrink-0"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
+                <Maximize2 className="w-3.5 h-3.5 shrink-0" />
               </Link>
               <button
                 onClick={() => setIsOpen(false)}
                 title={tText('Thu nhỏ', 'Minimize')}
-                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white"
+                className="p-1.5 hover:bg-white/15 rounded-lg transition-colors text-white flex items-center justify-center shrink-0 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 shrink-0" />
               </button>
             </div>
           </div>
@@ -347,7 +347,7 @@ export const FloatingChatbot: React.FC = () => {
               className="w-9 h-9 rounded-xl bg-[#28665F] hover:bg-[#20534D] disabled:opacity-40 text-white flex items-center justify-center transition-colors shrink-0 shadow-2xs cursor-pointer"
               title={tText('Gửi tin nhắn', 'Send')}
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 shrink-0" />
             </button>
           </div>
         </div>

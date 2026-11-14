@@ -74,7 +74,7 @@ export const VocabularyListPage: React.FC = () => {
         ]}
         actions={
           <Link to="/app/practice/vocabulary/review">
-            <Button variant="primary" size="sm" leftIcon={<RotateCcw className="w-4 h-4" />}>
+            <Button variant="primary" size="sm" leftIcon={<RotateCcw className="w-4 h-4 shrink-0" />}>
               {tText('Bắt đầu phiên ôn Flashcards', 'Start Flashcard Review')}
             </Button>
           </Link>
@@ -470,7 +470,7 @@ export const GrammarListPage: React.FC = () => {
 
             <div className="shrink-0">
               <Link to={`/app/practice/grammar/${topic.id}`}>
-                <Button variant="primary" size="sm" rightIcon={<ChevronRight className="w-4 h-4" />}>
+                <Button variant="primary" size="sm" rightIcon={<ChevronRight className="w-4 h-4 shrink-0" />}>
                   {tText('Học lý thuyết & Bài tập', 'Study Rules & Practice')}
                 </Button>
               </Link>

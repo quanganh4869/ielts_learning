@@ -283,7 +283,7 @@ export const AppShell: React.FC = () => {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-3.5 py-2 text-[#20272E] hover:bg-[#F7F8FA] text-xs font-medium"
                   >
-                    <User className="w-4 h-4 text-[#68727D]" />
+                    <User className="w-4 h-4 text-[#68727D] shrink-0" />
                     <span>{t('nav.profile')}</span>
                   </NavLink>
 
@@ -292,7 +292,7 @@ export const AppShell: React.FC = () => {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-3.5 py-2 text-[#20272E] hover:bg-[#F7F8FA] text-xs font-medium"
                   >
-                    <Settings className="w-4 h-4 text-[#68727D]" />
+                    <Settings className="w-4 h-4 text-[#68727D] shrink-0" />
                     <span>{t('nav.settings')}</span>
                   </NavLink>
 
@@ -301,7 +301,7 @@ export const AppShell: React.FC = () => {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-3.5 py-2 text-[#28665F] hover:bg-[#EAF3F1] text-xs font-semibold"
                   >
-                    <ShieldCheck className="w-4 h-4 text-[#28665F]" />
+                    <ShieldCheck className="w-4 h-4 text-[#28665F] shrink-0" />
                     <span>{t('nav.admin')}</span>
                   </NavLink>
 
@@ -314,7 +314,7 @@ export const AppShell: React.FC = () => {
                     }}
                     className="w-full flex items-center gap-2.5 px-3.5 py-2 text-red-600 hover:bg-red-50 text-xs font-medium text-left"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 shrink-0" />
                     <span>{t('nav.logout')}</span>
                   </button>
                 </div>

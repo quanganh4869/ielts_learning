@@ -234,15 +234,15 @@ export const AiTutorPage: React.FC = () => {
           {/* SIDEBAR HEADER */}
           <div className="p-3 border-b border-[#E3E7EB] flex items-center justify-between">
             <h3 className="font-extrabold text-xs text-[#20272E] uppercase tracking-wider flex items-center gap-1.5">
-              <MessageSquare className="w-3.5 h-3.5 text-[#28665F]" />
-              {tText('Lịch sử hội thoại', 'Conversations')}
+              <MessageSquare className="w-3.5 h-3.5 text-[#28665F] shrink-0" />
+              <span>{tText('Lịch sử hội thoại', 'Conversations')}</span>
             </h3>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="p-1 rounded-lg text-[#68727D] hover:bg-black/5"
+              className="p-1.5 rounded-lg text-[#68727D] hover:bg-black/5 flex items-center justify-center shrink-0 transition-colors"
               title={tText('Thu gọn danh sách', 'Collapse sidebar')}
             >
-              <PanelLeftClose className="w-4 h-4" />
+              <PanelLeftClose className="w-4 h-4 shrink-0" />
             </button>
           </div>
 
@@ -255,8 +255,8 @@ export const AiTutorPage: React.FC = () => {
               disabled={isLoading}
               className="w-full justify-center gap-2 bg-white hover:bg-[#EAF3F1] border-[#28665F]/30 text-[#28665F] font-bold text-xs shadow-2xs"
             >
-              <Plus className="w-3.5 h-3.5" />
-              {tText('Cuộc trò chuyện mới', 'New Chat')}
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span>{tText('Cuộc trò chuyện mới', 'New Chat')}</span>
             </Button>
           </div>
 
@@ -287,9 +287,9 @@ export const AiTutorPage: React.FC = () => {
                     <button
                       onClick={(e) => handleDeleteConversation(e, c.id)}
                       title={tText('Xóa cuộc trò chuyện', 'Delete')}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-[#9AA4AF] hover:text-red-500 rounded-md transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-[#9AA4AF] hover:text-red-500 rounded-md transition-opacity shrink-0 flex items-center justify-center"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3 h-3 shrink-0" />
                     </button>
                   </div>
                 )
@@ -306,22 +306,22 @@ export const AiTutorPage: React.FC = () => {
               {!isSidebarOpen && (
                 <button
                   onClick={() => setIsSidebarOpen(true)}
-                  className="p-1.5 rounded-lg text-[#68727D] hover:bg-[#F7F8FA] border border-[#E3E7EB]"
+                  className="p-1.5 rounded-lg text-[#68727D] hover:bg-[#F7F8FA] border border-[#E3E7EB] flex items-center justify-center shrink-0 transition-colors"
                   title={tText('Mở danh sách hội thoại', 'Open sidebar')}
                 >
-                  <PanelLeftOpen className="w-4 h-4" />
+                  <PanelLeftOpen className="w-4 h-4 shrink-0" />
                 </button>
               )}
               <div className="w-8 h-8 rounded-full bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0">
-                <img src="/brand/nori-mascot-sm.png" alt="Tutor" className="w-5 h-5 object-contain" />
+                <img src="/brand/nori-mascot-sm.png" alt="Tutor" className="w-5 h-5 object-contain shrink-0" />
               </div>
               <div>
                 <h2 className="font-extrabold text-sm text-[#20272E] leading-none">
                   {activeTitle || tText('IELTS AI Academic Tutor', 'IELTS AI Academic Tutor')}
                 </h2>
                 <span className="text-[10px] text-[#28665F] font-bold flex items-center gap-1 mt-0.5">
-                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                  {tText('Phạm vi IELTS chuẩn xác & Không suy diễn', 'Strict IELTS & Zero-hallucination')}
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span>{tText('Phạm vi IELTS chuẩn xác & Không suy diễn', 'Strict IELTS & Zero-hallucination')}</span>
                 </span>
               </div>
             </div>
@@ -331,10 +331,10 @@ export const AiTutorPage: React.FC = () => {
               size="sm"
               onClick={handleCreateNewChat}
               disabled={isLoading}
-              className="hidden sm:inline-flex text-xs h-8"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs h-8"
             >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              {tText('Đổi chủ đề', 'New Topic')}
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span>{tText('Đổi chủ đề', 'New Topic')}</span>
             </Button>
           </div>
 
@@ -355,8 +355,8 @@ export const AiTutorPage: React.FC = () => {
                     )}
                   >
                     {!isUser && (
-                      <div className="w-7 h-7 rounded-lg bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0 mt-1 shadow-2xs">
-                        <img src="/brand/nori-mascot-sm.png" alt="Tutor" className="w-5 h-5 object-contain" />
+                      <div className="w-8 h-8 rounded-full bg-[#EAF3F1] border border-[#28665F]/20 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                        <img src="/brand/nori-mascot-sm.png" alt="Tutor" className="w-5 h-5 object-contain shrink-0" />
                       </div>
                     )}
 
@@ -373,9 +373,9 @@ export const AiTutorPage: React.FC = () => {
                       {/* VERIFIED CITATIONS */}
                       {!isUser && msg.citations && msg.citations.length > 0 && (
                         <div className="mt-3 pt-2.5 border-t border-gray-100 flex flex-wrap gap-1.5">
-                          <span className="text-[10px] text-[#68727D] font-bold flex items-center gap-1 w-full">
-                            <BookOpen className="w-3 h-3 text-[#28665F]" />
-                            {tText('Nguồn tham khảo đã được xác minh:', 'Verified Citations & Tool Invocations:')}
+                          <span className="text-[10px] text-[#68727D] font-bold flex items-center gap-1.5 w-full">
+                            <BookOpen className="w-3 h-3 text-[#28665F] shrink-0" />
+                            <span>{tText('Nguồn tham khảo đã được xác minh:', 'Verified Citations & Tool Invocations:')}</span>
                           </span>
                           {msg.citations.map((c, idx) => (
                             <div
@@ -445,7 +445,7 @@ export const AiTutorPage: React.FC = () => {
 
             {isLoading && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-[#E3E7EB] text-xs text-[#68727D] w-fit shadow-2xs ml-9">
-                <RefreshCw className="w-3.5 h-3.5 text-[#28665F] animate-spin" />
+                <RefreshCw className="w-3.5 h-3.5 text-[#28665F] animate-spin shrink-0" />
                 <span>{tText('AI Tutor đang phân tích kiến thức và dữ liệu...', 'AI Tutor is retrieving data and formulating response...')}</span>
               </div>
             )}
@@ -471,7 +471,7 @@ export const AiTutorPage: React.FC = () => {
               onClick={() => handleSend()}
               title={t('aitutor.send')}
             >
-              <Send className="w-4 h-4 mr-1.5" />
+              <Send className="w-4 h-4 shrink-0" />
               <span>{tText('Gửi', 'Send')}</span>
             </Button>
           </div>

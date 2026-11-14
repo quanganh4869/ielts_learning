@@ -311,7 +311,7 @@ export const VocabularyAdminPage: React.FC = () => {
           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
           title="Xóa từ vựng này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },
@@ -328,7 +328,7 @@ export const VocabularyAdminPage: React.FC = () => {
             size="sm"
             onClick={handleOpenCreate}
             className="font-bold shadow-xs"
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4 shrink-0" />}
           >
             Thêm từ vựng mới
           </Button>
@@ -347,7 +347,7 @@ export const VocabularyAdminPage: React.FC = () => {
       {/* Search Toolbar & Sort Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <Search className="w-4 h-4 shrink-0 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
           <input
             type="text"
             placeholder="Tìm theo từ vựng, nghĩa tiếng Việt hoặc chủ đề..."
@@ -360,7 +360,7 @@ export const VocabularyAdminPage: React.FC = () => {
         {/* Quick Sort Presets */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider flex items-center gap-1">
-            <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
+            <ArrowUpDown className="w-3.5 h-3.5 shrink-0" /> Sắp xếp:
           </span>
           <select
             value={sortPreset}

@@ -442,7 +442,7 @@ export const OnboardingPage: React.FC = () => {
                 variant="outline"
                 size="md"
                 onClick={handleBack}
-                leftIcon={<ArrowLeft className="w-4 h-4" />}
+                leftIcon={<ArrowLeft className="w-4 h-4 shrink-0" />}
               >
                 {tText('Quay lại', 'Back')}
               </Button>
@@ -455,7 +455,7 @@ export const OnboardingPage: React.FC = () => {
                 variant="primary"
                 size="md"
                 onClick={handleNext}
-                rightIcon={<ArrowRight className="w-4 h-4" />}
+                rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
               >
                 {tText('Tiếp tục', 'Continue')}
               </Button>

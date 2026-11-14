@@ -136,7 +136,7 @@ export const RolesListPage: React.FC = () => {
           }`}
           title={r.isSystem ? 'Không thể xóa vai trò hệ thống' : 'Xóa vai trò này'}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },
@@ -159,7 +159,7 @@ export const RolesListPage: React.FC = () => {
               })
             }}
             className="font-bold shadow-xs"
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4 shrink-0" />}
           >
             Tạo vai trò mới
           </Button>

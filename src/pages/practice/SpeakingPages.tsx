@@ -78,7 +78,7 @@ export const SpeakingListPage: React.FC = () => {
 
             <div className="shrink-0">
               <Link to={`/app/practice/speaking/${ex.id}`}>
-                <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}>
                   {tText('Vào phòng nói', 'Start Speaking')}
                 </Button>
               </Link>

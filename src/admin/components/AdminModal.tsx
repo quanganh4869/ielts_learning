@@ -122,14 +122,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`p-2 rounded-xl transition-colors shrink-0 cursor-pointer ${
+            className={`p-2 rounded-xl transition-colors shrink-0 cursor-pointer flex items-center justify-center ${
               isDark
                 ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
                 : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
             }`}
             aria-label="Đóng cửa sổ"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 shrink-0" />
           </button>
         </div>
 

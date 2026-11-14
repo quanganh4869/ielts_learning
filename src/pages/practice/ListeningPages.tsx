@@ -85,7 +85,7 @@ export const ListeningListPage: React.FC = () => {
 
               <div className="shrink-0">
                 <Link to={`/app/practice/listening/${ex.id}`}>
-                  <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />} className="font-bold">
+                  <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />} className="font-bold">
                     {isDone ? tText('Làm lại', 'Retake Drill') : tText('Bắt đầu nghe', 'Start Listening')}
                   </Button>
                 </Link>
@@ -253,7 +253,7 @@ export const ListeningSessionPage: React.FC = () => {
               variant="primary"
               size="md"
               onClick={handleSubmit}
-              leftIcon={<CheckCircle2 className="w-4 h-4" />}
+              leftIcon={<CheckCircle2 className="w-4 h-4 shrink-0" />}
             >
               {tText('Nộp bài kiểm tra', 'Submit Answers')}
             </Button>

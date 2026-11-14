@@ -187,7 +187,7 @@ export const UserListPage: React.FC = () => {
           }`}
           title="Xóa tài khoản này"
         >
-          <Trash2 className="w-4.5 h-4.5" />
+          <Trash2 className="w-4.5 h-4.5 shrink-0" />
         </button>
       ),
     },

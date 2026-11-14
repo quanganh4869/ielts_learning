@@ -159,7 +159,7 @@ export const AssessmentsListPage: React.FC = () => {
           }`}
           title="Xóa đề thi này"
         >
-          <Trash2 className="w-4.5 h-4.5" />
+          <Trash2 className="w-4.5 h-4.5 shrink-0" />
         </button>
       ),
     },
@@ -177,7 +177,7 @@ export const AssessmentsListPage: React.FC = () => {
               size="md"
               onClick={() => navigate('/admin/assessments/builder')}
               className="font-bold shadow-xs h-11 px-4 text-[14px]"
-              leftIcon={<Plus className="w-4.5 h-4.5" />}
+              leftIcon={<Plus className="w-4.5 h-4.5 shrink-0" />}
             >
               Question Set Builder (Tạo đề & Bulk Import)
             </Button>

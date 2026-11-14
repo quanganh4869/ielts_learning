@@ -55,9 +55,9 @@ export const Pagination: React.FC<PaginationProps> = ({
               ? 'border-[#70E5B2]/25 bg-[#0C1A15] hover:border-[#70E5B2]/50 text-[#F8FAFC]'
               : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A]'
           }`}
+          leftIcon={<ChevronLeft className="w-4 h-4 shrink-0" />}
         >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          <span>Trước</span>
+          Trước
         </Button>
 
         <span className={`px-3 py-1.5 text-xs font-extrabold rounded-lg border ${
@@ -78,9 +78,9 @@ export const Pagination: React.FC<PaginationProps> = ({
               ? 'border-[#70E5B2]/25 bg-[#0C1A15] hover:border-[#70E5B2]/50 text-[#F8FAFC]'
               : 'border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A]'
           }`}
+          rightIcon={<ChevronRight className="w-4 h-4 shrink-0" />}
         >
-          <span>Sau</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
+          Sau
         </Button>
       </div>
     </div>

@@ -301,7 +301,7 @@ export const PhaseDetailPage: React.FC = () => {
                         </Button>
                       </Link>
                     ) : (
-                      <Button variant="outline" size="md" disabled leftIcon={<Lock className="w-4 h-4" />}>
+                      <Button variant="outline" size="md" disabled leftIcon={<Lock className="w-4 h-4 shrink-0" />}>
                         {tText('Đã khóa', 'Locked')}
                       </Button>
                     )}

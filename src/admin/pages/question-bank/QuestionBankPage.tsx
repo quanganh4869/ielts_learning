@@ -158,7 +158,7 @@ export const QuestionBankPage: React.FC = () => {
           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
           title="Xóa câu hỏi này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },
@@ -176,7 +176,7 @@ export const QuestionBankPage: React.FC = () => {
               size="sm"
               onClick={() => navigate('/admin/assessments/builder')}
               className="font-bold shadow-xs"
-              leftIcon={<Plus className="w-4 h-4" />}
+              leftIcon={<Plus className="w-4 h-4 shrink-0" />}
             >
               Question Set Builder
             </Button>
@@ -196,7 +196,7 @@ export const QuestionBankPage: React.FC = () => {
       {/* Filters Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <Search className="w-4 h-4 shrink-0 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
           <input
             type="text"
             placeholder="Tìm theo mã câu hỏi hoặc từ khóa nội dung..."

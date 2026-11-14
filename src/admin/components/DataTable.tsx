@@ -134,7 +134,7 @@ export function DataTable<T>({
                       <span>{col.header}</span>
                       {col.sortable && onSort && (
                         <ArrowUpDown
-                          className={`w-4 h-4 ${
+                          className={`w-4 h-4 shrink-0 ${
                             isSorted ? (isDark ? 'text-[#70E5B2]' : 'text-[#1B5E54]') : 'text-slate-400'
                           } ${isSorted && sortDirection === 'desc' ? 'rotate-180' : ''}`}
                         />

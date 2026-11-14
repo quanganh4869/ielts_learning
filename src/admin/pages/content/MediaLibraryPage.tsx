@@ -212,7 +212,7 @@ export const MediaLibraryPage: React.FC = () => {
               className="p-0.5 text-slate-400 hover:text-[#28665F] disabled:opacity-20 hover:bg-slate-100 rounded"
               title="Đẩy lên"
             >
-              <ArrowUp className="w-3 h-3" />
+              <ArrowUp className="w-3 h-3 shrink-0" />
             </button>
             <button
               type="button"
@@ -221,7 +221,7 @@ export const MediaLibraryPage: React.FC = () => {
               className="p-0.5 text-slate-400 hover:text-[#28665F] disabled:opacity-20 hover:bg-slate-100 rounded"
               title="Đẩy xuống"
             >
-              <ArrowDown className="w-3 h-3" />
+              <ArrowDown className="w-3 h-3 shrink-0" />
             </button>
           </div>
         </div>
@@ -283,7 +283,7 @@ export const MediaLibraryPage: React.FC = () => {
           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
           title="Xóa tệp tài nguyên này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },
@@ -300,7 +300,7 @@ export const MediaLibraryPage: React.FC = () => {
             size="sm"
             onClick={handleOpenCreate}
             className="font-bold shadow-xs"
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4 shrink-0" />}
           >
             Tải lên tài nguyên mới
           </Button>
@@ -319,7 +319,7 @@ export const MediaLibraryPage: React.FC = () => {
       {/* Search Toolbar & Sort Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-[#E3E7EB] shadow-2xs">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#68727D] shrink-0" />
           <input
             type="text"
             placeholder="Tìm theo tên tệp hoặc định dạng..."
@@ -332,7 +332,7 @@ export const MediaLibraryPage: React.FC = () => {
         {/* Quick Sort Presets */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-2xs font-bold text-[#68727D] uppercase tracking-wider flex items-center gap-1">
-            <ArrowUpDown className="w-3.5 h-3.5" /> Sắp xếp:
+            <ArrowUpDown className="w-3.5 h-3.5 shrink-0" /> Sắp xếp:
           </span>
           <select
             value={sortPreset}

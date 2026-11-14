@@ -170,7 +170,7 @@ export const SessionsListPage: React.FC = () => {
               : 'Xóa / Thu hồi phiên đăng nhập'
           }
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },

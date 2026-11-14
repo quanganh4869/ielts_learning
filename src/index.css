@@ -67,6 +67,18 @@
   select:disabled {
     cursor: not-allowed;
   }
+
+  /* Universal Icon Alignment Safeguard Across System (User & Admin) */
+  svg.lucide,
+  button svg,
+  [role="button"] svg,
+  a svg,
+  .btn svg,
+  .badge svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
 }
 
 /* Scroll reveal utilities */

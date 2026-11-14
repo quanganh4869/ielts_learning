@@ -104,13 +104,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center shrink-0 ${
               isDark
                 ? 'text-[#94A3B8] hover:text-[#70E5B2] hover:bg-[#70E5B2]/10'
                 : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]'
             }`}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 shrink-0" />
           </button>
         </div>
 

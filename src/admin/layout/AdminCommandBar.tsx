@@ -155,9 +155,9 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
             aria-label="Chuyển đổi giao diện Sáng / Tối"
           >
             {isDark ? (
-              <Sun className="w-5 h-5 text-amber-300 stroke-[2.2]" />
+              <Sun className="w-5 h-5 text-amber-300 stroke-[2.2] shrink-0" />
             ) : (
-              <Moon className="w-5 h-5 text-[#28665F] stroke-[2.2]" />
+              <Moon className="w-5 h-5 text-[#28665F] stroke-[2.2] shrink-0" />
             )}
           </button>
 
@@ -174,7 +174,7 @@ export const AdminCommandBar: React.FC<AdminCommandBarProps> = ({ onToggleSideba
               title="Quick Create"
               aria-label="Tạo nhanh đối tượng quản trị"
             >
-              <Plus className="w-5 h-5 stroke-[2.5]" />
+              <Plus className="w-5 h-5 stroke-[2.5] shrink-0" />
             </button>
 
             {/* Quick Create Dropdown Menu */}

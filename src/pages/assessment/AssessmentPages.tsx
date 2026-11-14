@@ -102,7 +102,7 @@ export const AssessmentIntroPage: React.FC = () => {
               variant="primary"
               size="lg"
               onClick={() => navigate(`/assessment/${selectedType}-01`)}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
             >
               {tText('Bắt đầu làm bài', 'Begin Assessment')}
             </Button>
@@ -332,7 +332,7 @@ export const AssessmentResultPage: React.FC = () => {
               </Button>
             </Link>
             <Link to="/app/learning-path">
-              <Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
+              <Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}>
                 {tText('Xem lộ trình học đề xuất', 'View Recommended Path')}
               </Button>
             </Link>

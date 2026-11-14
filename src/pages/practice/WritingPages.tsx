@@ -758,7 +758,7 @@ export const WritingSessionPage: React.FC = () => {
                   size="md"
                   disabled={isEvaluating || wordCount < 30}
                   onClick={handleSubmit}
-                  rightIcon={<Send className="w-4 h-4" />}
+                  rightIcon={<Send className="w-4 h-4 shrink-0" />}
                 >
                   {isEvaluating ? tText('Đang chấm điểm...', 'Evaluating...') : tText('Nộp bài & Chấm điểm IELTS', 'Submit & Grade Essay')}
                 </Button>

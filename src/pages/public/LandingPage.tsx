@@ -228,7 +228,7 @@ export const LandingPage: React.FC = () => {
                   variant="primary"
                   onClick={handleStartLearning}
                   className="w-full sm:w-auto font-black text-base h-13 px-8 shadow-md cursor-pointer"
-                  rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+                  rightIcon={<ArrowRight className="w-4.5 h-4.5 shrink-0" />}
                 >
                   {isAuthenticated && user
                     ? (user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')
@@ -701,7 +701,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <div className="pt-2">
                     <a href="#writing-coach">
-                      <Button variant="primary" size="md" className="font-bold" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                      <Button variant="primary" size="md" className="font-bold" rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}>
                         Xem thử bản sửa câu Band 8.0
                       </Button>
                     </a>
@@ -1178,7 +1178,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Action Bar */}
               <div className="mt-5">
-                <Button variant="primary" size="md" className="font-bold text-xs cursor-pointer" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} onClick={handleStartLearning}>
+                <Button variant="primary" size="md" className="font-bold text-xs cursor-pointer" rightIcon={<ArrowRight className="w-3.5 h-3.5 shrink-0" />} onClick={handleStartLearning}>
                   Khám phá kho 2.000+ từ vựng
                 </Button>
               </div>
@@ -1358,7 +1358,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div>
-                <Button variant="primary" size="md" className="font-bold shadow-xs cursor-pointer" rightIcon={<ArrowRight className="w-4 h-4" />} onClick={handleStartLearning}>
+                <Button variant="primary" size="md" className="font-bold shadow-xs cursor-pointer" rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />} onClick={handleStartLearning}>
                   Vào phòng thi thử ngay
                 </Button>
               </div>
@@ -1642,7 +1642,7 @@ export const LandingPage: React.FC = () => {
                 variant="primary"
                 onClick={handleStartLearning}
                 className="font-black text-base h-13 px-8 shadow-md rounded-2xl cursor-pointer"
-                rightIcon={<ArrowRight className="w-4.5 h-4.5" />}
+                rightIcon={<ArrowRight className="w-4.5 h-4.5 shrink-0" />}
               >
                 {isAuthenticated && user
                   ? (user.isAdmin || user.role === 'admin' || user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('ROLE_SUPER_ADMIN')

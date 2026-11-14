@@ -136,7 +136,7 @@ export const TestTakingLayout: React.FC<TestTakingLayoutProps> = ({
           {/* Offline indicator */}
           {!isOnline && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
-              <WifiOff className="w-3.5 h-3.5 text-amber-700" />
+              <WifiOff className="w-3.5 h-3.5 text-amber-700 shrink-0" />
               <span className="hidden sm:inline">{tText('Đang ngoại tuyến — lưu máy', 'Offline mode')}</span>
             </div>
           )}
@@ -145,19 +145,19 @@ export const TestTakingLayout: React.FC<TestTakingLayoutProps> = ({
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#68727D]">
             {saveStatus === 'saving' && (
               <>
-                <div className="w-2.5 h-2.5 border-2 border-[#28665F] border-t-transparent rounded-full animate-spin" />
+                <div className="w-2.5 h-2.5 border-2 border-[#28665F] border-t-transparent rounded-full animate-spin shrink-0" />
                 <span>{t('common.saving')}</span>
               </>
             )}
             {saveStatus === 'saved' && (
               <>
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="text-emerald-700 font-semibold">{t('common.saved')}</span>
               </>
             )}
             {saveStatus === 'error' && (
               <>
-                <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
                 <span className="text-red-600 font-bold">{tText('Lỗi lưu nháp', 'Draft save error')}</span>
               </>
             )}

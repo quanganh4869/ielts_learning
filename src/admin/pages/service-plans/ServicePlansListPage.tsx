@@ -129,7 +129,7 @@ export const ServicePlansListPage: React.FC = () => {
           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
           title="Xóa gói dịch vụ này"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 shrink-0" />
         </button>
       ),
     },
@@ -152,7 +152,7 @@ export const ServicePlansListPage: React.FC = () => {
               })
             }}
             className="font-bold shadow-xs"
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4 shrink-0" />}
           >
             Tạo gói dịch vụ mới
           </Button>

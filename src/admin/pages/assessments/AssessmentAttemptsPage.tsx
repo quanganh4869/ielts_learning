@@ -162,7 +162,7 @@ export const AssessmentAttemptsPage: React.FC = () => {
           }`}
           title="Xóa lượt làm bài này"
         >
-          <Trash2 className="w-4.5 h-4.5" />
+          <Trash2 className="w-4.5 h-4.5 shrink-0" />
         </button>
       ),
     },

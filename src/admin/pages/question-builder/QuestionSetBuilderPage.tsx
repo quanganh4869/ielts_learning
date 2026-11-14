@@ -981,7 +981,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                       setCurrentTest({ ...currentTest, sections: [...currentTest.sections, newSec] })
                     }}
                     className="font-bold text-xs"
-                    leftIcon={<Plus className="w-3.5 h-3.5" />}
+                    leftIcon={<Plus className="w-3.5 h-3.5 shrink-0" />}
                   >
                     Thêm phần thi (Section)
                   </Button>
@@ -1049,7 +1049,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                               setSelectedGroupId(newGrp.id)
                             }}
                             className="font-bold text-xs"
-                            leftIcon={<Plus className="w-3.5 h-3.5" />}
+                            leftIcon={<Plus className="w-3.5 h-3.5 shrink-0" />}
                           >
                             Thêm nhóm
                           </Button>
@@ -1169,7 +1169,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                     setSelectedGroupId(newGrp.id)
                   }}
                   className="w-full font-bold text-xs"
-                  leftIcon={<Plus className="w-3.5 h-3.5" />}
+                  leftIcon={<Plus className="w-3.5 h-3.5 shrink-0" />}
                 >
                   Thêm nhóm trong {currentSection?.name}
                 </Button>
@@ -1314,7 +1314,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                           size="sm"
                           onClick={handleBulkDelete}
                           className="text-rose-600 hover:bg-rose-50 font-bold text-xs"
-                          leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                          leftIcon={<Trash2 className="w-3.5 h-3.5 shrink-0" />}
                         >
                           Xóa đã chọn
                         </Button>
@@ -1354,7 +1354,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                             </span>
                             {q.sourceConfidence === 'ai_inferred' && (
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 flex items-center gap-1">
-                                <Sparkles className="w-3 h-3" /> AI suy luận
+                                <Sparkles className="w-3 h-3 shrink-0" /> AI suy luận
                               </span>
                             )}
                           </div>
@@ -1363,10 +1363,10 @@ export const QuestionSetBuilderPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => deleteQuestionFromGroup(currentGroup.id, q.id)}
-                              className="text-gray-400 hover:text-rose-600 p-1"
+                              className="text-gray-400 hover:text-rose-600 p-1 flex items-center justify-center shrink-0"
                               title="Xóa câu hỏi này"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 shrink-0" />
                             </button>
                           </div>
                         </div>
@@ -1445,7 +1445,7 @@ export const QuestionSetBuilderPage: React.FC = () => {
                     size="sm"
                     onClick={() => addNewQuestionToGroup(currentGroup.id)}
                     className="font-bold text-xs"
-                    leftIcon={<Plus className="w-4 h-4" />}
+                    leftIcon={<Plus className="w-4 h-4 shrink-0" />}
                   >
                     Thêm câu hỏi mới vào nhóm này
                   </Button>

@@ -58,7 +58,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
         {/* Search Input (Ergonomic 44px height) */}
         <div className="relative flex-1 max-w-md">
           <Search
-            className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 ${
+            className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 shrink-0 ${
               isDark ? 'text-[#70E5B2]' : 'text-[#28665F]'
             }`}
           />
@@ -91,7 +91,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
                   ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] hover:bg-[#12261F]'
                   : 'border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#F8FAFC]'
               }`}
-              leftIcon={<Filter className="w-4 h-4" />}
+              leftIcon={<Filter className="w-4 h-4 shrink-0" />}
             >
               Bộ lọc {activeFilterCount > 0 && `(${activeFilterCount})`}
             </Button>
@@ -107,7 +107,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
                   ? 'border-[#70E5B2]/25 bg-[#0C1A15] text-[#F8FAFC] hover:bg-[#12261F]'
                   : 'border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#F8FAFC]'
               }`}
-              leftIcon={<Download className="w-4 h-4" />}
+              leftIcon={<Download className="w-4 h-4 shrink-0" />}
             >
               Xuất dữ liệu
             </Button>

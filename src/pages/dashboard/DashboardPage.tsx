@@ -173,7 +173,7 @@ export const DashboardPage: React.FC = () => {
                   variant="primary"
                   size="md"
                   className="rounded-2xl font-bold shadow-xs px-5 py-2.5"
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
                 >
                   {tText('Học ngay', 'Start lesson')}
                 </Button>
@@ -337,7 +337,7 @@ export const DashboardPage: React.FC = () => {
                   variant="primary"
                   size="lg"
                   className="rounded-2xl font-bold shadow-sm px-6 py-3"
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
                 >
                   {tText('Bắt đầu', 'Start')}
                 </Button>
